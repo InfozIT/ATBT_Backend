@@ -2,7 +2,6 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 require('./models')
-// const Form_router =require('./Routes/Custom_form')
 const Entite_router = require('./Routes/Entity')
 const Toggle_router = require('./Routes/Toggle')
 const emailRoute = require('./mail/mail')
@@ -20,10 +19,10 @@ const app = express()
 const port = 3001
 
 app.use(cors())
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use('/entity', authVerify, Entite_router);
-app.use('/user', authVerify, User_router);
+app.use('/user', User_router);
 app.use('/team', Team_router);
 app.use('/auth', Auth_router);
 app.use('/form', CreateForm_router);
@@ -33,8 +32,6 @@ app.use('/toggle', Toggle_router);
 app.use('/rbac', Role_router);
 app.use('/api', authVerify, emailRoute);
 app.use('/profile', express.static('Public/Images'));
-// app.use('/form', Form_router)
-
 
 app.get('/', (req, res) => {
   res.send("API From Cus")

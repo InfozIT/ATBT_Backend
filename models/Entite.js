@@ -13,7 +13,6 @@ module.exports = (sequelize, DataTypes) => {
     Member: {
       type: DataTypes.STRING,
       allowNull: true
- 
       // allowNull defaults to true
     },
     EntityPhoto: {

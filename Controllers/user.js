@@ -1,20 +1,10 @@
 var db = require('../models/index');
 const bcrypt = require('bcrypt');
-const transporter = require('../utils/nodemailer')
-const User = db.User
+const transporter = require('../utils/nodemailer');
+const User = db.User;
 const { Op } = require('sequelize');
 
 const Create_User = async (req, res) => {
-    const transporter = nodemailer.createTransport({
-        port: 587,
-        host: "smtp.gmail.com",
-        secure: false,
-        auth: {
-            user: 'nirajkr00024@gmail.com',
-            pass: 'fkjj xtju fauu tgai'
-        }
-    });
-
     const mailData = {
         from: 'nirajkr00024@gmail.com',
         to: req.body.email,
@@ -89,7 +79,6 @@ const List_User = async (req, res) => {
                 ],
             },
         };
-
         // Add search condition dynamically based on your requirements
         if (searchQuery) {
             // Customize the where condition based on your model attributes
@@ -125,7 +114,6 @@ const List_User = async (req, res) => {
     }
 };
 
-
 async function Login_User(email, password) {
     try {
         const user = await User.findOne({
@@ -143,8 +131,6 @@ async function Login_User(email, password) {
         throw error;
     }
 }
-
-
 
 const Get_User = async (req, res) => {
     try {
@@ -175,6 +161,7 @@ const Update_User = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
 const Update_Password = async (req, res) => {
     try {
         const { newPassword } = req.body;
@@ -250,5 +237,14 @@ const Delete_User = async (req, res) => {
     }
 };
 
-
-module.exports = { Create_User, Login_User, List_User, Get_User, Update_User, Update_Password, Reset_Password, Delete_User, createUserData };
+module.exports = {
+    Create_User,
+    Login_User,
+    List_User,
+    Get_User,
+    Update_User,
+    Update_Password,
+    Reset_Password,
+    Delete_User,
+    createUserData
+};

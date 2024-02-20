@@ -1,4 +1,4 @@
-var db = require('../models/index.js')
+var db = require('../models/index.js');
 const Settings = db.From;
 const { DataTypes } = require('sequelize');
 const sequelize = require('../DB/dbconncet.js');
@@ -27,19 +27,34 @@ const queryInterface = sequelize.getQueryInterface();
 const Adddata = async (req, res) => {
     try {
         const arrayOfObjects = req.body.arrayOfObjects;
+        const name = req.body.Name;
+
         if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
             return res.status(400).json({ error: 'Invalid array of objects' });
         }
         const serializedData = JSON.stringify(arrayOfObjects);
         const filterableInputsInSearch = arrayOfObjects.map(obj => (
-        obj.inputname
+            obj.inputname
         ));
-        console.log("filtered",filterableInputsInSearch)
+        console.log("filtered", filterableInputsInSearch)
         const table = await queryInterface.describeTable('Users')
         const filteredKeys = Object.keys(table);
-        console.log(filteredKeys)
+        function filterFields(array1, array2) {
+            return array1.filter(field => !array2.includes(field));
 
+        }
+        const compared = filterFields(filterableInputsInSearch, filteredKeys)
+        const excludedFields = ['id', 'createdAt', 'updatedAt'];
+        const filteredFields = compared.filter(field => !excludedFields.includes(field));
+        console.log(filteredFields)
+        for (const key in filteredFields) {
+            await sequelize.getQueryInterface().addColumn('Users', filteredFields[key], {
+                type: DataTypes.STRING, // You may adjust the data type based on your requirement
+                allowNull: true, // You may adjust this based on your requirement
+            });
+        }
 
+        // console.log(resp, "resp")
 
         res.json({ message: 'Array of objects saved successfully.' });
     } catch (error) {
@@ -127,7 +142,6 @@ const Update_data = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
-
 
 // const FinalForm = async (req, res) => {
 //     let formData = req.body.arrayOfObjects;
@@ -359,9 +373,9 @@ const UserForm = async (req, res) => {
         });
 
         // Sync the model with the database
-        await EntityData.sync({ alter: true });
+        await EntityData.sync();
 
-        res.status(201).json({ message: "User  created or modified successfully",finalJson });
+        res.status(201).json({ message: "User  created or modified successfully", finalJson });
         return finalJson;
 
     } catch (error) {
@@ -446,7 +460,7 @@ const BoardForm = async (req, res) => {
         });
 
         // Sync the model with the database
-        await EntityData.sync({ alter: true });
+        await EntityData.sync();
 
         res.status(201).json({ message: "Board Meeting created or modified successfully" });
     } catch (error) {
@@ -531,8 +545,7 @@ const TeamsForm = async (req, res) => {
         });
 
         // Sync the model with the database
-        await EntityData.sync({ alter: true });
-
+        await EntityData.sync();
         res.status(201).json({ message: "Teem Meeting created or modified successfully" });
     } catch (error) {
         console.error("Error in creating or modifying entity:", error);

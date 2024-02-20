@@ -13,8 +13,8 @@ function verifyToken(token) {
 function extractUserIDFromToken(decodedToken) {
     if (decodedToken && decodedToken.userId && decodedToken.roleId) {
         return {
-            userId:decodedToken.userId,
-            roleId:decodedToken.roleId
+            userId: decodedToken.userId,
+            roleId: decodedToken.roleId
         };
     } else {
         throw new Error("Invalid or missing user ID in token");
@@ -25,7 +25,7 @@ function authVerify(req, res, next) {
     const token = req.headers.authorization;
     try {
         const decoded = verifyToken(token);
-        const {userId, roleId} = extractUserIDFromToken(decoded);
+        const { userId, roleId } = extractUserIDFromToken(decoded);
         req.user = { userId, roleId };
         return next();
     } catch (error) {
