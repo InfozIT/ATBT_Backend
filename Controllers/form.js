@@ -31,13 +31,14 @@ const Adddata = async (req, res) => {
             return res.status(400).json({ error: 'Invalid array of objects' });
         }
         const serializedData = JSON.stringify(arrayOfObjects);
-        const filterableInputsInSearch = arrayOfObjects.map(obj => ({
-        inputname: obj.inputname
-        }));
+        const filterableInputsInSearch = arrayOfObjects.map(obj => (
+        obj.inputname
+        ));
         console.log("filtered",filterableInputsInSearch)
-
         const table = await queryInterface.describeTable('Users')
-        console.log(table)
+        const filteredKeys = Object.keys(table);
+        console.log(filteredKeys)
+
 
 
         res.json({ message: 'Array of objects saved successfully.' });
