@@ -2,40 +2,51 @@ var db = require('../models/index.js')
 const Settings = db.From;
 const { DataTypes } = require('sequelize');
 const sequelize = require('../DB/dbconncet.js');
+const queryInterface = sequelize.getQueryInterface();
 
-const Add_data = async (req, res) => {
+
+
+// const Add_data = async (req, res) => {
+//     try {
+//         const arrayOfObjects = req.body.arrayOfObjects;
+//         const name = req.body.Name
+
+//         if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
+//             return res.status(400).json({ error: 'Invalid array of objects' });
+//         }
+//         const serializedData = JSON.stringify(arrayOfObjects);
+//         const data = await Settings.create({ Data: serializedData, Name: req.body.Name });
+
+//         res.json({ message: 'Array of objects saved successfully.', data, name });
+//     } catch (error) {
+//         console.error('Error saving array of objects:', error);
+//         res.status(500).json({ error: 'Internal server error' });
+//     }
+// };
+
+const Adddata = async (req, res) => {
     try {
         const arrayOfObjects = req.body.arrayOfObjects;
-        const name = req.body.Name
-
         if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
             return res.status(400).json({ error: 'Invalid array of objects' });
         }
         const serializedData = JSON.stringify(arrayOfObjects);
-        const data = await Settings.create({ Data: serializedData, Name: req.body.Name });
+        const filterableInputsInSearch = arrayOfObjects.map(obj => ({
+        inputname: obj.inputname
+        }));
+        console.log("filtered",filterableInputsInSearch)
 
-        res.json({ message: 'Array of objects saved successfully.', data, name });
+        const table = await queryInterface.describeTable('Users')
+        console.log(table)
+
+
+        res.json({ message: 'Array of objects saved successfully.' });
     } catch (error) {
         console.error('Error saving array of objects:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
-// const GetAllLIST = async (req, res) => {
-//   console.log(req.quarry.name)
-//   try {
-//     const allData = await Settings.findAll({
-//       where: {
-//         name: req.quarry.name
-//       },
-//       // attributes: ['data', 'name'] 
-//     });
-//     res.json({ message: 'Array of list is',  allData });
 
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// };
 
 const GetAllLIST = async (req, res) => {
     try {
@@ -349,7 +360,9 @@ const UserForm = async (req, res) => {
         // Sync the model with the database
         await EntityData.sync({ alter: true });
 
-        res.status(201).json({ message: "User  created or modified successfully" });
+        res.status(201).json({ message: "User  created or modified successfully",finalJson });
+        return finalJson;
+
     } catch (error) {
         console.error("Error in creating or modifying entity:", error);
         res.status(500).json({ error: "Internal server error" });
@@ -527,4 +540,4 @@ const TeamsForm = async (req, res) => {
 };
 
 
-module.exports = { Add_data, GetAllLIST, Update_data, EntityForm, UserForm, BoardForm, TeamsForm }
+module.exports = { Adddata, GetAllLIST, Update_data, EntityForm, UserForm, BoardForm, TeamsForm }
