@@ -6,9 +6,8 @@ const CreateForm = require('../Controllers/form');
 
 // Define a route for a specific resource
 
-router.post('/add', CreateForm.Adddata)
 router.get('/list', CreateForm.GetAllLIST)
-router.put('/update', CreateForm.Update_data)
+router.put('/update', CreateForm.AddUpdate)
 
 
 

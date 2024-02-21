@@ -1,6 +1,5 @@
 var db = require('../models/index.js');
 const Settings = db.From;
-const User = db.User
 const { DataTypes } = require('sequelize');
 const sequelize = require('../DB/dbconncet.js');
 const queryInterface = sequelize.getQueryInterface();
@@ -25,7 +24,7 @@ const queryInterface = sequelize.getQueryInterface();
 //     }
 // };
 
-const Adddata = async (req, res) => {
+const AddUpdate = async (req, res) => {
     try {
         const arrayOfObjects = req.body.arrayOfObjects;
         var name = req.body.Name
@@ -637,4 +636,4 @@ const TeamsForm = async (req, res) => {
 };
 
 
-module.exports = { Adddata, GetAllLIST, Update_data, EntityForm, UserForm, BoardForm, TeamsForm }
+module.exports = { AddUpdate, GetAllLIST, Update_data, EntityForm, UserForm, BoardForm, TeamsForm }
