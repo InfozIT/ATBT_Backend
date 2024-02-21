@@ -8,8 +8,10 @@ db.sequelize = sequelize
 
 
 // Importing models
-db.Entite = require('./Entite')(sequelize, DataTypes);
+db.Entite = require('./Entity')(sequelize, DataTypes);
 db.From = require('./Form')(sequelize, DataTypes)
+db.Board = require('./Board')(sequelize, DataTypes)
+db.Team = require('./Team')(sequelize,DataTypes)
 db.User = require('./User')(sequelize, DataTypes);
 db.Role = require('./Role')(sequelize, DataTypes);
 db.Module = require('./Module')(sequelize, DataTypes);
@@ -33,6 +35,6 @@ Module.belongsToMany(Permission, { through: db.PermissionModule });
 
 User.belongsTo(Role);
 
-db.sequelize.sync();
+db.sequelize.sync({force:true});
 console.log("All models were alter successfully.");
 module.exports = db;

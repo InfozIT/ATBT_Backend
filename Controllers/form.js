@@ -1,5 +1,6 @@
 var db = require('../models/index.js');
 const Settings = db.From;
+const User = db.User
 const { DataTypes } = require('sequelize');
 const sequelize = require('../DB/dbconncet.js');
 const queryInterface = sequelize.getQueryInterface();
@@ -27,36 +28,111 @@ const queryInterface = sequelize.getQueryInterface();
 const Adddata = async (req, res) => {
     try {
         const arrayOfObjects = req.body.arrayOfObjects;
-        const name = req.body.Name;
-
-        if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
-            return res.status(400).json({ error: 'Invalid array of objects' });
+        var name = req.body.Name
+        if (name === 'userform'){
+            if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
+                return res.status(400).json({ error: 'Invalid array of objects' });
+            }
+            const serializedData = JSON.stringify(arrayOfObjects);
+            const data = await Settings.create({ Data: serializedData, Name: name });        
+            const filterableInputsInSearch = arrayOfObjects.map(obj => (
+                obj.inputname
+            ));
+            const table = await queryInterface.describeTable('Users')
+            const filteredKeys = Object.keys(table);
+            function filterFields(array1, array2) {
+                return array1.filter(field => !array2.includes(field));
+    
+            }
+            const compared = filterFields(filterableInputsInSearch, filteredKeys)
+            const excludedFields = ['id', 'createdAt', 'updatedAt'];
+            const filteredFields = compared.filter(field => !excludedFields.includes(field));
+            for (const key in filteredFields) {
+                await sequelize.getQueryInterface().addColumn('Users', filteredFields[key], {
+                    type: DataTypes.STRING, // You may adjust the data type based on your requirement
+                    allowNull: true, // You may adjust this based on your requirement
+                });
+            }
+            res.json({ message: `Array of ${name} saved successfully ` });
         }
-        const serializedData = JSON.stringify(arrayOfObjects);
-        const filterableInputsInSearch = arrayOfObjects.map(obj => (
-            obj.inputname
-        ));
-        console.log("filtered", filterableInputsInSearch)
-        const table = await queryInterface.describeTable('Users')
-        const filteredKeys = Object.keys(table);
-        function filterFields(array1, array2) {
-            return array1.filter(field => !array2.includes(field));
-
+        else if(name === 'entityform'){
+            if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
+                return res.status(400).json({ error: 'Invalid array of objects' });
+            }
+            const serializedData = JSON.stringify(arrayOfObjects);
+            const data = await Settings.create({ Data: serializedData, Name: name });        
+            const filterableInputsInSearch = arrayOfObjects.map(obj => (
+                obj.inputname
+            ));
+            const table = await queryInterface.describeTable('Entities')
+            const filteredKeys = Object.keys(table);
+            function filterFields(array1, array2) {
+                return array1.filter(field => !array2.includes(field));
+    
+            }
+            const compared = filterFields(filterableInputsInSearch, filteredKeys)
+            const excludedFields = ['id', 'createdAt', 'updatedAt'];
+            const filteredFields = compared.filter(field => !excludedFields.includes(field));
+            for (const key in filteredFields) {
+                await sequelize.getQueryInterface().addColumn('Entities', filteredFields[key], {
+                    type: DataTypes.STRING, // You may adjust the data type based on your requirement
+                    allowNull: true, // You may adjust this based on your requirement
+                });
+            }
+            res.json({ message: `Array of ${name} saved successfully ` });
         }
-        const compared = filterFields(filterableInputsInSearch, filteredKeys)
-        const excludedFields = ['id', 'createdAt', 'updatedAt'];
-        const filteredFields = compared.filter(field => !excludedFields.includes(field));
-        console.log(filteredFields)
-        for (const key in filteredFields) {
-            await sequelize.getQueryInterface().addColumn('Users', filteredFields[key], {
-                type: DataTypes.STRING, // You may adjust the data type based on your requirement
-                allowNull: true, // You may adjust this based on your requirement
-            });
+        else if(name === 'boardmeetingform'){
+            if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
+                return res.status(400).json({ error: 'Invalid array of objects' });
+            }
+            const serializedData = JSON.stringify(arrayOfObjects);
+            const data = await Settings.create({ Data: serializedData, Name: name });        
+            const filterableInputsInSearch = arrayOfObjects.map(obj => (
+                obj.inputname
+            ));
+            const table = await queryInterface.describeTable('Boards')
+            const filteredKeys = Object.keys(table);
+            function filterFields(array1, array2) {
+                return array1.filter(field => !array2.includes(field));
+    
+            }
+            const compared = filterFields(filterableInputsInSearch, filteredKeys)
+            const excludedFields = ['id', 'createdAt', 'updatedAt'];
+            const filteredFields = compared.filter(field => !excludedFields.includes(field));
+            for (const key in filteredFields) {
+                await sequelize.getQueryInterface().addColumn('Boards', filteredFields[key], {
+                    type: DataTypes.STRING, // You may adjust the data type based on your requirement
+                    allowNull: true, // You may adjust this based on your requirement
+                });
+            }
+            res.json({ message: `Array of ${name} saved successfully ` });
         }
-
-        // console.log(resp, "resp")
-
-        res.json({ message: 'Array of objects saved successfully.' });
+        else if(name === 'teamform'){
+            if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
+                return res.status(400).json({ error: 'Invalid array of objects' });
+            }
+            const serializedData = JSON.stringify(arrayOfObjects);
+            const data = await Settings.create({ Data: serializedData, Name: name });        
+            const filterableInputsInSearch = arrayOfObjects.map(obj => (
+                obj.inputname
+            ));
+            const table = await queryInterface.describeTable('Teams')
+            const filteredKeys = Object.keys(table);
+            function filterFields(array1, array2) {
+                return array1.filter(field => !array2.includes(field));
+    
+            }
+            const compared = filterFields(filterableInputsInSearch, filteredKeys)
+            const excludedFields = ['id', 'createdAt', 'updatedAt'];
+            const filteredFields = compared.filter(field => !excludedFields.includes(field));
+            for (const key in filteredFields) {
+                await sequelize.getQueryInterface().addColumn('Teams', filteredFields[key], {
+                    type: DataTypes.STRING, // You may adjust the data type based on your requirement
+                    allowNull: true, // You may adjust this based on your requirement
+                });
+            }
+            res.json({ message: `Array of ${name} saved successfully ` });
+        }
     } catch (error) {
         console.error('Error saving array of objects:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -81,37 +157,6 @@ const GetAllLIST = async (req, res) => {
     }
 
 };
-
-// Update/create
-// const Update_data = async (req, res) => {
-//   try {
-//     const arrayOfObjects = req.body.arrayOfObjects;
-//     const name = req.body.Name;
-
-//     if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
-//       return res.status(400).json({ error: 'Invalid array of objects' });
-//     }
-
-//     const serializedData = JSON.stringify(arrayOfObjects);
-
-//     // Search for existing record with the provided name
-//     let existingRecord = await Settings.findOne({ Name: name });
-
-//     if (existingRecord) {
-//       // If record exists, update its data
-//       existingRecord.Data = serializedData;
-//       await existingRecord.save();
-//       res.json({ message: 'Array of objects updated successfully.', name, data: arrayOfObjects });
-//     } else {
-//       // If record doesn't exist, create a new one
-//       const data = await Settings.create({ Data: serializedData, Name: name });
-//       res.json({ message: 'New record created successfully.', name, data: arrayOfObjects });
-//     }
-//   } catch (error) {
-//     console.error('Error updating array of objects:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
 
 const Update_data = async (req, res) => {
     try {

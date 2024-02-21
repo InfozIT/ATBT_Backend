@@ -1,26 +1,26 @@
 module.exports = (sequelize, DataTypes) => {
-  const Entite = sequelize.define('Entite', {
+  const Entity = sequelize.define('Entity', {
     // Model attributes are defined here
-    Entite_Name: {
+    name: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    Description: {
+    description: {
       type: DataTypes.STRING,
       // allowNull defaults to true
       allowNull: true
     },
-    Member: {
+    members: {
       type: DataTypes.STRING,
       allowNull: true
       // allowNull defaults to true
     },
-    EntityPhoto: {
+    image: {
       type: DataTypes.STRING,
       allowNull: true
     }
   }, {
     // Other model options go here
   });
-  return Entite;
+  return Entity;
 }
