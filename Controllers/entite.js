@@ -1,8 +1,6 @@
 require('dotenv').config();
 var db = require('../models/index');
 const Entite = db.Entite;
-const User = db.User
-const UserEntites = db.UserEntite
 const { Op } = require('sequelize');
 
 
