@@ -7,7 +7,10 @@ const CreateForm = require('../Controllers/form');
 // Define a route for a specific resource
 
 router.get('/list', CreateForm.GetAllLIST)
-router.put('/update', CreateForm.AddUpdate)
+router.put('/userform', CreateForm.UserFrom)
+router.put('/entiyform', CreateForm.EntityFrom)
+router.put('/meetingform', CreateForm.MeetingFrom)
+router.put('/teamform', CreateForm.TeamFrom)
 
 
 
