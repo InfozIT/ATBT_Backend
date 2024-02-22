@@ -16,9 +16,7 @@ const UserFrom = async (req, res) => {
         const serializedData = JSON.stringify(arrayOfObjects);
         // console.log(arrayOfObjects, "aoo")
         const tview = JSON.stringify(tableview);
-
         let existingData = await Settings.findOne({ where: { Name: name } });
-        console.log(existingData)
         if (existingData) {
             // Update 
             existingData.Data = serializedData;
@@ -32,7 +30,6 @@ const UserFrom = async (req, res) => {
         ));
         const table = await queryInterface.describeTable('Users')
         const filteredKeys = Object.keys(table);
-        console.log(filteredKeys, "fsis")
         function filterFields(array1, array2) {
             return array1.filter(field => !array2.includes(field));
         }
@@ -43,7 +40,6 @@ const UserFrom = async (req, res) => {
         for (const key of filteredFields) {
             const obj = arrayOfObjects.find(item => item.inputname === key);
             let columnType;
-            console.log(obj.type)
             // Determine column type based on object type
             switch (obj.type) {
                 case 'text':
