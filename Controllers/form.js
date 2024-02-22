@@ -16,8 +16,7 @@ const UserFrom = async (req, res) => {
             const serializedData = JSON.stringify(arrayOfObjects);
             const tview = JSON.stringify(tableview);
 
-            let existingData = await Settings.findOne({name});
-            console.log(existingData)
+            let existingData = await Settings.findOne({where: {Name: name}});
             if (existingData) {
                 // Update 
                 existingData.Data = serializedData;
@@ -54,7 +53,7 @@ const EntityFrom = async (req, res) => {
     try {
         const arrayOfObjects = req.body.arrayOfObjects;
         var name = req.body.Name
-        console.log(name)
+        console.log(name, "entity Name")
         var tableview = req.body.Tableview
             if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
                 return res.status(400).json({ error: 'Invalid array of objects' });
@@ -62,14 +61,15 @@ const EntityFrom = async (req, res) => {
             const serializedData = JSON.stringify(arrayOfObjects);
             const tview = JSON.stringify(tableview);
 
-            let existingData = await Settings.findOne({name});
-            console.log(existingData)
+            let existingData = await Settings.findOne({where: {Name: name}});
+            console.log(existingData, "ed-null")
             if (existingData) {
                 // Update 
                 existingData.Data = serializedData;
                 await existingData.save();
             } else {
                 // Create 
+                console.log(name,"name-chk")
                 await Settings.create({ Data: serializedData, Name: name,Tableview :tview});
             }
             const filterableInputsInSearch = arrayOfObjects.map(obj => (
@@ -107,8 +107,7 @@ const MeetingFrom = async (req, res) => {
             const serializedData = JSON.stringify(arrayOfObjects);
             const tview = JSON.stringify(tableview);
 
-            let existingData = await Settings.findOne({name});
-            console.log(existingData)
+            let existingData = await Settings.findOne({where: {Name: name}});
             if (existingData) {
                 // Update 
                 existingData.Data = serializedData;
@@ -152,8 +151,7 @@ const TeamFrom = async (req, res) => {
             const serializedData = JSON.stringify(arrayOfObjects);
             const tview = JSON.stringify(tableview);
 
-            let existingData = await Settings.findOne({name});
-            console.log(existingData)
+            let existingData = await Settings.findOne({where: {Name: name}});
             if (existingData) {
                 // Update 
                 existingData.Data = serializedData;
