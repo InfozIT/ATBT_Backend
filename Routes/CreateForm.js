@@ -8,7 +8,7 @@ const CreateForm = require('../Controllers/form');
 
 router.get('/list', CreateForm.GetAllLIST)
 router.put('/userform', CreateForm.UserFrom)
-router.put('/entiyform', CreateForm.EntityFrom)
+router.put('/entityform', CreateForm.EntityFrom)
 router.put('/meetingform', CreateForm.MeetingFrom)
 router.put('/teamform', CreateForm.TeamFrom)
 

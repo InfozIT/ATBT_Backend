@@ -54,6 +54,7 @@ const EntityFrom = async (req, res) => {
     try {
         const arrayOfObjects = req.body.arrayOfObjects;
         var name = req.body.Name
+        console.log(name)
         var tableview = req.body.Tableview
             if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
                 return res.status(400).json({ error: 'Invalid array of objects' });
@@ -83,7 +84,7 @@ const EntityFrom = async (req, res) => {
             const excludedFields = ['id', 'createdAt', 'updatedAt'];
             const filteredFields = compared.filter(field => !excludedFields.includes(field));
             for (const key in filteredFields) {
-                await sequelize.getQueryInterface().addColumn('Users', filteredFields[key], {
+                await sequelize.getQueryInterface().addColumn('Entities', filteredFields[key], {
                     type: DataTypes.STRING, // You may adjust the data type based on your requirement
                     allowNull: true, // You may adjust this based on your requirement
                 });
@@ -128,7 +129,7 @@ const MeetingFrom = async (req, res) => {
             const excludedFields = ['id', 'createdAt', 'updatedAt'];
             const filteredFields = compared.filter(field => !excludedFields.includes(field));
             for (const key in filteredFields) {
-                await sequelize.getQueryInterface().addColumn('Users', filteredFields[key], {
+                await sequelize.getQueryInterface().addColumn('Meetings', filteredFields[key], {
                     type: DataTypes.STRING, // You may adjust the data type based on your requirement
                     allowNull: true, // You may adjust this based on your requirement
                 });
@@ -173,7 +174,7 @@ const TeamFrom = async (req, res) => {
             const excludedFields = ['id', 'createdAt', 'updatedAt'];
             const filteredFields = compared.filter(field => !excludedFields.includes(field));
             for (const key in filteredFields) {
-                await sequelize.getQueryInterface().addColumn('Users', filteredFields[key], {
+                await sequelize.getQueryInterface().addColumn('Teams', filteredFields[key], {
                     type: DataTypes.STRING, // You may adjust the data type based on your requirement
                     allowNull: true, // You may adjust this based on your requirement
                 });
