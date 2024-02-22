@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
 // Define a route for a specific resource
 router.post('/create-user', User.Create_User)
 router.post('/create', User.createUserData);
-router.get('/list', hasPermission("user", "read"), User.List_User)
+router.get('/list', User.List_User)
 router.get('/list/:id', hasPermission("user", "read"), User.Get_User)
 router.put('/update/:id', hasPermission("user", "update"), User.Update_User)
 router.put('/changepassword/:id', hasPermission("user", "update"), User.Update_Password)

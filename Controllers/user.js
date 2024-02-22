@@ -2,6 +2,7 @@ var db = require('../models/index');
 const bcrypt = require('bcrypt');
 const transporter = require('../utils/nodemailer');
 const User = db.User;
+const UserFormStructure = db.From
 const { Op } = require('sequelize');
 
 const Create_User = async (req, res) => {
@@ -42,24 +43,6 @@ const Create_User = async (req, res) => {
     }
 };
 
-const createUserData = (req, res) => {
-    const data = req.body;
-    console.log(data)
-    // Insert data into the Userdata table
-    mycon.query('INSERT INTO UsersData SET ?', data, (err, result) => {
-        if (err) {
-
-            console.error('Error inserting data: ' + err.stack);
-            res.status(500).send('Error inserting data');
-            return;
-        }
-
-        const id = result.insertId;
-        // res.status(200).send(`Data inserted successfully with id : ${id}`);
-        res.status(201).send(`${id}`);
-    });
-};
-
 const List_User = async (req, res) => {
     try {
         const page = parseInt(req.query.page, 10) || 1;
@@ -70,10 +53,10 @@ const List_User = async (req, res) => {
         const options = {
             offset: (page - 1) * pageSize,
             limit: pageSize,
-            order: sortBy === 'name' ? [['userName']] : sortBy === 'email' ? [['email']] : [[sortBy]],
+            order: sortBy === 'name' ? [['name']] : sortBy === 'email' ? [['email']] : [[sortBy]],
             where: {
                 [Op.or]: [
-                    { userName: { [Op.like]: `%${searchQuery}%` } },
+                    { name: { [Op.like]: `%${searchQuery}%` } },
                     { email: { [Op.like]: `%${searchQuery}%` } },
                     // Add more conditions based on your model's attributes
                 ],
@@ -84,7 +67,7 @@ const List_User = async (req, res) => {
             // Customize the where condition based on your model attributes
             options.where = {
                 [Op.or]: [
-                    { userName: { [Op.like]: `%${searchQuery}%` } },
+                    { name: { [Op.like]: `%${searchQuery}%` } },
                     { email: { [Op.like]: `%${searchQuery}%` } },
                     // Add more conditions based on your model's attributes
                 ],
@@ -235,6 +218,25 @@ const Delete_User = async (req, res) => {
         console.error("Error deleting User:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
+};
+
+
+const createUserData = (req, res) => {
+    const data = req.body;
+    console.log(data)
+    // Insert data into the Userdata table
+    mycon.query('INSERT INTO UsersData SET ?', data, (err, result) => {
+        if (err) {
+
+            console.error('Error inserting data: ' + err.stack);
+            res.status(500).send('Error inserting data');
+            return;
+        }
+
+        const id = result.insertId;
+        // res.status(200).send(`Data inserted successfully with id : ${id}`);
+        res.status(201).send(`${id}`);
+    });
 };
 
 module.exports = {

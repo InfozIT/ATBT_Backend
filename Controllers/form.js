@@ -20,6 +20,7 @@ const UserFrom = async (req, res) => {
         if (existingData) {
             // Update 
             existingData.Data = serializedData;
+            existingData.Tableview = tview;
             await existingData.save();
         } else {
             // Create 
@@ -101,6 +102,7 @@ const EntityFrom = async (req, res) => {
         if (existingData) {
             // Update 
             existingData.Data = serializedData;
+            existingData.Tableview = tview;
             await existingData.save();
         } else {
             // Create 
@@ -187,6 +189,7 @@ const MeetingFrom = async (req, res) => {
         if (existingData) {
             // Update 
             existingData.Data = serializedData;
+            existingData.Tableview = tview;
             await existingData.save();
         } else {
             // Create 
@@ -273,6 +276,7 @@ const TeamFrom = async (req, res) => {
         if (existingData) {
             // Update 
             existingData.Data = serializedData;
+            existingData.Tableview = tview;
             await existingData.save();
         } else {
             // Create 

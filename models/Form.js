@@ -6,13 +6,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     Name: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
+      unique: true
     },
     Tableview: {
       type: DataTypes.TEXT,
       allowNull: true
     }
-    
+
   }, {
     // Other model options go here
   });
