@@ -10,8 +10,8 @@ db.sequelize = sequelize
 // Importing models
 db.Entite = require('./Entity')(sequelize, DataTypes);
 db.From = require('./Form')(sequelize, DataTypes)
-db.Board = require('./Board')(sequelize, DataTypes)
-db.Team = require('./Team')(sequelize,DataTypes)
+db.Meeting = require('./Meeting')(sequelize, DataTypes)
+db.Team = require('./Team')(sequelize, DataTypes)
 db.User = require('./User')(sequelize, DataTypes);
 db.Role = require('./Role')(sequelize, DataTypes);
 db.Module = require('./Module')(sequelize, DataTypes);
