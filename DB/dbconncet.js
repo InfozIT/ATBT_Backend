@@ -1,7 +1,9 @@
 const { Sequelize } = require('sequelize');
+const config = require('./config')
 
-const sequelize = new Sequelize('RBAC1', 'rootadmin', 'rootadmin', {
-  host: 'atbt-db.cwuyjszxxfxc.us-east-1.rds.amazonaws.com',
+
+const sequelize = new Sequelize('ATBT', 'admin', 'rootadmin', {
+  host: 'atbt.cdwoi4ikm5i7.ap-south-1.rds.amazonaws.com',
   dialect: 'mysql',
   logging: false
 });
