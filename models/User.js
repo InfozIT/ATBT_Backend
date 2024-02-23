@@ -60,7 +60,6 @@ module.exports = (sequelize, DataTypes) => {
         customFieldsData: {
             type: DataTypes.TEXT,
             allowNull: true
-            // allowNull defaults to true
         },
     }, {
         hooks: {

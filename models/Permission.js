@@ -7,10 +7,10 @@ module.exports = (sequelize, DataTypes) => {
   const Permission = sequelize.define('Permission', {
     // name:DataTypes.STRING,
     all: DataTypes.BOOLEAN,
-    create: DataTypes.BOOLEAN,
-    read: DataTypes.BOOLEAN,
-    update: DataTypes.BOOLEAN,
-    delete: DataTypes.BOOLEAN
+    canCreate: DataTypes.BOOLEAN,
+    canRead: DataTypes.BOOLEAN,
+    canUpdate: DataTypes.BOOLEAN,
+    canDelete: DataTypes.BOOLEAN
   });
   return Permission
 }
