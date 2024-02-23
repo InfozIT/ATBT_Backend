@@ -5,6 +5,7 @@ const User = db.User;
 const UserFormStructure = db.From
 const { Op } = require('sequelize');
 
+
 const Create_User = async (req, res) => {
     const mailData = {
         from: 'nirajkr00024@gmail.com',
@@ -32,16 +33,16 @@ const Create_User = async (req, res) => {
             if (err)
                 res.status(500).json({ error: err.message });
             else
-                // res.json({ message: 'Email sent successfully! ${send_to}', info: info });
-                res.json({ message: `mail send to your repected mail ${send_to}` });
+                res.json({ message: `mail send to your respected mail ${req.body.email}` });
         });
-        res.status(201).json({ message: "User created successfully", user });
+        const id = user.id; 
+        res.status(201).send(`${id}`);
     } catch (error) {
-        // Handle any errors that occur during the user creation process
         console.error("Error creating user:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: "Error creating user" });
     }
 };
+
 
 const List_User = async (req, res) => {
     try {
