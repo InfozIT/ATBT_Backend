@@ -145,7 +145,7 @@ const createRoleWithPermissions = async (req, res) => {
     });
     // Iterate through permissions and associate modules with permissions
     for (const permissionData of permissions) {
-      const { module, all, create, read, update, delete: del } = permissionData;
+      const { module, all, canCreate, canRead, canUpdate, canDelete: del } = permissionData;
       // Find or create the module
       const [newModule, created] = await Module.findOrCreate({
         where: { name: module }
@@ -153,10 +153,10 @@ const createRoleWithPermissions = async (req, res) => {
       // Create a new permission
       const newPermission = await Permission.create({
         all,
-        create,
-        read,
-        update,
-        delete: del
+        canCreate,
+        canRead,
+        canUpdate,
+        canDelete: del
       });
 
       // Associate the permission with the module
