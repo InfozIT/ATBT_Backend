@@ -56,7 +56,16 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true
             // allowNull defaults to true
-        }
+        },
+        loggedInUser:{type: DataTypes.STRING,
+            allowNull: true,
+
+        },
+        customFieldsData: {
+            type: DataTypes.TEXT,
+            allowNull: true
+            // allowNull defaults to true
+        },
     }, {
         hooks: {
             beforeCreate: async (user) => {
