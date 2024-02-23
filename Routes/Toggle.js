@@ -6,7 +6,7 @@ const Toggle = require('../Controllers/toggle')
 
 // Define a route for a specific resource
 
-router.post('/',Toggle.Add_toggle)
+router.post('/', Toggle.Add_toggle)
 
 
 

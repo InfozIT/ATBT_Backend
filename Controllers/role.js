@@ -158,7 +158,7 @@ const createRoleWithPermissions = async (req, res) => {
         update,
         delete: del
       });
- 
+
       // Associate the permission with the module
       await newPermission.addModule(newModule);
       // Associate the permission with the role
@@ -180,7 +180,7 @@ const updateRoleWithPermissions = async (req, res) => {
   try {
     const { roleId } = req.params;
     const { role, description, permissions } = req.body;
-    
+
     // Find the role to update
     const existingRole = await Role.findByPk(roleId, {
       include: [Permission] // Include permissions to update existing ones
@@ -201,7 +201,7 @@ const updateRoleWithPermissions = async (req, res) => {
 
       // Find existing permission if it exists
       const existingPermission = existingRole.Permissions.find(permission => permission.Module.name === module);
-      
+
       if (existingPermission) {
         // Update existing permission
         existingPermission.all = all;
@@ -257,7 +257,7 @@ const updateRoleWithPermissions = async (req, res) => {
 //         update,
 //         delete: del
 //       });
- 
+
 //       // Associate the permission with the module
 //       await newPermission.addModule(newModule);
 //       // Associate the permission with the role

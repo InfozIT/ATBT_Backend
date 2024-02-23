@@ -7,7 +7,7 @@ const User = db.User
 const Add_toggle = async (req, res) => {
   try {
     const userId = req.query.id;
-  
+
     // Find the user by ID
     const user = await User.findByPk(userId);
 
@@ -20,9 +20,9 @@ const Add_toggle = async (req, res) => {
     // Fetch the updated user
     const updatedUser = await User.findByPk(userId);
 
-    res.status(200).json({ 
-      message: `User status updated successfully for ID: ${userId}`, 
-      user: updatedUser 
+    res.status(200).json({
+      message: `User status updated successfully for ID: ${userId}`,
+      user: updatedUser
     });
 
   } catch (error) {
@@ -31,9 +31,9 @@ const Add_toggle = async (req, res) => {
   }
 };
 
-  
-  
-  
 
 
-  module.exports = { Add_toggle };
+
+
+
+module.exports = { Add_toggle };

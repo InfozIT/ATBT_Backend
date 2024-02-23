@@ -348,22 +348,58 @@ const TeamFrom = async (req, res) => {
 };
 
 
+// const GetAllLIST = async (req, res) => {
+//     try {
+//         if (!req.query.name) {
+//             res.status(404).json({ error: "no name specified, Please check" });
+//         }
+//         const form = await Settings.findOne({
+//             where: {
+//                 name: req.query.name
+//             }
+//         });
+//         const data = JSON.parse(form.Data);
+//         const tview = JSON.parse(form.Tableview);
+//         // const trimmedJsonArray = array.map(obj => JSON.stringify(obj)).join(',');
+//         res.status(200).json({ id: form.id, Name: form.Name, Data: data, Tableview: tview });
+//     } catch (error) {
+//         console.error("Error creating :", error);
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+
+// };
+
 const GetAllLIST = async (req, res) => {
     try {
+        const { name } = req.query;
+
+        if (!name) {
+            return res.status(400).json({ error: "No name specified. Please provide a name." });
+        }
+
         const form = await Settings.findOne({
-            where: {
-                name: req.query.name
-            }
+            where: { name }
         });
-        const data = form.Data
-        const array = JSON.parse(data);
-        // const trimmedJsonArray = array.map(obj => JSON.stringify(obj)).join(',');
-        res.status(200).json({ message: `your name is:${req.query.name}`, array });
+
+        if (!form) {
+            return res.status(404).json({ error: "Form not found." });
+        }
+
+        const data = JSON.parse(form.Data);
+        const tview = JSON.parse(form.Tableview);
+
+        res.status(200).json({
+            id: form.id,
+            Name: form.Name,
+            Data: data,
+            Tableview: tview
+        });
     } catch (error) {
-        console.error("Error creating :", error);
+        console.error("Error fetching form:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
-
 };
+
+
 
 module.exports = { GetAllLIST, TeamFrom, UserFrom, MeetingFrom, EntityFrom }

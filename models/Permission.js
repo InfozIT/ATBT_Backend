@@ -3,8 +3,8 @@ const sequelize = require('../DB/dbconncet');
 
 
 module.exports = (sequelize, DataTypes) => {
-// Define Permission model
-const Permission = sequelize.define('Permission', {
+  // Define Permission model
+  const Permission = sequelize.define('Permission', {
     // name:DataTypes.STRING,
     all: DataTypes.BOOLEAN,
     create: DataTypes.BOOLEAN,
@@ -12,7 +12,7 @@ const Permission = sequelize.define('Permission', {
     update: DataTypes.BOOLEAN,
     delete: DataTypes.BOOLEAN
   });
-return Permission
+  return Permission
 }
 
 // module.exports = Permission;

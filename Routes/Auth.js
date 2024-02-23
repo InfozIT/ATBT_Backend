@@ -10,10 +10,8 @@ authRouter.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const userDetails = await Login_User(email, password);
-
         const roleId = userDetails.RoleId
         console.log("roleid", roleId)
-
         const role = await Role.findOne({
             where: { id: roleId },
             include: [{
