@@ -48,11 +48,24 @@ const queryInterface = sequelize.getQueryInterface();
 //     }
 // };
 
-const Create_User = (req, res) => {
+const Create_User = async (req, res) => {
     const data = req.body;
     console.log(data)
+    const role = await db.Role.findOne({
+                    where: {
+                        name: data.role,
+                    },
+                });
+                if (!role) {
+                    console.error("Role not found.");
+                    return;
+                }
     // Insert data into the Userdata table
-    mycon.query('INSERT INTO Users SET ?', data, (err, result) => {
+    const user = {
+                    ...data,
+            RoleId: role.id,
+    }
+    mycon.query('INSERT INTO Users SET ?', user, (err, result) => {
       if (err) {
       
         console.error('Error inserting data: ' + err.stack);
