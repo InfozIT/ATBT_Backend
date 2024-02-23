@@ -57,10 +57,6 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true
             // allowNull defaults to true
         },
-        loggedInUser:{type: DataTypes.STRING,
-            allowNull: true,
-
-        },
         customFieldsData: {
             type: DataTypes.TEXT,
             allowNull: true
@@ -74,7 +70,7 @@ module.exports = (sequelize, DataTypes) => {
                 user.password = hashedPassword;
             }
         },
+        // timestamps: false // Disable timestamps
     });
     return User
 }
-// module.exports = User;

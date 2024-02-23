@@ -4,6 +4,8 @@ const Entite = db.Entite;
 const { Op } = require('sequelize');
 
 
+
+
 const Add_Entite = async (req, res) => {
   try {
     var data = (req.body)
