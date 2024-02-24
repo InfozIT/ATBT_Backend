@@ -12,11 +12,13 @@ router.get('/', (req, res) => {
 router.post('/create-user', User.Create_User)
 router.post('/create', User.createUserData);
 router.get('/list', User.List_User)
-router.get('/list/:id', hasPermission("user", "read"), User.Get_User)
+router.get('/list/:id',  User.Get_User)
+// router.get('/list/:id', hasPermission("user", "read"), User.Get_User)
 router.put('/update/:id', hasPermission("user", "update"), User.Update_User)
 router.put('/changepassword/:id', hasPermission("user", "update"), User.Update_Password)
 router.put('/forgotpassword', hasPermission("user", "update"), User.Reset_Password)
-router.delete('/delete-user/:id', hasPermission("user", "delete"), User.Delete_User)
+// router.delete('/delete-user/:id', hasPermission("user", "delete"), User.Delete_User)
+router.delete('/delete-user/:id', User.Delete_User)
 
 
 module.exports = router;
