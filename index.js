@@ -32,7 +32,7 @@ app.use('/api', authVerify, emailRoute);
 app.use('/profile', express.static('Public/Images'));
 
 app.get('/', (req, res) => {
-  res.send("API From Cusrrrr")
+  res.send("API From Cus hai")
 })
 
 
