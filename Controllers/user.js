@@ -1,8 +1,5 @@
 var db = require('../models/index');
 const sequelize = require('../DB/dbconncet');
-const mycon = require('../DB/mycon')
-
-const bcrypt = require('bcrypt');
 const transporter = require('../utils/nodemailer');
 const User = db.User;
 const UserFormStructure = db.From
@@ -11,74 +8,43 @@ const queryInterface = sequelize.getQueryInterface();
 
 
 
-// const Create_User = async (req, res) => {
-//     const mailData = {
-//         from: 'nirajkr00024@gmail.com',
-//         to: req.body.email,
-//         subject: 'Sending Email using Node.js',
-//         text: 'User Created!',
-//         html: `<b>Hey there your account has been created please use the below credentials to login</b><br><a href="https://main.d4f46sk4x577g.amplifyapp.com/login">login</a></b><br>email:${req.body.email} password: ${req?.body?.password ?? "suadmin"}<br/>`,
-//     };
-//     try {
-//         var data = (req.body);
-//         const role = await db.Role.findOne({
-//             where: {
-//                 name: data.role,
-//             },
-//         });
-//         if (!role) {
-//             console.error("Role not found.");
-//             return;
-//         }
-//         const user = await User.create({
-//             ...data,
-//             RoleId: role.id,
-//         });
-//         transporter.sendMail(mailData, function (err, info) {
-//             if (err)
-//                 res.status(500).json({ error: err.message });
-//             else
-//                 res.json({ message: `mail send to your respected mail ${req.body.email}` });
-//         });
-//         const id = user.id; 
-//         res.status(201).send(`${id}`);
-//     } catch (error) {
-//         console.error("Error creating user:", error);
-//         res.status(500).json({ error: "Error creating user" });
-//     }
-// };
-
 const Create_User = async (req, res) => {
-    const data = req.body;
-    console.log(data)
-    const role = await db.Role.findOne({
-                    where: {
-                        name: data.role,
-                    },
-                });
-                if (!role) {
-                    console.error("Role not found.");
-                    return;
-                }
-    // Insert data into the Userdata table
-    const user = {
-                    ...data,
+    const mailData = {
+        from: 'nirajkr00024@gmail.com',
+        to: req.body.email,
+        subject: 'Sending Email using Node.js',
+        text: 'User Created!',
+        html: `<b>Hey there your account has been created please use the below credentials to login</b><br><a href="https://main.d4f46sk4x577g.amplifyapp.com/login">login</a></b><br>email:${req.body.email} password: ${req?.body?.password ?? "suadmin"}<br/>`,
+    };
+    try {
+        var data = (req.body);
+        const role = await db.Role.findOne({
+            where: {
+                name: data.role,
+            },
+        });
+        if (!role) {
+            console.error("Role not found.");
+            return;
+        }
+        const user = await User.create({
+            ...data,
             RoleId: role.id,
+        });
+        transporter.sendMail(mailData, function (err, info) {
+            if (err)
+                res.status(500).json({ error: err.message });
+            else
+                res.json({ message: `mail send to your respected mail ${req.body.email}` });
+        });
+        const id = user.id; 
+        res.status(201).send(`${id}`);
+    } catch (error) {
+        console.error("Error creating user:", error);
+        res.status(500).json({ error: "Error creating user" });
     }
-    mycon.query('INSERT INTO Users SET ?', user, (err, result) => {
-      if (err) {
-      
-        console.error('Error inserting data: ' + err.stack);
-        res.status(500).send('Error inserting data');
-        return;
-      }
-  
-      const id = result.insertId;
-      // res.status(200).send(`Data inserted successfully with id : ${id}`);
-      res.status(201).send(`${id}`);
-    });
-  };
-  
+};
+
 
 const List_User = async (req, res) => {
     try {
@@ -133,6 +99,7 @@ const List_User = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
 
 async function Login_User(email, password) {
     try {

@@ -2,6 +2,7 @@ var db = require('../models/index.js');
 const Settings = db.From;
 const { DataTypes } = require('sequelize');
 const sequelize = require('../DB/dbconncet.js');
+const User = db.User;
 const queryInterface = sequelize.getQueryInterface();
 
 
@@ -78,6 +79,8 @@ const UserFrom = async (req, res) => {
                 allowNull: true,
             });
         }
+        await sequelize.sync();
+        console.log("Sync Done")
         res.json({ message: `Array of ${name} saved successfully ` });
     } catch (error) {
         console.error('Error saving array of objects:', error);
