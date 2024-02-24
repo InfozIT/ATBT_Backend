@@ -57,6 +57,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true
             // allowNull defaults to true
         },
+        createdBy: {
+            type: DataTypes.STRING,
+            allowNull: true,
+
+        },
         customFieldsData: {
             type: DataTypes.TEXT,
             allowNull: true

@@ -11,10 +11,10 @@ const Add_Entite = async (req, res) => {
     var data = (req.body)
     const path = `${process.env.IMAGE_URI}/${req.file.filename}`
     const Entites = await Entite.create({
-      Entite_Name: req.body.name,
-      Description: req.body.description,
-      Member: req.body.members,
-      EntityPhoto: path
+      name: req.body.name,
+      description: req.body.description,
+      members: req.body.members,
+      image: path
     });
     res.status(201).json({ message: " created successfully", Entites });
   } catch (error) {
@@ -79,8 +79,8 @@ const List_Entite = async (req, res) => {
       order: sortBy === 'Entite_Name' ? [['Entite_Name']] : sortBy === 'Description' ? [['Description']] : [[sortBy]],
       where: {
         [Op.or]: [
-          { Entite_Name: { [Op.like]: `%${searchQuery}%` } },
-          { Description: { [Op.like]: `%${searchQuery}%` } },
+          { name: { [Op.like]: `%${searchQuery}%` } },
+          { description: { [Op.like]: `%${searchQuery}%` } },
           // Add more conditions based on your model's attributes
         ],
       },
@@ -91,8 +91,8 @@ const List_Entite = async (req, res) => {
       // Customize the where condition based on your model attributes
       options.where = {
         [Op.or]: [
-          { Entite_Name: { [Op.like]: `%${searchQuery}%` } },
-          { Description: { [Op.like]: `%${searchQuery}%` } },
+          { name: { [Op.like]: `%${searchQuery}%` } },
+          { description: { [Op.like]: `%${searchQuery}%` } },
           // Add more conditions based on your model's attributes
         ],
       };

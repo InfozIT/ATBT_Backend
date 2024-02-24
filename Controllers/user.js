@@ -1,4 +1,5 @@
 var db = require('../models/index');
+const bcrypt = require('bcrypt');
 const sequelize = require('../DB/dbconncet');
 const transporter = require('../utils/nodemailer');
 const User = db.User;
@@ -91,6 +92,7 @@ async function Login_User(email, password) {
                 email
             }
         });
+        console.log(user, "user details", email, password)
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (passwordMatch) {
             return user;

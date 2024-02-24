@@ -34,7 +34,7 @@ const hasPermission = (moduleName, permissionName) => {
             // }
 
             role.Permissions.find(permission => {
-                console.log("permission", permission.create, permission.read, permission.update, permission.delete, permission.Modules[0].name)
+                console.log("permission", permission.canCreate, permission.canRead, permission.canUpdate, permission.canDelete, permission.Modules[0].name)
                 if (permission[permissionName] === true) {
                     console.log("passed crud", permission.Modules[0].name, "moduleName: ", moduleName)
                     if (permission.Modules[0].name === moduleName) {

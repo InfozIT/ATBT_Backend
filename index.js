@@ -21,7 +21,7 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/entity', authVerify, Entite_router);
-app.use('/user', User_router);
+app.use('/user', authVerify, User_router);
 app.use('/team', Team_router);
 app.use('/auth', Auth_router);
 app.use('/form', CreateForm_router);

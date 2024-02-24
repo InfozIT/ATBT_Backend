@@ -8,11 +8,11 @@ const hasPermission = require('../middlewares/rolePermission');
 
 // Define a route for a specific resource
 
-router.post('/add', hasPermission("entity", "create"), upload.single('image'), ECont.Add_Entite)
-router.get('/list', hasPermission("entity", "read"), ECont.List_Entite)
-router.get('/list/:id', hasPermission("entity", "read"), ECont.Get_Entite)
-router.put('/update/:id', hasPermission("entity", "update"), ECont.Update_Entite)
-router.delete('/delete/:id', hasPermission("entity", "delete"), ECont.Delete_Entite)
+router.post('/add', hasPermission("entity", "canCreate"), upload.single('image'), ECont.Add_Entite)
+router.get('/list', hasPermission("entity", "canRead"), ECont.List_Entite)
+router.get('/list/:id', hasPermission("entity", "canRead"), ECont.Get_Entite)
+router.put('/update/:id', hasPermission("entity", "canUpdate"), ECont.Update_Entite)
+router.delete('/delete/:id', hasPermission("entity", "canDelete"), ECont.Delete_Entite)
 
 
 module.exports = router;
