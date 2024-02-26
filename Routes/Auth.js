@@ -38,7 +38,6 @@ authRouter.post('/login', async (req, res) => {
             return res.status(404).json({ error: "Role not found." });
         }
 
-        console.log(role.Permissions[0].update, "role")
         const simplifiedRole = {
             id: role.id,
             name: role.name,

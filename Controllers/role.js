@@ -77,8 +77,6 @@ const getRolePermissionsById = async (req, res) => {
     if (!role) {
       return res.status(404).json({ error: "Role not found." });
     }
-
-    console.log(role.Permissions[0].update, "role")
     const rolePermissions = {
       id: role.id,
       name: role.name,
@@ -120,15 +118,9 @@ const updateRoleWithPermissions = async (req, res) => {
         attributes: ['id', 'all', 'canCreate', 'canRead', 'canUpdate', 'canDelete']
       }]
     });
-    // const existingRole = await Role.findByPk(roleId, {
-    //   include: [Permission] // Include permissions to update existing ones
-    // });
-
     if (!existingRole) {
       return res.status(404).json({ error: 'Role not found' });
     }
-    // console.log(existingRole.Permissions[0].Modules[0].name, "er")
-
     // Update role details
     existingRole.name = role;
     existingRole.description = description;
@@ -138,11 +130,8 @@ const updateRoleWithPermissions = async (req, res) => {
     for (const permissionData of permissions) {
       const { module, all, canCreate, canRead, canUpdate, canDelete: del } = permissionData;
 
-      // console.log(module, all, canCreate, canRead, canUpdate, del, existingRole.Permissions[0].Modules[0].name)
-
       // Find existing permission if it exists
       const existingPermission = existingRole.Permissions.find(permission => permission.Modules[0].name === module);
-      console.log(existingPermission, "epr")
       if (existingPermission) {
         // Update existing permission
         existingPermission.all = all;
@@ -162,54 +151,6 @@ const updateRoleWithPermissions = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-// const updateRoleWithPermissions = async (req, res) => {
-//   try {
-//     const { roleId } = req.params;
-//     const { role, description, permissions } = req.body;
-
-//     // Find the role to update
-//     const existingRole = await Role.findByPk(roleId, {
-//       include: [Permission] // Include permissions to update existing ones
-//     });
-
-//     if (!existingRole) {
-//       return res.status(404).json({ error: 'Role not found' });
-//     }
-
-//     // Update role details
-//     existingRole.name = role;
-//     existingRole.description = description;
-//     await existingRole.save();
-
-//     // Iterate through permissions
-//     for (const permissionData of permissions) {
-//       const { module, all, create, read, update, delete: del } = permissionData;
-
-//       // Find existing permission if it exists
-//       const existingPermission = existingRole.Permissions.find(permission => permission.Module.name === module);
-
-//       if (existingPermission) {
-//         // Update existing permission
-//         existingPermission.all = all;
-//         existingPermission.create = create;
-//         existingPermission.read = read;
-//         existingPermission.update = update;
-//         existingPermission.delete = del;
-//         await existingPermission.save();
-//       } else {
-//         console.error(`Permission for module ${module} not found for role ${roleId}`);
-//       }
-//     }
-
-//     res.status(200).json({ message: 'Role updated successfully' });
-//   } catch (error) {
-//     console.error('Error updating role:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
-
 
 const deleteRoleById = async (req, res) => {
   try {

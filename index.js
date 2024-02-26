@@ -34,7 +34,7 @@ app.use('/api', authVerify, emailRoute);
 app.use('/profile', express.static('Public/Images'));
 
 app.get('/', (req, res) => {
-  res.send("API From Cus hai")
+  res.send("API Sort")
 })
 
 

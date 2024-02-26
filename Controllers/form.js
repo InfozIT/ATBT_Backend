@@ -15,7 +15,6 @@ const UserFrom = async (req, res) => {
             return res.status(400).json({ error: 'Invalid array of objects' });
         }
         const serializedData = JSON.stringify(arrayOfObjects);
-        // console.log(arrayOfObjects, "aoo")
         const tview = JSON.stringify(tableview);
         let existingData = await Settings.findOne({ where: { Name: name } });
         if (existingData) {
@@ -38,7 +37,6 @@ const UserFrom = async (req, res) => {
         const compared = filterFields(filterableInputsInSearch, filteredKeys)
         const excludedFields = ['id', 'createdAt', 'updatedAt'];
         const filteredFields = compared.filter(field => !excludedFields.includes(field));
-        console.log(filteredFields, "ff")
         for (const key of filteredFields) {
             const obj = arrayOfObjects.find(item => item.inputname === key);
             let columnType;
@@ -73,7 +71,6 @@ const UserFrom = async (req, res) => {
                     columnType = DataTypes.JSON;
                     break;
             }
-            console.log(obj.type, "fin")
             await sequelize.getQueryInterface().addColumn('Users', key, {
                 type: columnType,
                 allowNull: true,
@@ -87,91 +84,12 @@ const UserFrom = async (req, res) => {
 };
 
 
-// const UserFrom = async (req, res) => {
-//     try {
-//         const arrayOfObjects = req.body.arrayOfObjects;
-//         var name = req.body.Name
-//         var tableview = req.body.Tableview
-//         if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
-//             return res.status(400).json({ error: 'Invalid array of objects' });
-//         }
-//         const serializedData = JSON.stringify(arrayOfObjects);
-//         // console.log(arrayOfObjects, "aoo")
-//         const tview = JSON.stringify(tableview);
-//         let existingData = await Settings.findOne({ where: { Name: name } });
-//         if (existingData) {
-//             // Update 
-//             existingData.Data = serializedData;
-//             existingData.Tableview = tview;
-//             await existingData.save();
-//         } else {
-//             // Create 
-//             await Settings.create({ Data: serializedData, Name: name, Tableview: tview });
-//         }
-//         const filterableInputsInSearch = arrayOfObjects.map(obj => (
-//             obj.inputname
-//         ));
-//         const table = await queryInterface.describeTable('Users')
-//         const filteredKeys = Object.keys(table);
-//         function filterFields(array1, array2) {
-//             return array1.filter(field => !array2.includes(field));
-//         }
-//         const compared = filterFields(filterableInputsInSearch, filteredKeys)
-//         const excludedFields = ['id', 'createdAt', 'updatedAt'];
-//         const filteredFields = compared.filter(field => !excludedFields.includes(field));
-//         console.log(filteredFields, "ff")
-//         for (const key of filteredFields) {
-//             const obj = arrayOfObjects.find(item => item.inputname === key);
-//             let columnType;
-//             // Determine column type based on object type
-//             switch (obj.type) {
-//                 case 'text':
-//                 case 'email':
-//                 case 'password':
-//                 case 'select':
-//                 case 'range':
-//                     columnType = DataTypes.STRING;
-//                     break;
-//                 case 'textarea':
-//                     columnType = DataTypes.TEXT;
-//                     break;
-//                 case 'checkbox':
-//                     columnType = DataTypes.BOOLEAN;
-//                     break;
-//                 case 'number':
-//                     columnType = DataTypes.INTEGER;
-//                     break;
-//                 case 'date':
-//                     columnType = DataTypes.DATEONLY;
-//                     break;
-//                 case 'time':
-//                     columnType = DataTypes.TIME;
-//                     break;
-//                 case 'file':
-//                     columnType = DataTypes.BLOB;
-//                     break;
-//                 default:
-//                     columnType = DataTypes.JSON;
-//                     break;
-//             }
-//             console.log(obj.type, "fin")
-//             await sequelize.getQueryInterface().addColumn('Users', key, {
-//                 type: columnType,
-//                 allowNull: true,
-//             });
-//         }
-//         res.json({ message: `Array of ${name} saved successfully ` });
-//     } catch (error) {
-//         console.error('Error saving array of objects:', error);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// };
+
 
 const EntityFrom = async (req, res) => {
     try {
         const arrayOfObjects = req.body.arrayOfObjects;
         var name = req.body.Name
-        console.log(name, "entity Name")
         var tableview = req.body.Tableview
         if (!arrayOfObjects || !Array.isArray(arrayOfObjects)) {
             return res.status(400).json({ error: 'Invalid array of objects' });
@@ -180,7 +98,6 @@ const EntityFrom = async (req, res) => {
         const tview = JSON.stringify(tableview);
 
         let existingData = await Settings.findOne({ where: { Name: name } });
-        console.log(existingData)
         if (existingData) {
             // Update 
             existingData.Data = serializedData;
@@ -204,7 +121,6 @@ const EntityFrom = async (req, res) => {
         for (const key of filteredFields) {
             const obj = arrayOfObjects.find(item => item.inputname === key);
             let columnType;
-            console.log(obj.type)
             // Determine column type based on object type
             switch (obj.type) {
                 case 'text':
@@ -236,7 +152,6 @@ const EntityFrom = async (req, res) => {
                     columnType = DataTypes.JSON;
                     break;
             }
-            console.log(obj.type, "fin")
             await sequelize.getQueryInterface().addColumn('Entities', key, {
                 type: columnType,
                 allowNull: true,
@@ -262,7 +177,6 @@ const MeetingFrom = async (req, res) => {
         const tview = JSON.stringify(tableview);
 
         let existingData = await Settings.findOne({ where: { Name: name } });
-        console.log(existingData)
         if (existingData) {
             // Update 
             existingData.Data = serializedData;
@@ -292,7 +206,6 @@ const MeetingFrom = async (req, res) => {
         for (const key of filteredFields) {
             const obj = arrayOfObjects.find(item => item.inputname === key);
             let columnType;
-            console.log(obj.type)
             // Determine column type based on object type
             switch (obj.type) {
                 case 'text':
@@ -324,7 +237,6 @@ const MeetingFrom = async (req, res) => {
                     columnType = DataTypes.JSON;
                     break;
             }
-            console.log(obj.type, "fin")
             await sequelize.getQueryInterface().addColumn('Meetings', key, {
                 type: columnType,
                 allowNull: true,
@@ -349,7 +261,6 @@ const TeamFrom = async (req, res) => {
         const tview = JSON.stringify(tableview);
 
         let existingData = await Settings.findOne({ where: { Name: name } });
-        console.log(existingData)
         if (existingData) {
             // Update 
             existingData.Data = serializedData;
@@ -379,7 +290,6 @@ const TeamFrom = async (req, res) => {
         for (const key of filteredFields) {
             const obj = arrayOfObjects.find(item => item.inputname === key);
             let columnType;
-            console.log(obj.type)
             // Determine column type based on object type
             switch (obj.type) {
                 case 'text':
@@ -411,7 +321,6 @@ const TeamFrom = async (req, res) => {
                     columnType = DataTypes.JSON;
                     break;
             }
-            console.log(obj.type, "fin")
             await sequelize.getQueryInterface().addColumn('Teams', key, {
                 type: columnType,
                 allowNull: true,

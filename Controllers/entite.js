@@ -24,47 +24,6 @@ const Add_Entite = async (req, res) => {
   }
 };
 
-// const Add_Entite = async (req, res) => {
-//   try {
-//     const data = req.body;
-//     const { Entite_Name, Description, Members } = req.body;
-
-//     // Create the entity
-//     const entite = await Entite.create({
-//       Entite_Name,
-//       Description,
-//     });
-
-//     // If members are provided in the request body, add them to the entity
-//     if (Members && Array.isArray(Members)) {
-//       // Find the users by their IDs
-//       const users = await User.findAll({
-//         where: {
-//           email: Members
-//         }
-//       });
-
-//       console.log(users)
-
-//       // Add the users to the entity
-//       await entite.addUser({
-//         id: 17,
-//         userName: 'bob',
-//         password: '$2b$10$a42Ojx/9qxpxSHjodI.NLuwELqiGRqzgd4.hM1lkT8JHt2LLUYo1e',
-//         email: 'bob_builder@mail.com',
-//         phone: '1234567890',
-//         image: null,
-//       }, { through: UserEntites });
-//     }
-
-//     res.status(201).json({ message: "Entity created successfully", entite });
-//   } catch (error) {
-//     console.error("Error creating entity:", error);
-//     res.status(500).json({ error: "Error" });
-//   }
-// };
-
-
 
 const List_Entite = async (req, res) => {
   try {
@@ -106,16 +65,6 @@ const List_Entite = async (req, res) => {
 
     const totalPages = Math.ceil(count / pageSize);
 
-    // console.log({
-    //   Entites,
-    //   totalEntities: count,
-    //   totalPages,
-    //   currentPage: page,
-    //   pageSize,
-    //   startEntity,
-    //   endEntity,
-    // })
-
     res.status(200).json({
       Entites,
       totalEntities: count,
@@ -140,7 +89,6 @@ const Get_Entite = async (req, res) => {
         id: req.params.id
       }
     });
-    // console.log(Entites)
     res.status(200).json({ message: `your id is:${req.params.id}`, Entites });
   } catch (error) {
     // Handle any errors that occur during the Admin creation process

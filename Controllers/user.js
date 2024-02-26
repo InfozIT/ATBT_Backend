@@ -18,7 +18,6 @@ const Create_User = async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
-    console.log(data);
     const role = await db.Role.findOne({
         where: {
             name: data.role,
@@ -71,7 +70,6 @@ const List_User = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
         return;
     }
-    console.log(result);
     // Process the result
 });
 
@@ -113,7 +111,6 @@ async function Login_User(email, password) {
                 email
             }
         });
-        console.log(user, "user details", email, password)
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (passwordMatch) {
             return user;
@@ -233,7 +230,6 @@ const Delete_User = async (req, res) => {
 
 const createUserData = (req, res) => {
     const data = req.body;
-    console.log(data)
     // Insert data into the Userdata table
     mycon.query('INSERT INTO UsersData SET ?', data, (err, result) => {
         if (err) {
