@@ -63,7 +63,8 @@ const List_User = async (req, res) => {
     // // MySQL query to fetch paginated users
     const sqlCount = `SELECT COUNT(*) as total FROM Users`;
     // const sql = `SELECT * FROM Users LIMIT ?, ?`;
-    const sql = `SELECT * FROM Users  WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} LIMIT ?, ?`;
+    const sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
+
     mycon.query(sql, [offset, pageSize], (err, result) => {
     if (err) {
         console.error('Error executing MySQL query: ' + err.stack);
