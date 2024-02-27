@@ -33,7 +33,7 @@ app.use('/api', authVerify, emailRoute);
 app.use('/profile', express.static('Public/Images'));
 
 app.get('/', (req, res) => {
-  res.send("API Sort")
+  res.send("API Sort...")
 })
 
 app.put('/toggle/:id',Toggle.Add_toggle)
