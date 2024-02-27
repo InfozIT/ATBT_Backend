@@ -4,10 +4,6 @@ const sequelize = require('../DB/dbconncet');
 const transporter = require('../utils/nodemailer');
 const User = db.User;
 const mycon = require('../DB/mycon')
-const UserFormStructure = db.From
-const { Op } = require('sequelize');
-const queryInterface = sequelize.getQueryInterface();
-
 
 
 const Create_User = async (req, res) => {
@@ -140,17 +136,39 @@ const Get_User = async (req, res) => {
 
 const Update_User = async (req, res) => {
     try {
-        var data = req.body;
-        await User.update(data, {
-            where: { id: req.params.id }
+      const { id } = req.params;
+      const data = req.body;
+  
+      // Define the SQL query to update the user
+      const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
+  
+      // Execute the update query
+      mycon.query(updateQuery, [data, id], (error, updateResults) => {
+        if (error) {
+          console.error("Error updating User:", error);
+          return res.status(500).json({ error: "Internal Server Error" });
+        }
+  
+        // If the update was successful, fetch the updated user data
+        const selectQuery = `SELECT * FROM Users WHERE id = ?`;
+  
+        mycon.query(selectQuery, id, (selectError, selectResults) => {
+          if (selectError) {
+            console.error("Error fetching updated User:", selectError);
+            return res.status(500).json({ error: "Internal Server Error" });
+          }
+  
+          // Send the updated user data in the response
+        //   res.status(200).json({ message: `User updated successfully`, user: selectResults[0] });
+          res.status(200).json({ message: `User updated successfully ${id} `});
         });
-        res.status(200).json({ message: `User updated successfully ${req.params.id}` });
+      });
     } catch (error) {
-        // Handle any errors that occur during the User creation process
-        console.error("Error creating User:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error updating User:", error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
-};
+  };
+  
 
 const Update_Password = async (req, res) => {
     try {
