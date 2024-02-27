@@ -11,6 +11,7 @@ router.put('/userform', CreateForm.UserFrom)
 router.put('/entityform', CreateForm.EntityFrom)
 router.put('/meetingform', CreateForm.MeetingFrom)
 router.put('/teamform', CreateForm.TeamFrom)
+router.put('/tableUpdate', CreateForm.UpdateTableView)
 
 
 

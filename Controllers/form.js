@@ -334,26 +334,6 @@ const TeamFrom = async (req, res) => {
 };
 
 
-// const GetAllLIST = async (req, res) => {
-//     try {
-//         if (!req.query.name) {
-//             res.status(404).json({ error: "no name specified, Please check" });
-//         }
-//         const form = await Settings.findOne({
-//             where: {
-//                 name: req.query.name
-//             }
-//         });
-//         const data = JSON.parse(form.Data);
-//         const tview = JSON.parse(form.Tableview);
-//         // const trimmedJsonArray = array.map(obj => JSON.stringify(obj)).join(',');
-//         res.status(200).json({ id: form.id, Name: form.Name, Data: data, Tableview: tview });
-//     } catch (error) {
-//         console.error("Error creating :", error);
-//         res.status(500).json({ error: "Internal Server Error" });
-//     }
-
-// };
 
 const GetAllLIST = async (req, res) => {
     try {
@@ -387,5 +367,26 @@ const GetAllLIST = async (req, res) => {
 };
 
 
+const UpdateTableView = async (req, res) => {
+    try {
+       let Name = req.query.name;
+       let tableView = req.body; 
+       if (typeof tableView !== 'string') {
+           tableView = JSON.stringify(tableView);
+       }
+      console.log(tableView)
+       await Settings.update({ Tableview: tableView }, {
+         where: { Name: Name }
+       });
+       res.status(200).json({ message: `updated successfully ${Name}` });
+    } catch (error) {
+      // Handle any errors that occur during the Admin creation process
+      console.error("Error updating table view:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+};
 
-module.exports = { GetAllLIST, TeamFrom, UserFrom, MeetingFrom, EntityFrom }
+
+
+
+module.exports = { GetAllLIST, TeamFrom, UserFrom, MeetingFrom, EntityFrom, UpdateTableView }

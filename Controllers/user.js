@@ -134,10 +134,57 @@ const Get_User = async (req, res) => {
     }
 };
 
+// const Update_User = async (req, res) => {
+//     try {
+//       const { id } = req.params;
+//       const data = req.body;
+      
+//       // Define the SQL query to update the user
+//       const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
+  
+//       // Execute the update query
+//       mycon.query(updateQuery, [data, id], (error, updateResults) => {
+//         if (error) {
+//           console.error("Error updating User:", error);
+//           return res.status(500).json({ error: "Internal Server Error" });
+//         }
+  
+//         // If the update was successful, fetch the updated user data
+//         const selectQuery = `SELECT * FROM Users WHERE id = ?`;
+  
+//         mycon.query(selectQuery, id, (selectError, selectResults) => {
+//           if (selectError) {
+//             console.error("Error fetching updated User:", selectError);
+//             return res.status(500).json({ error: "Internal Server Error" });
+//           }
+  
+//           // Send the updated user data in the response
+//         //   res.status(200).json({ message: `User updated successfully`, user: selectResults[0] });
+//           res.status(200).json({ message: `User updated successfully ${id} `});
+//         });
+//       });
+//     } catch (error) {
+//       console.error("Error updating User:", error);
+//       res.status(500).json({ error: "Internal Server Error" });
+//     }
+//   };
+
 const Update_User = async (req, res) => {
     try {
       const { id } = req.params;
-      const data = req.body;
+      let data = req.body;
+      
+      // Function to recursively stringify JSON objects
+      const stringifyJSONObjects = (obj) => {
+        for (let key in obj) {
+          if (typeof obj[key] === 'object') {
+            obj[key] = JSON.stringify(obj[key]);
+          }
+        }
+      };
+  
+      // Convert JSON objects in data to JSON strings
+      stringifyJSONObjects(data);
   
       // Define the SQL query to update the user
       const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
@@ -159,7 +206,6 @@ const Update_User = async (req, res) => {
           }
   
           // Send the updated user data in the response
-        //   res.status(200).json({ message: `User updated successfully`, user: selectResults[0] });
           res.status(200).json({ message: `User updated successfully ${id} `});
         });
       });
@@ -168,6 +214,7 @@ const Update_User = async (req, res) => {
       res.status(500).json({ error: "Internal Server Error" });
     }
   };
+  
   
 
 const Update_Password = async (req, res) => {

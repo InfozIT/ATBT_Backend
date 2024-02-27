@@ -5,7 +5,6 @@ const hasPermission = require('../middlewares/rolePermission');
 
 
 router.post('/create-user', hasPermission("entity", "canCreate"), User.Create_User)
-// router.post('/create', User.createUserData);
 router.get('/list', hasPermission("user", "canRead"), User.List_User)
 router.get('/list/:id', hasPermission("user", "canRead"), User.Get_User)
 router.put('/update/:id', hasPermission("user", "canUpdate"), User.Update_User)
