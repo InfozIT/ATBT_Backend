@@ -126,13 +126,7 @@ const List_User = async (req, res) => {
             res.status(500).json({ error: 'Internal server error' });
             return;
         }
-        
-        // Process the result
-        const users = result.map(row => {
-            const userRemarks = JSON.parse(row.userremarkshistory);
-            return { ...row, userremarkshistory: userRemarks };
-        });
-
+    
         // Execute the count query to get the total number of users
         mycon.query(sqlCount, (err, countResult) => {
             if (err) {
@@ -144,7 +138,7 @@ const List_User = async (req, res) => {
             const totalPages = Math.ceil(totalUsers / pageSize);
 
             res.json({
-                users: users,
+                users:  result,
                 totalPages: totalPages,
                 currentPage: page,
                 pageSize: pageSize,

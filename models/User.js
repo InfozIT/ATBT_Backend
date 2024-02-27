@@ -63,7 +63,7 @@ module.exports = (sequelize, DataTypes) => {
 
         },
         customFieldsData: {
-            type: DataTypes.TEXT,
+            type: DataTypes.JSON,
             allowNull: true
         },
     }, {
@@ -74,7 +74,7 @@ module.exports = (sequelize, DataTypes) => {
                 user.password = hashedPassword;
             }
         },
-        timestamps: false // Disable timestamps
+        // timestamps: false // Disable timestamps
     });
     return User
 }
