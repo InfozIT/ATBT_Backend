@@ -42,6 +42,67 @@ const Create_User = async (req, res) => {
     });
 };
 
+// const List_User = async (req, res) => {
+//     // Extract query parameters
+//     const page = parseInt(req.query.page) || 1; // Default page is 1
+//     const pageSize = parseInt(req.query.pageSize) || 10; // Default page size is 10
+//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+//     const search = req.query.search || ''; // Default search is empty string
+
+//     // Calculate offset
+//     const offset = (page - 1) * pageSize;
+//     // Calculate start and end users
+//     const startUser = offset;
+//     const endUser = offset + pageSize;
+
+//     // // MySQL query to fetch paginated users
+//     const sqlCount = `SELECT COUNT(*) as total FROM Users`;
+//     // const sql = `SELECT * FROM Users LIMIT ?, ?`;
+//     const sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
+
+//     mycon.query(sql, [offset, pageSize], (err, result) => {
+//     if (err) {
+//         console.error('Error executing MySQL query: ' + err.stack);
+//         res.status(500).json({ error: 'Internal server error' });
+//         return;
+//     }
+//     // Process the result
+// });
+
+//     // Execute the count query to get the total number of users
+//     mycon.query(sqlCount, (err, countResult) => {
+//         if (err) {
+//             console.error('Error executing MySQL count query: ' + err.stack);
+//             res.status(500).json({ error: 'Internal server error' });
+//             return;
+//         }
+//         const totalUsers = countResult[0].total;
+//         const totalPages = Math.ceil(totalUsers / pageSize);
+
+//         // Execute the query to fetch paginated users
+//         mycon.query(sql, [offset, pageSize], (err, results) => {
+//             if (err) {
+//                 console.error('Error executing MySQL query: ' + err.stack);
+//                 res.status(500).json({ error: 'Internal server error' });
+//                 return;
+//             }
+
+//             const a = results[1].userremarkshistory;
+//             const b = JSON.parse(a)
+
+//             res.json({
+//                 users: b,
+//                 totalPages: totalPages,
+//                 currentPage: page,
+//                 pageSize: pageSize,
+//                 totalUsers: totalUsers,
+//                 startUser: startUser,
+//                 endUser: endUser
+//             });
+//         });
+//     });
+// }
+
 const List_User = async (req, res) => {
     // Extract query parameters
     const page = parseInt(req.query.page) || 1; // Default page is 1
@@ -55,40 +116,35 @@ const List_User = async (req, res) => {
     const startUser = offset;
     const endUser = offset + pageSize;
 
-    // // MySQL query to fetch paginated users
+    // MySQL query to fetch paginated users
     const sqlCount = `SELECT COUNT(*) as total FROM Users`;
-    // const sql = `SELECT * FROM Users LIMIT ?, ?`;
     const sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
 
     mycon.query(sql, [offset, pageSize], (err, result) => {
-    if (err) {
-        console.error('Error executing MySQL query: ' + err.stack);
-        res.status(500).json({ error: 'Internal server error' });
-        return;
-    }
-    // Process the result
-});
-
-    // Execute the count query to get the total number of users
-    mycon.query(sqlCount, (err, countResult) => {
         if (err) {
-            console.error('Error executing MySQL count query: ' + err.stack);
+            console.error('Error executing MySQL query: ' + err.stack);
             res.status(500).json({ error: 'Internal server error' });
             return;
         }
-        const totalUsers = countResult[0].total;
-        const totalPages = Math.ceil(totalUsers / pageSize);
+        
+        // Process the result
+        const users = result.map(row => {
+            const userRemarks = JSON.parse(row.userremarkshistory);
+            return { ...row, userremarkshistory: userRemarks };
+        });
 
-        // Execute the query to fetch paginated users
-        mycon.query(sql, [offset, pageSize], (err, results) => {
+        // Execute the count query to get the total number of users
+        mycon.query(sqlCount, (err, countResult) => {
             if (err) {
-                console.error('Error executing MySQL query: ' + err.stack);
+                console.error('Error executing MySQL count query: ' + err.stack);
                 res.status(500).json({ error: 'Internal server error' });
                 return;
             }
-            // Send paginated users along with pagination information as response
+            const totalUsers = countResult[0].total;
+            const totalPages = Math.ceil(totalUsers / pageSize);
+
             res.json({
-                users: results,
+                users: users,
                 totalPages: totalPages,
                 currentPage: page,
                 pageSize: pageSize,
@@ -99,6 +155,9 @@ const List_User = async (req, res) => {
         });
     });
 }
+
+
+
 
 async function Login_User(email, password) {
     try {
@@ -118,56 +177,114 @@ async function Login_User(email, password) {
     }
 }
 
+// const Get_User = async (req, res) => {
+//     try {
+//         // Execute the query using the promise wrapper
+//         const [rows] = await mycon.promise().query('SELECT * FROM Users WHERE id = ?', [req.params.id]);
+
+//         if (!rows.length) {
+//             return res.status(404).json({ error: 'User not found' });
+//         }
+
+//         // Parse properties of type 'object' to JSON
+//         const user = rows[0];
+//         for (let prop in user) {
+//             if (typeof user[prop] === 'TEXT') {
+//                 try {
+//                     user[prop] = JSON.parse(user[prop]);
+//                 } catch (err) {
+//                     console.error(`Error parsing JSON for property '${prop}':`, err);
+//                     // Handle the error as needed, such as setting the property to null
+//                     user[prop] = null;
+//                 }
+//             }
+//         }
+
+//         res.status(200).json({ message: `Your id is: ${req.params.id}`, user });
+//     } catch (error) {
+//         console.error('Error fetching user:', error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// };
+
 const Get_User = async (req, res) => {
     try {
-        // Create an User with the given data
-        const user = await User.findOne({
-            where: {
-                id: req.params.id
+        // Execute the query using the promise wrapper
+        const [rows] = await mycon.promise().query('SELECT * FROM Users WHERE id = ?', [req.params.id]);
+
+        if (!rows.length) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Parse "userremarkshistory" property to JSON
+        const user = rows[0];
+        if (user.userremarkshistory) {
+            try {
+                user.userremarkshistory = JSON.parse(user.userremarkshistory.replace(/\\"/g, '"'));
+            } catch (err) {
+                console.error('Error parsing "userremarkshistory" property:', err);
+                // Handle the error as needed
             }
-        });
-        res.status(200).json({ message: `your id is:${req.params.id}`, user });
+        }
+
+        res.status(200).json({ message: `Your id is: ${req.params.id}`, user });
     } catch (error) {
-        // Handle any errors that occur during the User creation process
-        console.error("Error creating User:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error('Error fetching user:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
+
+
+
+
+
+
 // const Update_User = async (req, res) => {
-//     try {
-//       const { id } = req.params;
-//       const data = req.body;
-      
-//       // Define the SQL query to update the user
-//       const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
-  
-//       // Execute the update query
-//       mycon.query(updateQuery, [data, id], (error, updateResults) => {
-//         if (error) {
-//           console.error("Error updating User:", error);
+//   try {
+//     const { id } = req.params;
+//     let data = req.body;
+    
+//     // Function to recursively stringify JSON objects
+//     const stringifyJSONObjects = (obj) => {
+//       for (let key in obj) {
+//         if (typeof obj[key] === 'object') {
+//           obj[key] = JSON.stringify(obj[key]);
+//         }
+//       }
+//     };
+
+//     // Convert JSON objects in data to JSON strings
+//     stringifyJSONObjects(data);
+
+//     // Define the SQL query to update the user
+//     const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
+
+//     // Execute the update query
+//     mycon.query(updateQuery, [data, id], (error, updateResults) => {
+//       if (error) {
+//         console.error("Error updating User:", error);
+//         return res.status(500).json({ error: "Internal Server Error" });
+//       }
+
+//       // If the update was successful, fetch the updated user data
+//       const selectQuery = `SELECT * FROM Users WHERE id = ?`;
+
+//       mycon.query(selectQuery, id, (selectError, selectResults) => {
+//         if (selectError) {
+//           console.error("Error fetching updated User:", selectError);
 //           return res.status(500).json({ error: "Internal Server Error" });
 //         }
-  
-//         // If the update was successful, fetch the updated user data
-//         const selectQuery = `SELECT * FROM Users WHERE id = ?`;
-  
-//         mycon.query(selectQuery, id, (selectError, selectResults) => {
-//           if (selectError) {
-//             console.error("Error fetching updated User:", selectError);
-//             return res.status(500).json({ error: "Internal Server Error" });
-//           }
-  
-//           // Send the updated user data in the response
-//         //   res.status(200).json({ message: `User updated successfully`, user: selectResults[0] });
-//           res.status(200).json({ message: `User updated successfully ${id} `});
-//         });
+
+//         // Send the updated user data in the response
+//         res.status(200).json({ message: `User updated successfully ${id} `});
 //       });
-//     } catch (error) {
-//       console.error("Error updating User:", error);
-//       res.status(500).json({ error: "Internal Server Error" });
-//     }
-//   };
+//     });
+//   } catch (error) {
+//     console.error("Error updating User:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
 
 const Update_User = async (req, res) => {
     try {
@@ -204,9 +321,17 @@ const Update_User = async (req, res) => {
             console.error("Error fetching updated User:", selectError);
             return res.status(500).json({ error: "Internal Server Error" });
           }
+
+          const parsedUsers = selectResults.map(item => {
+            const parsedHistory = JSON.parse(item.userremarkshistory)
+            return {
+                ...item,
+                userremarkshistory:parsedHistory
+            }
+          });
   
-          // Send the updated user data in the response
-          res.status(200).json({ message: `User updated successfully ${id} `});
+          // Send the parsed user data in the response
+          res.status(200).json({ message: `User updated successfully ${id}`, users: parsedUsers });
         });
       });
     } catch (error) {
@@ -215,6 +340,7 @@ const Update_User = async (req, res) => {
     }
   };
   
+
   
 
 const Update_Password = async (req, res) => {
@@ -292,24 +418,6 @@ const Delete_User = async (req, res) => {
     }
 };
 
-
-const createUserData = (req, res) => {
-    const data = req.body;
-    // Insert data into the Userdata table
-    mycon.query('INSERT INTO UsersData SET ?', data, (err, result) => {
-        if (err) {
-
-            console.error('Error inserting data: ' + err.stack);
-            res.status(500).send('Error inserting data');
-            return;
-        }
-
-        const id = result.insertId;
-        // res.status(200).send(`Data inserted successfully with id : ${id}`);
-        res.status(201).send(`${id}`);
-    });
-};
-
 module.exports = {
     Create_User,
     Login_User,
@@ -319,5 +427,4 @@ module.exports = {
     Update_Password,
     Reset_Password,
     Delete_User,
-    createUserData
 };

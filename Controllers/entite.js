@@ -3,82 +3,106 @@ var db = require('../models/index');
 const Entite = db.Entite;
 const { Op } = require('sequelize');
 
+const bcrypt = require('bcrypt');
+const mycon = require('../DB/mycon')
 
 
 
-const Add_Entite = async (req, res) => {
-  try {
-    var data = (req.body)
-    const path = `${process.env.IMAGE_URI}/${req.file.filename}`
-    const Entites = await Entite.create({
-      name: req.body.name,
-      description: req.body.description,
-      members: req.body.members,
-      image: path
-    });
-    res.status(201).json({ message: " created successfully", Entites });
-  } catch (error) {
-    // Handle any errors that occur during the Admin creation process
-    console.error("Error creating admin:", error);
-    res.status(500).json({ error: "Error" });
-  }
-};
 
+const CreateAdmin = async (req, res) => {
+  const data = req.body;
+  const email = data.email;
+  const password = email.split("@")[0]; // Initial password from email (You might want to change this)
 
-const List_Entite = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const pageSize = parseInt(req.query.pageSize, 10) || 10;
-    const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
-    const searchQuery = req.query.search || '';
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
-    const options = {
-      offset: (page - 1) * pageSize,
-      limit: pageSize,
-      order: sortBy === 'Entite_Name' ? [['Entite_Name']] : sortBy === 'Description' ? [['Description']] : [[sortBy]],
+  const role = await db.Role.findOne({
       where: {
-        [Op.or]: [
-          { name: { [Op.like]: `%${searchQuery}%` } },
-          { description: { [Op.like]: `%${searchQuery}%` } },
-          // Add more conditions based on your model's attributes
-        ],
+          name: data.role,
       },
-    };
-
-    // Add search condition dynamically based on your requirements
-    if (searchQuery) {
-      // Customize the where condition based on your model attributes
-      options.where = {
-        [Op.or]: [
-          { name: { [Op.like]: `%${searchQuery}%` } },
-          { description: { [Op.like]: `%${searchQuery}%` } },
-          // Add more conditions based on your model's attributes
-        ],
-      };
-    }
-
-    const { count, rows: Entites } = await Entite.findAndCountAll(options);
-
-    // Calculate the range of entities being displayed
-    const startEntity = (page - 1) * pageSize + 1;
-    const endEntity = Math.min(page * pageSize, count);
-
-    const totalPages = Math.ceil(count / pageSize);
-
-    res.status(200).json({
-      Entites,
-      totalEntities: count,
-      totalPages,
-      currentPage: page,
-      pageSize,
-      startEntity,
-      endEntity,
-    });
-  } catch (error) {
-    console.error("Error fetching Entites:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+  });
+  if (!role) {
+      console.error("Role not found.");
+      return res.status(404).send("Role not found");
   }
+
+  // Insert data into the Userdata table
+  const user = {
+      ...data,
+      RoleId: role.id,
+      password: hashedPassword, // Insert hashed password
+  };
+
+  mycon.query('INSERT INTO Entities SET ?', user, (err, result) => {
+      if (err) {
+          console.error('Error inserting data: ' + err.stack);
+          return res.status(500).send('Error inserting data');
+      }
+
+      const id = result.insertId;
+      res.status(201).send(`${id}`);
+  });
 };
+
+const List_Entite =async (req, res) => {
+  // Extract query parameters
+  const page = parseInt(req.query.page) || 1; // Default page is 1
+  const pageSize = parseInt(req.query.pageSize) || 10; // Default page size is 10
+  const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+  const search = req.query.search || ''; // Default search is empty string
+
+  // Calculate offset
+  const offset = (page - 1) * pageSize;
+  // Calculate start and end users
+  const startUser = offset;
+  const endUser = offset + pageSize;
+
+  // // MySQL query to fetch paginated users
+  const sqlCount = `SELECT COUNT(*) as total FROM Entities`;
+  // const sql = `SELECT * FROM Users LIMIT ?, ?`;
+  const sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
+
+  mycon.query(sql, [offset, pageSize], (err, result) => {
+  if (err) {
+      console.error('Error executing MySQL query: ' + err.stack);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+  }
+  // Process the result
+});
+
+  // Execute the count query to get the total number of users
+  mycon.query(sqlCount, (err, countResult) => {
+      if (err) {
+          console.error('Error executing MySQL count query: ' + err.stack);
+          res.status(500).json({ error: 'Internal server error' });
+          return;
+      }
+      const totalUsers = countResult[0].total;
+      const totalPages = Math.ceil(totalUsers / pageSize);
+
+      // Execute the query to fetch paginated users
+      mycon.query(sql, [offset, pageSize], (err, results) => {
+          if (err) {
+              console.error('Error executing MySQL query: ' + err.stack);
+              res.status(500).json({ error: 'Internal server error' });
+              return;
+          }
+          // Send paginated users along with pagination information as response
+          res.json({
+              users: results,
+              totalPages: totalPages,
+              currentPage: page,
+              pageSize: pageSize,
+              totalUsers: totalUsers,
+              startUser: startUser,
+              endUser: endUser
+          });
+      });
+  });
+}
+
 
 
 const Get_Entite = async (req, res) => {
@@ -124,4 +148,4 @@ const Delete_Entite = async (req, res) => {
   }
 };
 
-module.exports = { Add_Entite, List_Entite, Update_Entite, Delete_Entite, Get_Entite }
+module.exports = { CreateAdmin, List_Entite, Update_Entite, Delete_Entite, Get_Entite }

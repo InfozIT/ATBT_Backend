@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
             // allowNull defaults to true
         },
         userremarkshistory: {
-            type: DataTypes.TEXT,
+            type: DataTypes.JSON,
             allowNull: true
             // allowNull defaults to true
         },
@@ -74,7 +74,7 @@ module.exports = (sequelize, DataTypes) => {
                 user.password = hashedPassword;
             }
         },
-        // timestamps: false // Disable timestamps
+        timestamps: false // Disable timestamps
     });
     return User
 }
