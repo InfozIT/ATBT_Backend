@@ -26,4 +26,4 @@ router.delete('/delete/:id', hasPermission("entity", "canDelete"), ECont.Delete_
 // router.delete('/delete/:id',ECont.Delete_Entite)
 
 
-module.exports = router;
+// module.exports = router;
