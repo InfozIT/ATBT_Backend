@@ -3,49 +3,25 @@ var db = require('../models/index');
 const Entite = db.Entite;
 const { Op } = require('sequelize');
 
-const bcrypt = require('bcrypt');
 const mycon = require('../DB/mycon')
 
 
 
-
-const CreateAdmin = async (req, res) => {
+const  CreateAdmin = (req, res) => {
   const data = req.body;
-  const email = data.email;
-  const password = email.split("@")[0]; // Initial password from email (You might want to change this)
-
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
-
-  const role = await db.Role.findOne({
-      where: {
-          name: data.role,
-      },
-  });
-  if (!role) {
-      console.error("Role not found.");
-      return res.status(404).send("Role not found");
-  }
-
-  // Insert data into the Userdata table
-  const user = {
-      ...data,
-      RoleId: role.id,
-      password: hashedPassword, // Insert hashed password
-  };
-
-  mycon.query('INSERT INTO Entities SET ?', user, (err, result) => {
-      if (err) {
-          console.error('Error inserting data: ' + err.stack);
-          return res.status(500).send('Error inserting data');
-      }
-
-      const id = result.insertId;
-      res.status(201).send(`${id}`);
+  // Insert data into the entitydata table
+  mycon.query('INSERT INTO Entities SET ?', data, (err, result) => {
+    if (err) {
+    
+      console.error('Error inserting data: ' + err.stack);
+      res.status(500).send('Error inserting data');
+      return;
+    }
+    const id = result.insertId;
+    res.status(201).send(`${id}`);
   });
 };
-
-const List_Entite =async (req, res) => {
+const List_Entite = async (req, res) => {
   // Extract query parameters
   const page = parseInt(req.query.page) || 1; // Default page is 1
   const pageSize = parseInt(req.query.pageSize) || 10; // Default page size is 10
@@ -58,44 +34,33 @@ const List_Entite =async (req, res) => {
   const startUser = offset;
   const endUser = offset + pageSize;
 
-  // // MySQL query to fetch paginated users
+  // MySQL query to fetch paginated users
   const sqlCount = `SELECT COUNT(*) as total FROM Entities`;
-  // const sql = `SELECT * FROM Users LIMIT ?, ?`;
   const sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
 
   mycon.query(sql, [offset, pageSize], (err, result) => {
-  if (err) {
-      console.error('Error executing MySQL query: ' + err.stack);
-      res.status(500).json({ error: 'Internal server error' });
-      return;
-  }
-  // Process the result
-});
-
-  // Execute the count query to get the total number of users
-  mycon.query(sqlCount, (err, countResult) => {
       if (err) {
-          console.error('Error executing MySQL count query: ' + err.stack);
+          console.error('Error executing MySQL query: ' + err.stack);
           res.status(500).json({ error: 'Internal server error' });
           return;
       }
-      const totalUsers = countResult[0].total;
-      const totalPages = Math.ceil(totalUsers / pageSize);
-
-      // Execute the query to fetch paginated users
-      mycon.query(sql, [offset, pageSize], (err, results) => {
+  
+      // Execute the count query to get the total number of users
+      mycon.query(sqlCount, (err, countResult) => {
           if (err) {
-              console.error('Error executing MySQL query: ' + err.stack);
+              console.error('Error executing MySQL count query: ' + err.stack);
               res.status(500).json({ error: 'Internal server error' });
               return;
           }
-          // Send paginated users along with pagination information as response
+          const totalEntities = countResult[0].total;
+          const totalPages = Math.ceil(totalEntities / pageSize);
+
           res.json({
-              users: results,
+              Entities:  result,
               totalPages: totalPages,
               currentPage: page,
               pageSize: pageSize,
-              totalUsers: totalUsers,
+              totalEntities: totalEntities,
               startUser: startUser,
               endUser: endUser
           });
@@ -103,37 +68,44 @@ const List_Entite =async (req, res) => {
   });
 }
 
+const Get_Entite = (req, res) => {
+  const entityId = req.params.id;
+  mycon.query('SELECT * FROM Entities WHERE id = ?', entityId, (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      res.status(500).send('Error retrieving data');
+      return;
+    }
 
+    if (result.length === 0) {
+      res.status(404).send('Entity data not found');
+      return;
+    }
 
-const Get_Entite = async (req, res) => {
-  try {
-    // Create an Admin with the given data
-    const Entites = await Entite.findOne({
-      where: {
-        id: req.params.id
-      }
-    });
-    res.status(200).json({ message: `your id is:${req.params.id}`, Entites });
-  } catch (error) {
-    // Handle any errors that occur during the Admin creation process
-    console.error("Error creating :", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+    res.status(200).json(result[0]);
+  });
+};
+const Update_Entite = (req, res) => {
+  const entityId = req.params.id;
+  const newData = req.body;
+  // Update data in the entitydata table based on the id
+  mycon.query('UPDATE EntityData SET ? WHERE id = ?', [newData, entityId], (err, result) => {
+    if (err) {
+      console.error('Error updating data: ' + err.stack);
+      res.status(500).send('Error updating data');
+      return;
+    }
+
+    if (result.affectedRows === 0) {
+      res.status(404).send('Entity data not found');
+      return;
+    }
+
+    console.log('Updated ' + result.affectedRows + ' row(s)');
+    res.status(200).send('Data updated successfully');
+  });
 };
 
-const Update_Entite = async (req, res) => {
-  try {
-    var data = req.body;
-    await Entite.update(data, {
-      where: { id: req.params.id }
-    });
-    res.status(200).json({ message: `updated successfully ${req.params.id}` });
-  } catch (error) {
-    // Handle any errors that occur during the Admin creation process
-    console.error("Error creating admin:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
 const Delete_Entite = async (req, res) => {
   try {
     await Entite.destroy({
