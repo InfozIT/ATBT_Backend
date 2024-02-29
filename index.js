@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const path = require('path');
 require('./models')
 const Entite_router = require('./Routes/Entity')
 const Toggle = require('./Controllers/toggle')
@@ -30,13 +31,15 @@ app.use('/form', CreateForm_router);
 app.use('/meeting', Meeting_router);
 app.use('/rbac', Role_router);
 app.use('/api', authVerify, emailRoute);
-app.use('/profile', express.static('Public/Images'));
+// app.use('/profile', express.static('Public/Images'));
+const imagesFolder = path.join(__dirname, 'Public', 'logo');
+app.use('/images', express.static(imagesFolder));
 
 app.get('/', (req, res) => {
-  res.send("API Sacacacafdad")
+  res.send("mailer done")
 })
 
-app.put('/toggle/:id',Toggle.Add_toggle)
+app.put('/toggle/:id', Toggle.Add_toggle)
 
 app.use(errorHander);
 app.use(routeNotFound);

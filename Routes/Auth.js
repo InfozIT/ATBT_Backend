@@ -1,12 +1,12 @@
 const express = require('express')
 const { generateToken } = require('../utils/utils');
-const { Login_User } = require("../Controllers/user")
-const authRouter = express.Router()
+const User = require('../Controllers/user');
+const router = express.Router()
 // const Role = require("../models/Role");
 const { Role, Module, Permission } = require('../models/index');
 
 
-authRouter.post('/login', async (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -14,7 +14,7 @@ authRouter.post('/login', async (req, res) => {
             return res.status(400).json({ error: "Email and password are required." });
         }
 
-        const userDetails = await Login_User(email, password);
+        const userDetails = await User.Login_User(email, password);
 
         if (!userDetails) {
             return res.status(401).json({ error: "Invalid credentials." });
@@ -62,5 +62,8 @@ authRouter.post('/login', async (req, res) => {
     }
 });
 
+router.put('/changepassword/:id', User.Update_Password)
+router.put('/forgotpassword', User.Reset_Password)
 
-module.exports = authRouter;
+
+module.exports = router;

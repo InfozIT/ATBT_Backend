@@ -22,24 +22,24 @@ const Create_User = async (req, res) => {
             console.error("Role not found.");
             return res.status(404).send("Role not found");
         }
-        
+
         // Insert user data into the database
         const user = {
             ...data,
             RoleId: role.id,
             password: hashedPassword,
         };
-        
+
         mycon.query('INSERT INTO Users SET ?', user, async (err, result) => {
             if (err) {
                 console.error('Error inserting data: ' + err.stack);
                 return res.status(500).send('Error inserting data');
             }
-            
+
             try {
                 // Send email to the user
                 await sendEmail(email, password);
-                
+
                 // Respond with success message
                 res.status(201).send(`${result.insertId}`);
             } catch (emailError) {
@@ -66,13 +66,62 @@ function generateRandomPassword() {
 
 // Function to send email
 async function sendEmail(email, password) {
+
     const mailData = {
-        from: 'your@example.com',
+        from: 'nirajkr00024@gmail.com',
         to: email,
-        subject: 'Your account has been created',
-        text: 'User Created!',
-        html: `<b>Hey there, your account has been created. Please use the following credentials to login:</b><br>Email: ${email}<br>Password: ${password}<br>`,
+        subject: 'Welcome to ATBT! Your Account has been Created',
+        html: `
+            <style>
+                /* Add CSS styles here */
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    font-family: Arial, sans-serif;
+                    background-color: #f9f9f9;
+                }
+                .logo {
+                    max-width: 100px;
+                    margin-bottom: 20px;
+                }
+                .button {
+                    display: inline-block;
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: #fff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }
+                .button:hover {
+                    background-color: #0056b3;
+                }
+                p {
+                    margin-bottom: 15px;
+                }
+            </style>
+            <div class="container">
+                <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Your Company Logo" class="logo" />
+                <p>Hi there,</p>
+                <p>Welcome to ATBT! Your account has been successfully created.</p>
+                <p>Here are your account details:</p>
+                <ul style="list-style: none;">
+                    <li><strong>Email:</strong> ${email}</li>
+                    <li><strong>Password:</strong> ${password}</li>
+                    <li>
+                    <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Login</a>
+                    </li>
+                    <!-- You can add more user details here if needed -->
+                </ul>
+                <p>Feel free to explore our platform and start enjoying our services.</p>
+                <p>If you have any questions or need assistance, don't hesitate to contact us.</p>
+                <p>Thank you for choosing YourCompany!</p>
+                <p>Best regards,</p>
+                <p>Your Company Team</p>
+            </div>
+        `,
     };
+
     await transporter.sendMail(mailData);
 }
 
@@ -101,7 +150,7 @@ const List_User = async (req, res) => {
             res.status(500).json({ error: 'Internal server error' });
             return;
         }
-    
+
         // Execute the count query to get the total number of users
         mycon.query(sqlCount, (err, countResult) => {
             if (err) {
@@ -113,7 +162,7 @@ const List_User = async (req, res) => {
             const totalPages = Math.ceil(totalUsers / pageSize);
 
             res.json({
-                users:  result,
+                users: result,
                 totalPages: totalPages,
                 currentPage: page,
                 pageSize: pageSize,
@@ -177,60 +226,60 @@ const Get_User = async (req, res) => {
 
 const Update_User = async (req, res) => {
     try {
-      const { id } = req.params;
-      let data = req.body;
-      
-      // Function to recursively stringify JSON objects
-      const stringifyJSONObjects = (obj) => {
-        for (let key in obj) {
-          if (typeof obj[key] === 'object') {
-            obj[key] = JSON.stringify(obj[key]);
-          }
-        }
-      };
-  
-      // Convert JSON objects in data to JSON strings
-      stringifyJSONObjects(data);
-  
-      // Define the SQL query to update the user
-      const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
-  
-      // Execute the update query
-      mycon.query(updateQuery, [data, id], (error, updateResults) => {
-        if (error) {
-          console.error("Error updating User:", error);
-          return res.status(500).json({ error: "Internal Server Error" });
-        }
-  
-        // If the update was successful, fetch the updated user data
-        const selectQuery = `SELECT * FROM Users WHERE id = ?`;
-  
-        mycon.query(selectQuery, id, (selectError, selectResults) => {
-          if (selectError) {
-            console.error("Error fetching updated User:", selectError);
-            return res.status(500).json({ error: "Internal Server Error" });
-          }
+        const { id } = req.params;
+        let data = req.body;
 
-          const parsedUsers = selectResults.map(item => {
-            const parsedHistory = JSON.parse(item.userremarkshistory)
-            return {
-                ...item,
-                userremarkshistory:parsedHistory
+        // Function to recursively stringify JSON objects
+        const stringifyJSONObjects = (obj) => {
+            for (let key in obj) {
+                if (typeof obj[key] === 'object') {
+                    obj[key] = JSON.stringify(obj[key]);
+                }
             }
-          });
-  
-          // Send the parsed user data in the response
-          res.status(200).json({ message: `User updated successfully ${id}`, users: parsedUsers });
-        });
-      });
-    } catch (error) {
-      console.error("Error updating User:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  };
-  
+        };
 
-  
+        // Convert JSON objects in data to JSON strings
+        stringifyJSONObjects(data);
+
+        // Define the SQL query to update the user
+        const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
+
+        // Execute the update query
+        mycon.query(updateQuery, [data, id], (error, updateResults) => {
+            if (error) {
+                console.error("Error updating User:", error);
+                return res.status(500).json({ error: "Internal Server Error" });
+            }
+
+            // If the update was successful, fetch the updated user data
+            const selectQuery = `SELECT * FROM Users WHERE id = ?`;
+
+            mycon.query(selectQuery, id, (selectError, selectResults) => {
+                if (selectError) {
+                    console.error("Error fetching updated User:", selectError);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
+
+                const parsedUsers = selectResults.map(item => {
+                    const parsedHistory = JSON.parse(item.userremarkshistory)
+                    return {
+                        ...item,
+                        userremarkshistory: parsedHistory
+                    }
+                });
+
+                // Send the parsed user data in the response
+                res.status(200).json({ message: `User updated successfully ${id}`, users: parsedUsers });
+            });
+        });
+    } catch (error) {
+        console.error("Error updating User:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
+
 
 const Update_Password = async (req, res) => {
     try {
@@ -273,12 +322,45 @@ const Reset_Password = async (req, res) => {
         const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: email,
-            subject: 'Reset Password',
+            subject: 'Password Reset Request',
             html: `
-                <p>You are receiving this email because you (or someone else) have requested the reset of the password for your account.</p>
-                <p>Please click on the following link, or paste this into your browser to complete the process:</p>
-                <a href="https://www.betaatbt.infozit.com/${user.id}">Reset Password Link</a>
-                <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+                <style>
+                    /* Add CSS styles here */
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        font-family: Arial, sans-serif;
+                        background-color: #f9f9f9;
+                    }
+                    .banner {
+                        margin-bottom: 20px;
+                    }
+                    .button {
+                        display: inline-block;
+                        padding: 10px 20px;
+                        background-color: #007bff;
+                        color: #fff;
+                        text-decoration: none;
+                        border-radius: 5px;
+                    }
+                    .button:hover {
+                        background-color: #0056b3;
+                    }
+                    p {
+                        margin-bottom: 15px;
+                    }
+                </style>
+                <div class="container">
+                    <p>Hi there,</p>
+                    <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+                    <p>We received a request to reset the password for your account.</p>
+                    <p>If this was you, please click the button below to reset your password:</p>
+                    <a href="https://www.betaatbt.infozit.com/changepassword/${user.id}" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+                    <p>If you didn't request this password reset, you can safely ignore this email.</p>
+                    <p>Thank you,</p>
+                    <p>Infoz IT Team</p>
+                </div>
             `,
         };
 
