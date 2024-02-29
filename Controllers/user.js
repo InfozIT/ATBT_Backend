@@ -1,46 +1,81 @@
 var db = require('../models/index');
 const bcrypt = require('bcrypt');
 const sequelize = require('../DB/dbconncet');
-const transporter = require('../utils/nodemailer');
 const User = db.User;
 const mycon = require('../DB/mycon')
+const transporter = require('../utils/nodemailer')
+const saltRounds = 10;
 
 
 const Create_User = async (req, res) => {
-    const data = req.body;
-    const email = data.email;
-    const password = email.split("@")[0]; // Initial password from email (You might want to change this)
+    try {
+        const { email, role: roleName } = req.body;
+        const data = req.body;
+        const password = generateRandomPassword();
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const role = await db.Role.findOne({
-        where: {
-            name: data.role,
-        },
-    });
-    if (!role) {
-        console.error("Role not found.");
-        return res.status(404).send("Role not found");
-    }
-
-    // Insert data into the Userdata table
-    const user = {
-        ...data,
-        RoleId: role.id,
-        password: hashedPassword, // Insert hashed password
-    };
-
-    mycon.query('INSERT INTO Users SET ?', user, (err, result) => {
-        if (err) {
-            console.error('Error inserting data: ' + err.stack);
-            return res.status(500).send('Error inserting data');
+        // Retrieve role from the database
+        const role = await db.Role.findOne({ where: { name: roleName } });
+        if (!role) {
+            console.error("Role not found.");
+            return res.status(404).send("Role not found");
         }
-
-        const id = result.insertId;
-        res.status(201).send(`${id}`);
-    });
+        
+        // Insert user data into the database
+        const user = {
+            ...data,
+            RoleId: role.id,
+            password: hashedPassword,
+        };
+        
+        mycon.query('INSERT INTO Users SET ?', user, async (err, result) => {
+            if (err) {
+                console.error('Error inserting data: ' + err.stack);
+                return res.status(500).send('Error inserting data');
+            }
+            
+            try {
+                // Send email to the user
+                await sendEmail(email, password);
+                
+                // Respond with success message
+                res.status(201).send(`${result.insertId}`);
+            } catch (emailError) {
+                console.error("Error sending email:", emailError);
+                res.status(500).send("Error sending email to user");
+            }
+        });
+    } catch (error) {
+        console.error("Error creating user:", error);
+        res.status(500).send("Error creating user");
+    }
 };
+
+
+// Function to generate a random password
+function generateRandomPassword() {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return password;
+}
+
+// Function to send email
+async function sendEmail(email, password) {
+    const mailData = {
+        from: 'your@example.com',
+        to: email,
+        subject: 'Your account has been created',
+        text: 'User Created!',
+        html: `<b>Hey there, your account has been created. Please use the following credentials to login:</b><br>Email: ${email}<br>Password: ${password}<br>`,
+    };
+    await transporter.sendMail(mailData);
+}
+
 
 
 const List_User = async (req, res) => {
@@ -110,37 +145,6 @@ async function Login_User(email, password) {
         throw error;
     }
 }
-
-// const Get_User = async (req, res) => {
-//     try {
-//         // Execute the query using the promise wrapper
-//         const [rows] = await mycon.promise().query('SELECT * FROM Users WHERE id = ?', [req.params.id]);
-
-//         if (!rows.length) {
-//             return res.status(404).json({ error: 'User not found' });
-//         }
-
-//         // Parse properties of type 'object' to JSON
-//         const user = rows[0];
-//         for (let prop in user) {
-//             if (typeof user[prop] === 'TEXT') {
-//                 try {
-//                     user[prop] = JSON.parse(user[prop]);
-//                 } catch (err) {
-//                     console.error(`Error parsing JSON for property '${prop}':`, err);
-//                     // Handle the error as needed, such as setting the property to null
-//                     user[prop] = null;
-//                 }
-//             }
-//         }
-
-//         res.status(200).json({ message: `Your id is: ${req.params.id}`, user });
-//     } catch (error) {
-//         console.error('Error fetching user:', error);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// };
-
 const Get_User = async (req, res) => {
     try {
         // Execute the query using the promise wrapper
@@ -170,55 +174,6 @@ const Get_User = async (req, res) => {
 
 
 
-
-
-
-
-// const Update_User = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     let data = req.body;
-    
-//     // Function to recursively stringify JSON objects
-//     const stringifyJSONObjects = (obj) => {
-//       for (let key in obj) {
-//         if (typeof obj[key] === 'object') {
-//           obj[key] = JSON.stringify(obj[key]);
-//         }
-//       }
-//     };
-
-//     // Convert JSON objects in data to JSON strings
-//     stringifyJSONObjects(data);
-
-//     // Define the SQL query to update the user
-//     const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
-
-//     // Execute the update query
-//     mycon.query(updateQuery, [data, id], (error, updateResults) => {
-//       if (error) {
-//         console.error("Error updating User:", error);
-//         return res.status(500).json({ error: "Internal Server Error" });
-//       }
-
-//       // If the update was successful, fetch the updated user data
-//       const selectQuery = `SELECT * FROM Users WHERE id = ?`;
-
-//       mycon.query(selectQuery, id, (selectError, selectResults) => {
-//         if (selectError) {
-//           console.error("Error fetching updated User:", selectError);
-//           return res.status(500).json({ error: "Internal Server Error" });
-//         }
-
-//         // Send the updated user data in the response
-//         res.status(200).json({ message: `User updated successfully ${id} `});
-//       });
-//     });
-//   } catch (error) {
-//     console.error("Error updating User:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
 
 const Update_User = async (req, res) => {
     try {
@@ -322,7 +277,7 @@ const Reset_Password = async (req, res) => {
             html: `
                 <p>You are receiving this email because you (or someone else) have requested the reset of the password for your account.</p>
                 <p>Please click on the following link, or paste this into your browser to complete the process:</p>
-                <a href="https://main.d4f46sk4x577g.amplifyapp.com/changepassword/${user.id}">Reset Password Link</a>
+                <a href="https://www.betaatbt.infozit.com/${user.id}">Reset Password Link</a>
                 <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
             `,
         };

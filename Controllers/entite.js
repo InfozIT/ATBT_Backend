@@ -4,23 +4,85 @@ const Entite = db.Entite;
 const { Op } = require('sequelize');
 
 const mycon = require('../DB/mycon')
+const nodemailer = require('nodemailer');
 
 
 
-const  CreateAdmin = (req, res) => {
-  const data = req.body;
-  // Insert data into the entitydata table
-  mycon.query('INSERT INTO Entities SET ?', data, (err, result) => {
-    if (err) {
+// const  CreateAdmin = (req, res) => {
+//   const data = req.body;
+//   // Insert data into the entitydata table
+//   mycon.query('INSERT INTO Entities SET ?', data, (err, result) => {
+//     if (err) {
     
-      console.error('Error inserting data: ' + err.stack);
-      res.status(500).send('Error inserting data');
-      return;
+//       console.error('Error inserting data: ' + err.stack);
+//       res.status(500).send('Error inserting data');
+//       return;
+//     }
+//     const id = result.insertId;
+//     res.status(201).send(`${id}`);
+//   });
+// };
+
+
+
+const CreateAdmin = async (req, res) => {
+    const data = req.body;
+    const email = data.email;
+    const password = email.split("@")[0]; // Initial password from email (You might want to change this)
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+
+    const role = await db.Role.findOne({
+        where: {
+            name: data.role,
+        },
+    });
+    if (!role) {
+        console.error("Role not found.");
+        return res.status(404).send("Role not found");
     }
-    const id = result.insertId;
-    res.status(201).send(`${id}`);
-  });
+
+    // Insert data into the Userdata table
+    const user = {
+        ...data,
+        RoleId: role.id,
+        password: hashedPassword, // Insert hashed password
+    };
+
+    mycon.query('INSERT INTO Users SET ?', user, async (err, result) => {
+        if (err) {
+            console.error('Error inserting data: ' + err.stack);
+            return res.status(500).send('Error inserting data');
+        }
+
+        const id = result.insertId;
+
+        // Sending email
+        try {
+            const transporter = nodemailer.createTransport({
+                // Specify your email sending service configuration here
+            });
+
+            const mailOptions = {
+                from: 'your_email@example.com',
+                to: email,
+                subject: 'User Account Created',
+                text: `Your account has been successfully created. Your user ID is: ${id}`,
+            };
+
+            await transporter.sendMail(mailOptions);
+            console.log('Email sent successfully');
+        } catch (error) {
+            console.error('Error sending email:', error);
+            // Handle error in email sending
+        }
+
+        res.status(201).send(`${id}`);
+    });
 };
+
+
 const List_Entite = async (req, res) => {
   // Extract query parameters
   const page = parseInt(req.query.page) || 1; // Default page is 1
