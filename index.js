@@ -18,12 +18,12 @@ const errorHander = require('./middlewares/errorHandler.middleware')
 const routeNotFound = require('./middlewares/routeNotfound.middleware')
 const authVerify = require('./middlewares/authVerify.middleware')
 const app = express()
-const port =3000;
+const port = 3000;
 
 
 app.use(cors())
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/entity', authVerify, Entite_router);
 app.use('/user', authVerify, User_router);
 // app.use('/entity',Entite_router);
@@ -47,7 +47,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
     success: 1,
     profile_url: `${process.env.IMAGE_URI}/images/${req.file.filename}`
 
-})
+  })
 });
 
 
@@ -56,7 +56,6 @@ app.get('/', (req, res) => {
 })
 // toggle 
 app.put('/toggle/:id', Toggle.Add_toggle)
-
 app.use(errorHander);
 app.use(routeNotFound);
 

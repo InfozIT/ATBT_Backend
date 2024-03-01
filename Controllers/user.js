@@ -1,3 +1,4 @@
+require('dotenv').config();
 var db = require('../models/index');
 const bcrypt = require('bcrypt');
 const sequelize = require('../DB/dbconncet');
@@ -10,6 +11,7 @@ const formidable = require('formidable');
 
 const Create_User = async (req, res) => {
     try {
+        console.log(req.file, req.body, "multer")
         const { email, role: roleName } = req.body;
         const data = req.body;
         const password = generateRandomPassword();
@@ -27,6 +29,7 @@ const Create_User = async (req, res) => {
         // Insert user data into the database
         const user = {
             ...data,
+            image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
             RoleId: role.id,
             password: hashedPassword,
         };
@@ -223,24 +226,17 @@ const Get_User = async (req, res) => {
 };
 
 
-
-
 const Update_User = async (req, res) => {
     try {
         const { id } = req.params;
         let data = req.body;
+        let file = req.file;
 
-        // Function to recursively stringify JSON objects
-        const stringifyJSONObjects = (obj) => {
-            for (let key in obj) {
-                if (typeof obj[key] === 'object') {
-                    obj[key] = JSON.stringify(obj[key]);
-                }
-            }
-        };
-
-        // Convert JSON objects in data to JSON strings
-        stringifyJSONObjects(data);
+        console.log(data, file, "update data");
+        data = {
+            image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+            ...data
+        }
 
         // Define the SQL query to update the user
         const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
@@ -251,27 +247,8 @@ const Update_User = async (req, res) => {
                 console.error("Error updating User:", error);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
+            res.status(200).json({ message: `User updated successfully ${id}` });
 
-            // If the update was successful, fetch the updated user data
-            const selectQuery = `SELECT * FROM Users WHERE id = ?`;
-
-            mycon.query(selectQuery, id, (selectError, selectResults) => {
-                if (selectError) {
-                    console.error("Error fetching updated User:", selectError);
-                    return res.status(500).json({ error: "Internal Server Error" });
-                }
-
-                const parsedUsers = selectResults.map(item => {
-                    const parsedHistory = JSON.parse(item.userremarkshistory)
-                    return {
-                        ...item,
-                        userremarkshistory: parsedHistory
-                    }
-                });
-
-                // Send the parsed user data in the response
-                res.status(200).json({ message: `User updated successfully ${id}`, users: parsedUsers });
-            });
         });
     } catch (error) {
         console.error("Error updating User:", error);
