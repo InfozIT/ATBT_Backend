@@ -1,7 +1,9 @@
 const express = require('express')
+require('dotenv').config();
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path');
+const upload = require('./utils/store')
 require('./models')
 const Entite_router = require('./Routes/Entity')
 const Toggle = require('./Controllers/toggle')
@@ -16,7 +18,8 @@ const errorHander = require('./middlewares/errorHandler.middleware')
 const routeNotFound = require('./middlewares/routeNotfound.middleware')
 const authVerify = require('./middlewares/authVerify.middleware')
 const app = express()
-const port = 3000
+const port =3000;
+
 
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -31,14 +34,27 @@ app.use('/form', CreateForm_router);
 app.use('/meeting', Meeting_router);
 app.use('/rbac', Role_router);
 app.use('/api', authVerify, emailRoute);
-// app.use('/profile', express.static('Public/Images'));
-const imagesFolder = path.join(__dirname, 'Public', 'logo');
+
+
+
+// load Static file
+const imagesFolder = path.join(__dirname, 'Public');
 app.use('/images', express.static(imagesFolder));
+
+app.post('/upload', upload.single('image'), (req, res) => {
+  console.log(req.file)
+  res.status(200).json({
+    success: 1,
+    profile_url: `${process.env.IMAGE_URI}/images/${req.file.filename}`
+
+})
+});
+
 
 app.get('/', (req, res) => {
   res.send("mailer done")
 })
-
+// toggle 
 app.put('/toggle/:id', Toggle.Add_toggle)
 
 app.use(errorHander);

@@ -5,6 +5,7 @@ const User = db.User;
 const mycon = require('../DB/mycon')
 const transporter = require('../utils/nodemailer')
 const saltRounds = 10;
+const formidable = require('formidable');
 
 
 const Create_User = async (req, res) => {
