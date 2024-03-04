@@ -131,22 +131,151 @@ async function sendEmail(email, password) {
 
 
 
+// const List_User = async (req, res) => {
+//     // Extract query parameters
+//     const page = parseInt(req.query.page) || 1; // Default page is 1
+//     const pageSize = parseInt(req.query.pageSize) || 10; // Default page size is 10
+//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+//     const search = req.query.search || ''; // Default search is empty string
+
+//     // Calculate offset
+//     const offset = (page - 1) * pageSize;
+//     // Calculate start and end users
+//     const startUser = offset;
+//     const endUser = offset + pageSize;
+
+//     // MySQL query to fetch paginated users
+//     const sqlCount = `SELECT COUNT(*) as total FROM Users`;
+//     const sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
+
+//     mycon.query(sql, [offset, pageSize], (err, result) => {
+//         if (err) {
+//             console.error('Error executing MySQL query: ' + err.stack);
+//             res.status(500).json({ error: 'Internal server error' });
+//             return;
+//         }
+
+//         // Execute the count query to get the total number of users
+//         mycon.query(sqlCount, (err, countResult) => {
+//             if (err) {
+//                 console.error('Error executing MySQL count query: ' + err.stack);
+//                 res.status(500).json({ error: 'Internal server error' });
+//                 return;
+//             }
+//             const totalUsers = countResult[0].total;
+//             const totalPages = Math.ceil(totalUsers / pageSize);
+
+//             res.json({
+//                 users: result,
+//                 totalPages: totalPages,
+//                 currentPage: page,
+//                 pageSize: pageSize,
+//                 totalUsers: totalUsers,
+//                 startUser: startUser,
+//                 endUser: endUser
+//             });
+//         });
+//     });
+// }
+
+// const List_User = async (req, res) => {
+//     // Extract query parameters
+//     const page = parseInt(req.query.page) || 1; // Default page is 1
+//     const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
+//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+//     const search = req.query.search || ''; // Default search is empty string
+//     const data = req.query.CustomFild || ''; // Corrected spelling for entityName
+
+//     let filter = req.body.filters; 
+
+    
+//     // Calculate offset
+//     const offset = (page - 1) * pageSize;
+
+//     // MySQL query to fetch paginated users
+//     let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+//     // let sql = `SELECT * FROM Users WHERE 1`; // Start with a true condition
+
+// for (const [field, value] of Object.entries(filter)) {
+//     if (value !== '') {
+//         sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+//     }
+// }
+
+// // Check if any condition was added
+// if (sql === `SELECT * FROM Users WHERE 1`) {
+//     sql += `SELECT * FROM Users`; // If no conditions were added, revert to the original SQL
+// }
+
+
+//     sql += ` ORDER BY ${sortBy} DESC LIMIT ?, ?`;
+
+//     mycon.query(sql, [offset, pageSize], (err, result) => {
+//         if (err) {
+//             console.error('Error executing MySQL query: ' + err.stack);
+//             res.status(500).json({ error: 'Internal server error' });
+//             return;
+//         }
+
+//         // Execute the count query to get the total number of users
+//         let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+//         // Add condition for EntityName
+//         for (const [field, value] of Object.entries(filter)) {
+//             if (value !== '') {
+//                 sqlCount += ` AND ${field} LIKE '%${value}%'`; 
+//             }
+//         }
+        
+
+//         mycon.query(sqlCount, (err, countResult) => {
+//             if (err) {
+//                 console.error('Error executing MySQL count query: ' + err.stack);
+//                 res.status(500).json({ error: 'Internal server error' });
+//                 return;
+//             }
+//             const totalUsers = countResult[0].total;
+//             const totalPages = Math.ceil(totalUsers / pageSize);
+
+//             res.json({
+//                 users: result,
+//                 totalPages: totalPages,
+//                 currentPage: page,
+//                 pageSize: pageSize,
+//                 totalUsers: totalUsers,
+//                 startUser: offset,
+//                 endUser: offset + pageSize
+//             });
+//         });
+//     });
+// };
+
 const List_User = async (req, res) => {
     // Extract query parameters
     const page = parseInt(req.query.page) || 1; // Default page is 1
-    const pageSize = parseInt(req.query.pageSize) || 10; // Default page size is 10
+    const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
     const search = req.query.search || ''; // Default search is empty string
 
+    // Corrected spelling for entityName
+    const data = req.query.CustomFild || '';
+
+    let filter = req.body.filters;
+
     // Calculate offset
     const offset = (page - 1) * pageSize;
-    // Calculate start and end users
-    const startUser = offset;
-    const endUser = offset + pageSize;
 
     // MySQL query to fetch paginated users
-    const sqlCount = `SELECT COUNT(*) as total FROM Users`;
-    const sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
+    let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+    // Add conditions for additional filter fields
+    for (const [field, value] of Object.entries(filter)) {
+        if (value !== '') {
+            sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+        }
+    }
+
+    sql += ` ORDER BY ${sortBy} DESC LIMIT ?, ?`;
 
     mycon.query(sql, [offset, pageSize], (err, result) => {
         if (err) {
@@ -156,6 +285,15 @@ const List_User = async (req, res) => {
         }
 
         // Execute the count query to get the total number of users
+        let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+        // Add conditions for additional filter fields
+        for (const [field, value] of Object.entries(filter)) {
+            if (value !== '') {
+                sqlCount += ` AND ${field} LIKE '%${value}%'`; 
+            }
+        }
+
         mycon.query(sqlCount, (err, countResult) => {
             if (err) {
                 console.error('Error executing MySQL count query: ' + err.stack);
@@ -171,12 +309,14 @@ const List_User = async (req, res) => {
                 currentPage: page,
                 pageSize: pageSize,
                 totalUsers: totalUsers,
-                startUser: startUser,
-                endUser: endUser
+                startUser: offset,
+                endUser: offset + pageSize
             });
         });
     });
-}
+};
+
+
 
 
 

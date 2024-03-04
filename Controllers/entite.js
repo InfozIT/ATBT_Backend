@@ -6,83 +6,28 @@ const { Op } = require('sequelize');
 const mycon = require('../DB/mycon')
 const nodemailer = require('nodemailer');
 
-
-
-// const  CreateAdmin = (req, res) => {
-//   const data = req.body;
-//   // Insert data into the entitydata table
-//   mycon.query('INSERT INTO Entities SET ?', data, (err, result) => {
-//     if (err) {
-    
-//       console.error('Error inserting data: ' + err.stack);
-//       res.status(500).send('Error inserting data');
-//       return;
-//     }
-//     const id = result.insertId;
-//     res.status(201).send(`${id}`);
-//   });
-// };
-
-
-
 const CreateAdmin = async (req, res) => {
-    const data = req.body;
-    const email = data.email;
-    const password = email.split("@")[0]; // Initial password from email (You might want to change this)
+  try {
+      console.log(req.file, req.body, "multer")
+      const data = req.body;
+      const user = {
+          ...data,
+          image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+      };
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+      mycon.query('INSERT INTO Entities SET ?', user, async (err, result) => {
+          if (err) {
+              console.error('Error inserting data: ' + err.stack);
+              return res.status(500).send('Error inserting data');
+          }
+              res.status(201).send(`${result.insertId}`);
 
-    const role = await db.Role.findOne({
-        where: {
-            name: data.role,
-        },
-    });
-    if (!role) {
-        console.error("Role not found.");
-        return res.status(404).send("Role not found");
-    }
-
-    // Insert data into the Userdata table
-    const user = {
-        ...data,
-        RoleId: role.id,
-        password: hashedPassword, // Insert hashed password
-    };
-
-    mycon.query('INSERT INTO Users SET ?', user, async (err, result) => {
-        if (err) {
-            console.error('Error inserting data: ' + err.stack);
-            return res.status(500).send('Error inserting data');
-        }
-
-        const id = result.insertId;
-
-        // Sending email
-        try {
-            const transporter = nodemailer.createTransport({
-                // Specify your email sending service configuration here
-            });
-
-            const mailOptions = {
-                from: 'your_email@example.com',
-                to: email,
-                subject: 'User Account Created',
-                text: `Your account has been successfully created. Your user ID is: ${id}`,
-            };
-
-            await transporter.sendMail(mailOptions);
-            console.log('Email sent successfully');
-        } catch (error) {
-            console.error('Error sending email:', error);
-            // Handle error in email sending
-        }
-
-        res.status(201).send(`${id}`);
-    });
+      });
+  } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).send("Error creating user");
+  }
 };
-
-
 const List_Entite = async (req, res) => {
   // Extract query parameters
   const page = parseInt(req.query.page) || 1; // Default page is 1
@@ -98,7 +43,7 @@ const List_Entite = async (req, res) => {
 
   // MySQL query to fetch paginated users
   const sqlCount = `SELECT COUNT(*) as total FROM Entities`;
-  const sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
+  const sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') ORDER BY ${sortBy} DESC LIMIT ?, ? `;
 
   mycon.query(sql, [offset, pageSize], (err, result) => {
       if (err) {
@@ -147,26 +92,36 @@ const Get_Entite = (req, res) => {
     res.status(200).json(result[0]);
   });
 };
-const Update_Entite = (req, res) => {
-  const entityId = req.params.id;
-  const newData = req.body;
-  // Update data in the entitydata table based on the id
-  mycon.query('UPDATE EntityData SET ? WHERE id = ?', [newData, entityId], (err, result) => {
-    if (err) {
-      console.error('Error updating data: ' + err.stack);
-      res.status(500).send('Error updating data');
-      return;
-    }
 
-    if (result.affectedRows === 0) {
-      res.status(404).send('Entity data not found');
-      return;
-    }
+const Update_Entite = (req, res) => {  try {
+  const { id } = req.params;
+  let data = req.body;
+  let file = req.file;
 
-    console.log('Updated ' + result.affectedRows + ' row(s)');
-    res.status(200).send('Data updated successfully');
+  console.log(data, file, "update data");
+  data = {
+      image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+      ...data
+  }
+
+  // Define the SQL query to update the user
+  const updateQuery = `UPDATE Entities SET ? WHERE id = ?`;
+
+  // Execute the update query
+  mycon.query(updateQuery, [data, id], (error, updateResults) => {
+      if (error) {
+          console.error("Error updating User:", error);
+          return res.status(500).json({ error: "Internal Server Error" });
+      }
+      res.status(200).json({ message: `User updated successfully ${id}` });
+
   });
-};
+} catch (error) {
+  console.error("Error updating User:", error);
+  res.status(500).json({ error: "Internal Server Error" });
+}}
+
+
 
 const Delete_Entite = async (req, res) => {
   try {
