@@ -7,6 +7,9 @@ const mycon = require('../DB/mycon')
 const transporter = require('../utils/nodemailer')
 const saltRounds = 10;
 const formidable = require('formidable');
+const { Role, Module, Permission } = require('../models/index');
+const { generateToken } = require('../utils/utils');
+
 
 
 const Create_User = async (req, res) => {
@@ -126,6 +129,8 @@ async function sendEmail(email, password) {
     await transporter.sendMail(mailData);
 }
 const List_User = async (req, res) => {
+    const body = req.body
+    console.log(body, "body")
     // Extract query parameters
     const page = parseInt(req.query.page) || 1; // Default page is 1
     const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
@@ -200,21 +205,93 @@ const List_User = async (req, res) => {
         });
     });
 };
-async function Login_User(email, password) {
+// async function Login_User(email, password) {
+//     try {
+//         const user = await User.findOne({
+//             where: {
+//                 email
+//             }
+//         });
+//         console.log(user)
+//         if (!user.userstatus) {
+//             return res.status(403).json({ message: 'Your account is inactive. Please contact the administrator.' });
+//         }
+//         const passwordMatch = await bcrypt.compare(password, user.password);
+//         if (passwordMatch) {
+//             return user;
+//         } else {
+//             throw new Error('Authentication failed');
+//         }
+//     } catch (error) {
+//         throw error;
+//     }
+// }
+async function Login_User(req, res) {
     try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required." });
+        }
+
         const user = await User.findOne({
             where: {
                 email
             }
         });
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (passwordMatch) {
-            return user;
-        } else {
-            throw new Error('Authentication failed');
+        if (!user) {
+            return res.status(404).json({ message: 'user not found.' });
         }
+
+        if (!user.userstatus) {
+            return res.status(403).json({ message: 'Your account is inactive. Please contact the administrator.' });
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ message: "Invalid credentials." });
+        }
+
+        const roleId = user.RoleId;
+
+        const role = await Role.findOne({
+            where: { id: roleId },
+            include: [{
+                model: Permission,
+                include: [{
+                    model: Module,
+                    attributes: ['name']
+                }],
+                attributes: ['all', 'canCreate', 'canRead', 'canUpdate', 'canDelete']
+            }]
+        });
+
+        if (!role) {
+            return res.status(404).json({ message: "Role not found." });
+        }
+
+        const simplifiedRole = {
+            id: role.id,
+            name: role.name,
+            description: role.description,
+            Permissions: role.Permissions.map(permission => ({
+                module: permission.Modules.length ?
+                    permission.Modules[0].name
+                    : null,
+                all: permission.all,
+                canCreate: permission.canCreate,
+                canRead: permission.canRead,
+                canUpdate: permission.canUpdate,
+                canDelete: permission.canDelete,
+            }))
+        };
+
+        const token = generateToken(user.id, user.RoleId);
+        res.json({ role: simplifiedRole, user, token, success: true, message: "Login successful" });
     } catch (error) {
-        throw error;
+        console.error("Login error:", error);
+        res.status(500).json({ message: "An unexpected error occurred." });
     }
 }
 const Get_User = async (req, res) => {
