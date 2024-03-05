@@ -56,8 +56,6 @@ const Create_User = async (req, res) => {
         res.status(500).send("Error creating user");
     }
 };
-
-
 // Function to generate a random password
 function generateRandomPassword() {
     const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -67,7 +65,6 @@ function generateRandomPassword() {
     }
     return password;
 }
-
 // Function to send email
 async function sendEmail(email, password) {
 
@@ -128,7 +125,6 @@ async function sendEmail(email, password) {
 
     await transporter.sendMail(mailData);
 }
-
 const List_User = async (req, res) => {
     // Extract query parameters
     const page = parseInt(req.query.page) || 1; // Default page is 1
@@ -205,12 +201,6 @@ const List_User = async (req, res) => {
         });
     });
 };
-
-
-
-
-
-
 async function Login_User(email, password) {
     try {
         const user = await User.findOne({
@@ -254,8 +244,6 @@ const Get_User = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-
-
 const Update_User = async (req, res) => {
     try {
         const { id } = req.params;
@@ -285,10 +273,6 @@ const Update_User = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
-
-
 const Update_Password = async (req, res) => {
     try {
         const { newPassword } = req.body;
@@ -313,7 +297,6 @@ const Update_Password = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
 const Reset_Password = async (req, res) => {
     try {
         const { email } = req.query;
@@ -382,7 +365,6 @@ const Reset_Password = async (req, res) => {
 
     }
 }
-
 const Delete_User = async (req, res) => {
     try {
         await User.destroy({
