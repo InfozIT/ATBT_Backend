@@ -65,7 +65,7 @@ const UserFrom = async (req, res) => {
                     columnType = DataTypes.TIME;
                     break;
                 case 'file':
-                    columnType = DataTypes.BLOB;
+                    columnType = DataTypes.STRING;
                     break;
                 default:
                     columnType = DataTypes.JSON;
