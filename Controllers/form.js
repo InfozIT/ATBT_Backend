@@ -369,20 +369,20 @@ const GetAllLIST = async (req, res) => {
 
 const UpdateTableView = async (req, res) => {
     try {
-       let Name = req.query.name;
-       let tableView = req.body; 
-       if (typeof tableView !== 'string') {
-           tableView = JSON.stringify(tableView);
-       }
-      console.log(tableView)
-       await Settings.update({ Tableview: tableView }, {
-         where: { Name: Name }
-       });
-       res.status(200).json({ message: `updated successfully ${Name}` });
+        let Name = req.query.name;
+        let tableView = req.body;
+        if (typeof tableView !== 'string') {
+            tableView = JSON.stringify(tableView);
+        }
+        console.log(tableView)
+        await Settings.update({ Tableview: tableView }, {
+            where: { Name: Name }
+        });
+        res.status(200).json({ message: `updated successfully ${Name}` });
     } catch (error) {
-      // Handle any errors that occur during the Admin creation process
-      console.error("Error updating table view:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+        // Handle any errors that occur during the Admin creation process
+        console.error("Error updating table view:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 

@@ -134,7 +134,7 @@ const List_User = async (req, res) => {
 
     let filter = req.body.filters || '';
 
-    console.log(filter,"filter")
+    console.log(filter, "filter")
 
     // Calculate offset
     const offset = (page - 1) * pageSize;
@@ -143,13 +143,12 @@ const List_User = async (req, res) => {
     let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
     // Add conditions for additional filter fields
-    if(!!filter){
-     for (const [field, value] of Object.entries(filter)) {
-        if (value !== '') {
-            sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+    if (!!filter) {
+        for (const [field, value] of Object.entries(filter)) {
+            if (value !== '') {
+                sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+            }
         }
-        
-    }
     }
     // else{
     //      sql +=  `SELECT * FROM Users`;
@@ -169,16 +168,16 @@ const List_User = async (req, res) => {
         let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
         // Add conditions for additional filter fields
-        if(!!filter){
-        for (const [field, value] of Object.entries(filter)) {
-            if (value !== '') {
-                sqlCount += ` AND ${field} LIKE '%${value}%'`; 
+        if (!!filter) {
+            for (const [field, value] of Object.entries(filter)) {
+                if (value !== '') {
+                    sqlCount += ` AND ${field} LIKE '%${value}%'`;
+                }
             }
         }
-    }
-    // else{
-    //     sqlCount += `SELECT COUNT(*) as total FROM Users`;
-    // }
+        // else{
+        //     sqlCount += `SELECT COUNT(*) as total FROM Users`;
+        // }
 
         mycon.query(sqlCount, (err, countResult) => {
             if (err) {

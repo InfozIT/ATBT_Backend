@@ -20,10 +20,10 @@ const Add_toggle = async (req, res) => {
     await User.update({ userstatus: newStatus, userremarkshistory: remarks }, { where: { id: userId } });
 
 
-    
+
     res.status(200).json({
       message: `User status updated successfully for ID: ${userId}`,
- 
+
     });
 
   } catch (error) {
