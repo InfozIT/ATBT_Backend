@@ -1,72 +1,10 @@
-require('dotenv').config();
-var db = require('../models/index');
-const bcrypt = require('bcrypt');
-const sequelize = require('../DB/dbconncet');
-const User = db.User;
-const mycon = require('../DB/mycon')
-const transporter = require('../utils/nodemailer')
-const saltRounds = 10;
-const formidable = require('formidable');
-const { Role, Module, Permission } = require('../models/index');
-const { generateToken } = require('../utils/utils');
-
-
-
-// const Create_User = async (req, res) => {
-//     try {
-//         console.log(req.file, req.body, "multer")
-//         const { email, role: roleName } = req.body;
-//         const data = req.body;
-//         const password = generateRandomPassword();
-
-//         // Hash the password
-//         const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-//         // Retrieve role from the database
-//         const role = await db.Role.findOne({ where: { name: roleName } });
-//         if (!role) {
-//             console.error("Role not found.");
-//             return res.status(404).send("Role not found");
-//         }
-
-//         // Insert user data into the database
-//         const user = {
-//             ...data,
-//             image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-//             RoleId: role.id,
-//             password: hashedPassword,
-//         };
-
-//         mycon.query('INSERT INTO Users SET ?', user, async (err, result) => {
-//             if (err) {
-//                 console.error('Error inserting data: ' + err.stack);
-//                 return res.status(500).send('Error inserting data');
-//             }
-
-//             try {
-//                 // Send email to the user
-//                 await sendEmail(email, password);
-
-//                 // Respond with success message
-//                 res.status(201).send(`${result.insertId}`);
-//             } catch (emailError) {
-//                 console.error("Error sending email:", emailError);
-//                 res.status(500).send("Error sending email to user");
-//             }
-//         });
-//     } catch (error) {
-//         console.error("Error creating user:", error);
-//         res.status(500).send("Error creating user");
-//     }
-// };
-
 const Create_User = async (req, res) => {
     try {
-        let { email, role: roleName ,customFieldsData } = req.body;
+        console.log(req.file, req.body, "multer")
+        const { email, role: roleName } = req.body;
         const data = req.body;
         const password = generateRandomPassword();
-        cFieldsData = JSON.parse(customFieldsData)
-       
+
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -78,26 +16,14 @@ const Create_User = async (req, res) => {
         }
 
         // Insert user data into the database
-        let images ={}
-        for(let i=0;i<req.files.length;i++){
-        //    images[req.files[i].fieldname] = req.files[i].filename
-        images[req.files[i].fieldname] = `${process.env.IMAGE_URI}/images/${req.files[i].filename}`
-        }
-        console.log(images)
         const user = {
-         
             ...data,
-            // image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+            image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
             RoleId: role.id,
             password: hashedPassword,
-            customFieldsData: cFieldsData
         };
 
-        const finalData = {
-            ...user,
-            ...images
-        }
-        mycon.query('INSERT INTO Users SET ?', finalData, async (err, result) => {
+        mycon.query('INSERT INTO Users SET ?', user, async (err, result) => {
             if (err) {
                 console.error('Error inserting data: ' + err.stack);
                 return res.status(500).send('Error inserting data');
@@ -119,10 +45,6 @@ const Create_User = async (req, res) => {
         res.status(500).send("Error creating user");
     }
 };
-
-
-
-
 // Function to generate a random password
 function generateRandomPassword() {
     const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -389,12 +311,15 @@ const Update_User = async (req, res) => {
         const { id } = req.params;
         let data = req.body;
         let file = req.file;
-
-        console.log(data, file, "update data");
-        data = {
-            image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-            ...data
+        let image;
+        if(file){
+            image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+            data = {
+                image,
+                ...data
+            }
         }
+        console.log(data, "update data");
 
         // Define the SQL query to update the user
         const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
