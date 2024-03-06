@@ -65,7 +65,7 @@ const Create_User = async (req, res) => {
         let { email, role: roleName ,customFieldsData } = req.body;
         const data = req.body;
         const password = generateRandomPassword();
-
+        cFieldsData = JSON.parse(customFieldsData)
        
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -90,6 +90,7 @@ const Create_User = async (req, res) => {
             // image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
             RoleId: role.id,
             password: hashedPassword,
+            customFieldsData: cFieldsData
         };
 
         const finalData = {
