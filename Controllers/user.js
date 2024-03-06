@@ -345,8 +345,7 @@ const Update_User = async (req, res) => {
                 console.error("Error updating User:", error);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
-            res.status(200).json({ message: `User updated successfully ${id}` });
-
+            res.status(201).send(`${id}`);
         });
     } catch (error) {
         console.error("Error updating User:", error);
