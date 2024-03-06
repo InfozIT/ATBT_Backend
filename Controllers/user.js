@@ -16,8 +16,9 @@ const { generateToken } = require('../utils/utils');
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName } = req.body;
-        const data = req.body;
+        const { email, role: roleName, } = req.body;
+        let data = req.body;
+        const file = req.file;
         const password = generateRandomPassword();
 
         // Hash the password
@@ -30,12 +31,17 @@ const Create_User = async (req, res) => {
             return res.status(404).send("Role not found");
         }
 
+        if (file) {
+            data = {
+                image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+                ...data,
+            }
+        }
         // Insert user data into the database
         const user = {
-            ...data,
-            image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
             RoleId: role.id,
             password: hashedPassword,
+            ...data
         };
 
         mycon.query('INSERT INTO Users SET ?', user, async (err, result) => {
@@ -129,9 +135,9 @@ async function sendEmail(email, password) {
 
     await transporter.sendMail(mailData);
 }
+
 const List_User = async (req, res) => {
     const body = req.body
-    console.log(body, "body")
     // Extract query parameters
     const page = parseInt(req.query.page) || 1; // Default page is 1
     const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
@@ -139,8 +145,6 @@ const List_User = async (req, res) => {
     const search = req.query.search || ''; // Default search is empty strin
 
     let filter = req.body.filters || '';
-
-    console.log(filter, "filter")
 
     // Calculate offset
     const offset = (page - 1) * pageSize;
@@ -171,9 +175,7 @@ const List_User = async (req, res) => {
         }
 
         // Execute the count query to get the total number of users
-        // let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
-        let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY total DESC`;
-
+        let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
         // Add conditions for additional filter fields
         if (!!filter) {
@@ -208,6 +210,7 @@ const List_User = async (req, res) => {
         });
     });
 };
+
 // async function Login_User(email, password) {
 //     try {
 //         const user = await User.findOne({
@@ -329,14 +332,13 @@ const Update_User = async (req, res) => {
         let data = req.body;
         let file = req.file;
         let image;
-        if(file){
+        if (file) {
             image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
             data = {
                 image,
                 ...data
             }
         }
-        console.log(data, "update data");
 
         // Define the SQL query to update the user
         const updateQuery = `UPDATE Users SET ? WHERE id = ?`;

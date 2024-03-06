@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     Name: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true
+      unique: "Name"
     },
     Tableview: {
       type: DataTypes.TEXT,
