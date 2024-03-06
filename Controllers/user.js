@@ -1,3 +1,18 @@
+require('dotenv').config();
+var db = require('../models/index');
+const bcrypt = require('bcrypt');
+const sequelize = require('../DB/dbconncet');
+const User = db.User;
+const mycon = require('../DB/mycon')
+const transporter = require('../utils/nodemailer')
+const saltRounds = 10;
+const formidable = require('formidable');
+const { Role, Module, Permission } = require('../models/index');
+const { generateToken } = require('../utils/utils');
+
+
+
+
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
