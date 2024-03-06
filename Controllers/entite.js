@@ -121,35 +121,38 @@ const Get_Entite = (req, res) => {
   });
 };
 
-const Update_Entite = (req, res) => {
+const Update_Entite = async (req, res) => {
   try {
-    const { id } = req.params;
-    let data = req.body;
-    let file = req.file;
-
-    console.log(data, file, "update data");
-    data = {
-      image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-      ...data
-    }
-
-    // Define the SQL query to update the user
-    const updateQuery = `UPDATE Entities SET ? WHERE id = ?`;
-
-    // Execute the update query
-    mycon.query(updateQuery, [data, id], (error, updateResults) => {
-      if (error) {
-        console.error("Error updating User:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+      const { id } = req.params;
+      let data = req.body;
+      let file = req.file;
+      let image;
+      if(file){
+          image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+          data = {
+              image,
+              ...data
+          }
       }
-      res.status(200).json({ message: `User updated successfully ${id}` });
+      console.log(data, "update data");
 
-    });
+      // Define the SQL query to update the user
+      const updateQuery = `UPDATE Entities SET ? WHERE id = ?`;
+
+      // Execute the update query
+      mycon.query(updateQuery, [data, id], (error, updateResults) => {
+          if (error) {
+              console.error("Error updating User:", error);
+              return res.status(500).json({ error: "Internal Server Error" });
+          }
+          res.status(200).json({ message: `User updated successfully ${id}` });
+
+      });
   } catch (error) {
-    console.error("Error updating User:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error updating User:", error);
+      res.status(500).json({ error: "Internal Server Error" });
   }
-}
+};
 
 
 
