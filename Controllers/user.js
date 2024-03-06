@@ -171,7 +171,9 @@ const List_User = async (req, res) => {
         }
 
         // Execute the count query to get the total number of users
-        let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+        // let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+        let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') ORDER BY total DESC`;
+
 
         // Add conditions for additional filter fields
         if (!!filter) {
