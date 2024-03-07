@@ -211,27 +211,6 @@ const List_User = async (req, res) => {
     });
 };
 
-// async function Login_User(email, password) {
-//     try {
-//         const user = await User.findOne({
-//             where: {
-//                 email
-//             }
-//         });
-//         console.log(user)
-//         if (!user.userstatus) {
-//             return res.status(403).json({ message: 'Your account is inactive. Please contact the administrator.' });
-//         }
-//         const passwordMatch = await bcrypt.compare(password, user.password);
-//         if (passwordMatch) {
-//             return user;
-//         } else {
-//             throw new Error('Authentication failed');
-//         }
-//     } catch (error) {
-//         throw error;
-//     }
-// }
 async function Login_User(req, res) {
     try {
         const { email, password } = req.body;
