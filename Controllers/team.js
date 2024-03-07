@@ -147,4 +147,23 @@ const ListTeam = async (req, res) => {
   });
 };
 
+
+const getTeamDataById = (req, res) => {
+  const entityId = req.params.id;
+  mycon.query('SELECT * FROM Teams WHERE id = ?', entityId, (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      res.status(500).send('Error retrieving data');
+      return;
+    }
+
+    if (result.length === 0) {
+      res.status(404).send('Entity data not found');
+      return;
+    }
+
+    res.status(200).json(result[0]);
+  });
+};
+
 module.exports = {CreateTeam,getTeamDataById,ListTeam,DeleteTeamById,UpdateTeam};
