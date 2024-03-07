@@ -81,8 +81,7 @@ const ListTeam = async (req, res) => {
   // Extract query parameters
   const page = parseInt(req.query.page) || 1; // Default page is 1
   const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
-  const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
-  const search = req.query.search || ''; // Default search is empty strin
+  const search = req.query.search || ''; // Default search is empty string
 
   let filter = req.body.filters || '';
 
@@ -90,7 +89,7 @@ const ListTeam = async (req, res) => {
   const offset = (page - 1) * pageSize;
 
   // MySQL query to fetch paginated users
-  let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%')`;
+  let sql = `SELECT * FROM Teams WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
   if (!!filter) {
@@ -100,12 +99,6 @@ const ListTeam = async (req, res) => {
           }
       }
   }
-  // else{
-  //      sql +=  `SELECT * FROM Users`;
-  // }
-
-
-  sql += ` ORDER BY ${sortBy} DESC LIMIT ?, ?`;
 
   mycon.query(sql, [offset, pageSize], (err, result) => {
       if (err) {
@@ -115,7 +108,7 @@ const ListTeam = async (req, res) => {
       }
 
       // Execute the count query to get the total number of users
-      let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%')`;
+      let sqlCount = `SELECT COUNT(*) as total FROM Teams WHERE (name LIKE '%${search}%')`;
 
       // Add conditions for additional filter fields
       if (!!filter) {
@@ -125,9 +118,6 @@ const ListTeam = async (req, res) => {
               }
           }
       }
-      // else{
-      //     sqlCount += `SELECT COUNT(*) as total FROM Users`;
-      // }
 
       mycon.query(sqlCount, (err, countResult) => {
           if (err) {
