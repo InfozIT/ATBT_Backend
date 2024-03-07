@@ -31,8 +31,6 @@ const CreateTeam = async (req, res) => { try {
   res.status(500).send("Error creating Teams");
 }}
 
-
-
 const UpdateTeam = async (req, res) => {
   try {
       const { id } = req.params;
@@ -78,7 +76,6 @@ const DeleteTeamById = async (req, res) => {
     res.status(500).send('Error deleting data');
   }
 };
-
 const ListTeam = async (req, res) => {
   const body = req.body
   // Extract query parameters
@@ -92,8 +89,8 @@ const ListTeam = async (req, res) => {
   // Calculate offset
   const offset = (page - 1) * pageSize;
 
-  // MySQL query to fetch paginated Teams
-  let sql = `SELECT * FROM Teams WHERE (name LIKE '%${search}%')`;
+  // MySQL query to fetch paginated users
+  let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
   if (!!filter) {
@@ -104,7 +101,7 @@ const ListTeam = async (req, res) => {
       }
   }
   // else{
-  //      sql +=  `SELECT * FROM Teams`;
+  //      sql +=  `SELECT * FROM Users`;
   // }
 
 
@@ -117,8 +114,8 @@ const ListTeam = async (req, res) => {
           return;
       }
 
-      // Execute the count query to get the total number of Teams
-      let sqlCount = `SELECT COUNT(*) as total FROM Teams WHERE (name LIKE '%${search}%')`;
+      // Execute the count query to get the total number of users
+      let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%')`;
 
       // Add conditions for additional filter fields
       if (!!filter) {
@@ -129,7 +126,7 @@ const ListTeam = async (req, res) => {
           }
       }
       // else{
-      //     sqlCount += `SELECT COUNT(*) as total FROM Teams`;
+      //     sqlCount += `SELECT COUNT(*) as total FROM Users`;
       // }
 
       mycon.query(sqlCount, (err, countResult) => {
@@ -146,15 +143,13 @@ const ListTeam = async (req, res) => {
               totalPages: totalPages,
               currentPage: page,
               pageSize: pageSize,
-              totalTeams: totalUsers,
+              totalteams: totalUsers,
               startUser: offset,
               endUser: offset + pageSize
           });
       });
   });
 };
-
-
 const getTeamDataById = (req, res) => {
   const entityId = req.params.id;
   mycon.query('SELECT * FROM Teams WHERE id = ?', entityId, (err, result) => {

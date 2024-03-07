@@ -42,7 +42,7 @@ const ListEntity = async (req, res) => {
   const offset = (page - 1) * pageSize;
 
   // MySQL query to fetch paginated users
-  let sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`;
+  let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
   if (!!filter) {
@@ -67,7 +67,7 @@ const ListEntity = async (req, res) => {
       }
 
       // Execute the count query to get the total number of users
-      let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
+      let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%')`;
 
       // Add conditions for additional filter fields
       if (!!filter) {
@@ -91,7 +91,7 @@ const ListEntity = async (req, res) => {
           const totalPages = Math.ceil(totalUsers / pageSize);
 
           res.json({
-              users: result,
+              Entity: result,
               totalPages: totalPages,
               currentPage: page,
               pageSize: pageSize,
