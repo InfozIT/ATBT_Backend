@@ -8,23 +8,30 @@ const mycon = require('../DB/mycon')
 
 
 
-const CreateTeam = async (req, res) => {
-  const entityId = req.params.id;
-  mycon.query('SELECT * FROM Teams WHERE id = ?', entityId, (err, result) => {
+const CreateTeam = async (req, res) => { try {
+  let file = req.file;
+  let data = req.body;
+  if (file) {
+    team = {
+        image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        ...data,
+    }
+}
+  console.log(team)
+  mycon.query('INSERT INTO Teams SET ?', team, async (err, result) => {
     if (err) {
-      console.error('Error retrieving data: ' + err.stack);
-      res.status(500).send('Error retrieving data');
-      return;
+      console.error('Error inserting data: ' + err.stack);
+      return res.status(500).send('Error inserting data');
     }
+    res.status(201).send(`${result.insertId}`);
 
-    if (result.length === 0) {
-      res.status(404).send('Entity data not found');
-      return;
-    }
-
-    res.status(200).json(result[0]);
   });
-};
+} catch (error) {
+  console.error("Error creating Teams:", error);
+  res.status(500).send("Error creating Teams");
+}}
+
+
 
 const UpdateTeam = async (req, res) => {
   try {
@@ -40,19 +47,19 @@ const UpdateTeam = async (req, res) => {
           }
       }
 
-      // Define the SQL query to update the user
+      // Define the SQL query to update the Teams
       const updateQuery = `UPDATE Teams SET ? WHERE id = ?`;
 
       // Execute the update query
       mycon.query(updateQuery, [data, id], (error, updateResults) => {
           if (error) {
-              console.error("Error updating User:", error);
+              console.error("Error updating Teams:", error);
               return res.status(500).json({ error: "Internal Server Error" });
           }
           res.status(201).send(`${id}`);
       });
   } catch (error) {
-      console.error("Error updating User:", error);
+      console.error("Error updating Teams:", error);
       res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -85,7 +92,7 @@ const ListTeam = async (req, res) => {
   // Calculate offset
   const offset = (page - 1) * pageSize;
 
-  // MySQL query to fetch paginated users
+  // MySQL query to fetch paginated Teams
   let sql = `SELECT * FROM Teams WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
@@ -97,7 +104,7 @@ const ListTeam = async (req, res) => {
       }
   }
   // else{
-  //      sql +=  `SELECT * FROM Users`;
+  //      sql +=  `SELECT * FROM Teams`;
   // }
 
 
@@ -110,7 +117,7 @@ const ListTeam = async (req, res) => {
           return;
       }
 
-      // Execute the count query to get the total number of users
+      // Execute the count query to get the total number of Teams
       let sqlCount = `SELECT COUNT(*) as total FROM Teams WHERE (name LIKE '%${search}%')`;
 
       // Add conditions for additional filter fields
@@ -122,7 +129,7 @@ const ListTeam = async (req, res) => {
           }
       }
       // else{
-      //     sqlCount += `SELECT COUNT(*) as total FROM Users`;
+      //     sqlCount += `SELECT COUNT(*) as total FROM Teams`;
       // }
 
       mycon.query(sqlCount, (err, countResult) => {
@@ -135,11 +142,11 @@ const ListTeam = async (req, res) => {
           const totalPages = Math.ceil(totalUsers / pageSize);
 
           res.json({
-              users: result,
+              Teams: result,
               totalPages: totalPages,
               currentPage: page,
               pageSize: pageSize,
-              totalUsers: totalUsers,
+              totalTeams: totalUsers,
               startUser: offset,
               endUser: offset + pageSize
           });
@@ -158,7 +165,7 @@ const getTeamDataById = (req, res) => {
     }
 
     if (result.length === 0) {
-      res.status(404).send('Entity data not found');
+      res.status(404).send('Teams data not found');
       return;
     }
 
