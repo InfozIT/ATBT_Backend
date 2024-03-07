@@ -1,6 +1,6 @@
 require('dotenv').config();
 const db = require('../models/index');
-
+const mycon = require('../DB/mycon')
 const Role = db.Role;
 const Module = db.Module;
 const Permission = db.Permission;
@@ -42,21 +42,88 @@ const createRoleWithPermissions = async (req, res) => {
 
 };
 
+// const getAllRoles = async (req, res) => {
+//   try {
+//     // Fetch all roles
+//     const roles = await Role.findAll();
+//     // If no roles found, return empty array
+//     if (!roles || roles.length === 0) {
+//       return res.status(404).json({ message: 'No roles found' });
+//     }
+//     // Return roles
+//     res.status(200).json({ roles });
+//   } catch (error) {
+//     console.error('Error fetching roles:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
 const getAllRoles = async (req, res) => {
-  try {
-    // Fetch all roles
-    const roles = await Role.findAll();
-    // If no roles found, return empty array
-    if (!roles || roles.length === 0) {
-      return res.status(404).json({ message: 'No roles found' });
+  const body = req.body
+  // Extract query parameters
+  const page = parseInt(req.query.page) || 1; // Default page is 1
+  const pageSize = parseInt(req.query.pageSize) || 10; // Default page size is 5
+  const search = req.query.search || ''; // Default search is empty string
+
+  let filter = req.body.filters || '';
+
+  // Calculate offset
+  const offset = (page - 1) * pageSize;
+
+  // MySQL query to fetch paginated users
+  let sql = `SELECT * FROM Roles WHERE (name LIKE '%${search}%')`;
+
+  // Add conditions for additional filter fields
+  if (!!filter) {
+    for (const [field, value] of Object.entries(filter)) {
+      if (value !== '') {
+        sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+      }
     }
-    // Return roles
-    res.status(200).json({ roles });
-  } catch (error) {
-    console.error('Error fetching roles:', error);
-    res.status(500).json({ error: 'Internal server error' });
   }
+
+  mycon.query(sql, [offset, pageSize], (err, result) => {
+    if (err) {
+      console.error('Error executing MySQL query: ' + err.stack);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    // Execute the count query to get the total number of users
+    let sqlCount = `SELECT COUNT(*) as total FROM Roles WHERE (name LIKE '%${search}%')`;
+
+    // Add conditions for additional filter fields
+    if (!!filter) {
+      for (const [field, value] of Object.entries(filter)) {
+        if (value !== '') {
+          sqlCount += ` AND ${field} LIKE '%${value}%'`;
+        }
+      }
+    }
+
+    mycon.query(sqlCount, (err, countResult) => {
+      if (err) {
+        console.error('Error executing MySQL count query: ' + err.stack);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+      }
+      const totalUsers = countResult[0].total;
+      const totalPages = Math.ceil(totalUsers / pageSize);
+
+      res.json({
+        roles: result,
+        totalPages: totalPages,
+        currentPage: page,
+        pageSize: pageSize,
+        totalRoles: totalUsers,
+        startRole: offset,
+        endRole: offset + pageSize
+      });
+    });
+  });
 };
+
 
 const getRolePermissionsById = async (req, res) => {
   try {

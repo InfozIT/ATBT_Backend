@@ -305,18 +305,58 @@ const Get_User = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+// const Update_User = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         let data = req.body;
+//         let file = req.file;
+//         let image;
+//         if (file) {
+//             image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+//             data = {
+//                 image,
+//                 ...data
+//             }
+//         }
+
+//         // Define the SQL query to update the user
+//         const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
+
+//         // Execute the update query
+//         mycon.query(updateQuery, [data, id], (error, updateResults) => {
+//             if (error) {
+//                 console.error("Error updating User:", error);
+//                 return res.status(500).json({ error: "Internal Server Error" });
+//             }
+//             res.status(201).send(`${id}`);
+//         });
+//     } catch (error) {
+//         console.error("Error updating User:", error);
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+// };
+
 const Update_User = async (req, res) => {
     try {
         const { id } = req.params;
+        const { role: roleName } = req.body;
         let data = req.body;
-        let file = req.file;
+        const file = req.file;
         let image;
+
+        // Find role in the database
+        const role = await db.Role.findOne({ where: { name: roleName } });
+        if (!role) {
+            console.error("Role not found.");
+            return res.status(404).send("Role not found");
+        } else {
+            data.RoleId = role.id;
+        }
+
+        // Check if file is uploaded
         if (file) {
             image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
-            data = {
-                image,
-                ...data
-            }
+            data.image = image;
         }
 
         // Define the SQL query to update the user
@@ -328,13 +368,15 @@ const Update_User = async (req, res) => {
                 console.error("Error updating User:", error);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
-            res.status(201).send(`${id}`);
+            res.status(201).json(`${id}`);
         });
     } catch (error) {
         console.error("Error updating User:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
 const Update_Password = async (req, res) => {
     try {
         const { newPassword } = req.body;
