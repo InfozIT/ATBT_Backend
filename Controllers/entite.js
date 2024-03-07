@@ -1,8 +1,6 @@
 require('dotenv').config();
 var db = require('../models/index');
 const Entite = db.Entite;
-const { Op } = require('sequelize');
-
 const mycon = require('../DB/mycon')
 
 
@@ -103,7 +101,7 @@ const ListEntity = async (req, res) => {
           });
       });
   });
-};;
+};
 
 const Get_Entite = (req, res) => {
   const entityId = req.params.id;
