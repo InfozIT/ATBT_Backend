@@ -3,19 +3,9 @@ module.exports = (sequelize, DataTypes) => {
     // Model attributes are defined here
     name: {
       type: DataTypes.STRING,
-      allowNull: true
-    },
-    data: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    email: {
-      type: DataTypes.STRING,
       allowNull: true,
-      unique: 'email',
-      validate: {
-          isEmail: true
-      }
+      unique: "Name"
+
     },
     time: {
       type: DataTypes.STRING,
@@ -34,7 +24,17 @@ module.exports = (sequelize, DataTypes) => {
     description: {
       type: DataTypes.STRING,
       allowNull: true
-    }
+    },
+       createdBy: {
+      type: DataTypes.STRING,
+      allowNull: true,
+
+    },
+    customFieldsData: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+
   }, {
     // Other model options go here
   });

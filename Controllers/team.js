@@ -134,8 +134,8 @@ const ListTeam = async (req, res) => {
               currentPage: page,
               pageSize: pageSize,
               totalteams: totalUsers,
-              startUser: offset,
-              endUser: offset + pageSize
+              startteam: offset,
+              endteam: offset + pageSize
           });
       });
   });
