@@ -12,13 +12,12 @@ const CreateTeam = async (req, res) => { try {
   let file = req.file;
   let data = req.body;
   if (file) {
-    team = {
+    data = {
         image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
         ...data,
     }
 }
-  console.log(team)
-  mycon.query('INSERT INTO Teams SET ?', team, async (err, result) => {
+  mycon.query('INSERT INTO Teams SET ?', data, async (err, result) => {
     if (err) {
       console.error('Error inserting data: ' + err.stack);
       return res.status(500).send('Error inserting data');
