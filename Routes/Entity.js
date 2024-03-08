@@ -12,7 +12,7 @@ const { Permission } = require('../models');
 router.post('/add', hasPermission("entity", "canCreate"), upload.single('image'), ECont.CreateEntiy)
 router.post('/list', hasPermission("entity", "canRead"), ECont.ListEntity)
 router.get('/list/:id', hasPermission("entity", "canRead"), ECont.Get_Entite)
-router.put('/update/:id', hasPermission("entity", "canUpdate"), ECont.UpdateEntity)
+router.put('/update/:id', hasPermission("entity", "canUpdate"), upload.single('image'), ECont.UpdateEntity)
 router.delete('/delete/:id', hasPermission("entity", "canDelete"), ECont.Delete_Entite)
 
 
