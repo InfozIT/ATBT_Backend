@@ -23,7 +23,11 @@ const Create_User = async (req, res) => {
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-
+        const existingUser = await db.User.findOne({ where: { name } });
+        if (existingUser) {
+            console.error("name already exists.");
+            return res.status(400).send("name already exists");
+        }
         // Retrieve role from the database
         const role = await db.Role.findOne({ where: { name: roleName } });
         if (!role) {
