@@ -10,6 +10,12 @@ const createRoleWithPermissions = async (req, res) => {
   try {
     const { role, description, permissions } = req.body;
     // Create the role entry
+    console.log(req.body, "body")
+    const existingUser = await db.Role.findOne({ where: { name: role } });
+    if (existingUser) {
+      console.error("name already exists.");
+      return res.status(400).send("name already exists");
+    }
     const newRole = await Role.create({
       name: role,
       description: description

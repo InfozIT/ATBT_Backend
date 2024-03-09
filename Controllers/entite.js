@@ -6,8 +6,16 @@ const mycon = require('../DB/mycon')
 
 const CreateEntiy = async (req, res) => {
   try {
+    let name = req.body.name
     let file = req.file;
     let data = req.body;
+    console.log(req.body, "body")
+    const existingUser = await db.Entite.findOne({ where: { name } });
+    console.log(name, existingUser, "existin user")
+    if (existingUser) {
+      console.error("name already exists.");
+      return res.status(400).send("name already exists");
+    }
     console.log(data, file, "create data and file")
     if (file) {
       data = {
