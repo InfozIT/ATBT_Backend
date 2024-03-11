@@ -28,10 +28,10 @@ app.use('/entity', authVerify, Entite_router);
 app.use('/user', authVerify, User_router);
 // app.use('/entity',Entite_router);
 // app.use('/user', User_router);
-app.use('/team', authVerify, Team_router);
+app.use('/team', Team_router);
 app.use('/auth', Auth_router);
 app.use('/form', CreateForm_router);
-app.use('/meeting', authVerify, Meeting_router);
+app.use('/meeting', Meeting_router);
 app.use('/rbac', Role_router);
 app.use('/api', authVerify, emailRoute);
 
@@ -52,7 +52,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
 
 app.get('/', (req, res) => {
-  res.send("feat: user/entity/teams v-0.0")
+  res.send("user done")
 })
 // toggle 
 app.put('/toggle/:id', Toggle.Add_toggle)

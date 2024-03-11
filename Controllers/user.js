@@ -7,27 +7,18 @@ const mycon = require('../DB/mycon')
 const transporter = require('../utils/nodemailer')
 const saltRounds = 10;
 const formidable = require('formidable');
-const { Role, Module, Permission } = require('../models/index');
-const { generateToken } = require('../utils/utils');
-
-
 
 
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName, } = req.body;
-        let data = req.body;
-        const file = req.file;
+        const { email, role: roleName } = req.body;
+        const data = req.body;
         const password = generateRandomPassword();
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const existingUser = await db.User.findOne({ where: { name } });
-        if (existingUser) {
-            console.error("name already exists.");
-            return res.status(400).send("name already exists");
-        }
+
         // Retrieve role from the database
         const role = await db.Role.findOne({ where: { name: roleName } });
         if (!role) {
@@ -35,17 +26,12 @@ const Create_User = async (req, res) => {
             return res.status(404).send("Role not found");
         }
 
-        if (file) {
-            data = {
-                image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-                ...data,
-            }
-        }
         // Insert user data into the database
         const user = {
+            ...data,
+            image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
             RoleId: role.id,
             password: hashedPassword,
-            ...data
         };
 
         mycon.query('INSERT INTO Users SET ?', user, async (err, result) => {
@@ -139,9 +125,7 @@ async function sendEmail(email, password) {
 
     await transporter.sendMail(mailData);
 }
-
 const List_User = async (req, res) => {
-    const body = req.body
     // Extract query parameters
     const page = parseInt(req.query.page) || 1; // Default page is 1
     const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
@@ -149,6 +133,8 @@ const List_User = async (req, res) => {
     const search = req.query.search || ''; // Default search is empty strin
 
     let filter = req.body.filters || '';
+
+    console.log(filter, "filter")
 
     // Calculate offset
     const offset = (page - 1) * pageSize;
@@ -214,73 +200,21 @@ const List_User = async (req, res) => {
         });
     });
 };
-
-async function Login_User(req, res) {
+async function Login_User(email, password) {
     try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required." });
-        }
-
         const user = await User.findOne({
             where: {
                 email
             }
         });
-        if (!user) {
-            return res.status(404).json({ message: 'user not found.' });
-        }
-
-        if (!user.userstatus) {
-            return res.status(403).json({ message: 'Your account is inactive. Please contact the administrator.' });
-        }
-
         const passwordMatch = await bcrypt.compare(password, user.password);
-
-        if (!passwordMatch) {
-            return res.status(401).json({ message: "Invalid credentials." });
+        if (passwordMatch) {
+            return user;
+        } else {
+            throw new Error('Authentication failed');
         }
-
-        const roleId = user.RoleId;
-
-        const role = await Role.findOne({
-            where: { id: roleId },
-            include: [{
-                model: Permission,
-                include: [{
-                    model: Module,
-                    attributes: ['name']
-                }],
-                attributes: ['all', 'canCreate', 'canRead', 'canUpdate', 'canDelete']
-            }]
-        });
-
-        if (!role) {
-            return res.status(404).json({ message: "Role not found." });
-        }
-
-        const simplifiedRole = {
-            id: role.id,
-            name: role.name,
-            description: role.description,
-            Permissions: role.Permissions.map(permission => ({
-                module: permission.Modules.length ?
-                    permission.Modules[0].name
-                    : null,
-                all: permission.all,
-                canCreate: permission.canCreate,
-                canRead: permission.canRead,
-                canUpdate: permission.canUpdate,
-                canDelete: permission.canDelete,
-            }))
-        };
-
-        const token = generateToken(user.id, user.RoleId);
-        res.json({ role: simplifiedRole, user, token, success: true, message: "Login successful" });
     } catch (error) {
-        console.error("Login error:", error);
-        res.status(500).json({ message: "An unexpected error occurred." });
+        throw error;
     }
 }
 const Get_User = async (req, res) => {
@@ -309,58 +243,16 @@ const Get_User = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-// const Update_User = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         let data = req.body;
-//         let file = req.file;
-//         let image;
-//         if (file) {
-//             image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
-//             data = {
-//                 image,
-//                 ...data
-//             }
-//         }
-
-//         // Define the SQL query to update the user
-//         const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
-
-//         // Execute the update query
-//         mycon.query(updateQuery, [data, id], (error, updateResults) => {
-//             if (error) {
-//                 console.error("Error updating User:", error);
-//                 return res.status(500).json({ error: "Internal Server Error" });
-//             }
-//             res.status(201).send(`${id}`);
-//         });
-//     } catch (error) {
-//         console.error("Error updating User:", error);
-//         res.status(500).json({ error: "Internal Server Error" });
-//     }
-// };
-
 const Update_User = async (req, res) => {
     try {
         const { id } = req.params;
-        const { role: roleName } = req.body;
         let data = req.body;
-        const file = req.file;
-        let image;
+        let file = req.file;
 
-        // Find role in the database
-        const role = await db.Role.findOne({ where: { name: roleName } });
-        if (!role) {
-            console.error("Role not found.");
-            return res.status(404).send("Role not found");
-        } else {
-            data.RoleId = role.id;
-        }
-
-        // Check if file is uploaded
-        if (file) {
-            image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
-            data.image = image;
+        console.log(data, file, "update data");
+        data = {
+            image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+            ...data
         }
 
         // Define the SQL query to update the user
@@ -372,15 +264,14 @@ const Update_User = async (req, res) => {
                 console.error("Error updating User:", error);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
-            res.status(201).json(`${id}`);
+            res.status(200).json({ message: `User updated successfully ${id}` });
+
         });
     } catch (error) {
         console.error("Error updating User:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
 const Update_Password = async (req, res) => {
     try {
         const { newPassword } = req.body;

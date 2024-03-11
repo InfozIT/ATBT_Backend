@@ -1,30 +1,21 @@
 require('dotenv').config();
 var db = require('../models/index');
 const Entite = db.Entite;
+const { Op } = require('sequelize');
+
 const mycon = require('../DB/mycon')
+const nodemailer = require('nodemailer');
 
-
-const CreateEntiy = async (req, res) => {
+const CreateAdmin = async (req, res) => {
   try {
-    let name = req.body.name
-    let file = req.file;
-    let data = req.body;
-    console.log(req.body, "body")
-    const existingUser = await db.Entite.findOne({ where: { name } });
-    console.log(name, existingUser, "existin user")
-    if (existingUser) {
-      console.error("name already exists.");
-      return res.status(400).send("name already exists");
-    }
-    console.log(data, file, "create data and file")
-    if (file) {
-      data = {
-        image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-        ...data,
-      }
-    }
-    console.log(data)
-    mycon.query('INSERT INTO Entities SET ?', data, async (err, result) => {
+    console.log(req.file, req.body, "multer")
+    const data = req.body;
+    const user = {
+      ...data,
+      image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+    };
+
+    mycon.query('INSERT INTO Entities SET ?', user, async (err, result) => {
       if (err) {
         console.error('Error inserting data: ' + err.stack);
         return res.status(500).send('Error inserting data');
@@ -33,16 +24,16 @@ const CreateEntiy = async (req, res) => {
 
     });
   } catch (error) {
-    console.error("Error creating Entity:", error);
+    console.error("Error creating user:", error);
     res.status(500).send("Error creating user");
   }
 };
-const ListEntity = async (req, res) => {
-  const body = req.body
+const List_Entite = async (req, res) => {
   // Extract query parameters
   const page = parseInt(req.query.page) || 1; // Default page is 1
   const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
-  const search = req.query.search || ''; // Default search is empty string
+  const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+  const search = req.query.search || ''; // Default search is empty strin
 
   let filter = req.body.filters || '';
 
@@ -50,7 +41,7 @@ const ListEntity = async (req, res) => {
   const offset = (page - 1) * pageSize;
 
   // MySQL query to fetch paginated users
-  let sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`;
+  let sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
   if (!!filter) {
@@ -58,8 +49,15 @@ const ListEntity = async (req, res) => {
       if (value !== '') {
         sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
       }
+
     }
   }
+  // else{
+  //      sql +=  `SELECT * FROM Users`;
+  // }
+
+
+  sql += ` ORDER BY ${sortBy} DESC LIMIT ?, ?`;
 
   mycon.query(sql, [offset, pageSize], (err, result) => {
     if (err) {
@@ -69,7 +67,7 @@ const ListEntity = async (req, res) => {
     }
 
     // Execute the count query to get the total number of users
-    let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
+    let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
     // Add conditions for additional filter fields
     if (!!filter) {
@@ -79,6 +77,9 @@ const ListEntity = async (req, res) => {
         }
       }
     }
+    // else{
+    //     sqlCount += `SELECT COUNT(*) as total FROM Users`;
+    // }
 
     mycon.query(sqlCount, (err, countResult) => {
       if (err) {
@@ -90,18 +91,17 @@ const ListEntity = async (req, res) => {
       const totalPages = Math.ceil(totalUsers / pageSize);
 
       res.json({
-        Entites: result,
+        users: result,
         totalPages: totalPages,
         currentPage: page,
         pageSize: pageSize,
-        totalEntities: totalUsers,
-        startEntity: offset,
-        endEntity: offset + pageSize
+        totalUsers: totalUsers,
+        startUser: offset,
+        endUser: offset + pageSize
       });
     });
   });
 };
-
 
 const Get_Entite = (req, res) => {
   const entityId = req.params.id;
@@ -121,19 +121,16 @@ const Get_Entite = (req, res) => {
   });
 };
 
-const UpdateEntity = async (req, res) => {
+const Update_Entite = (req, res) => {
   try {
     const { id } = req.params;
     let data = req.body;
     let file = req.file;
-    let image;
-    console.log(data, file, "update data and file")
-    if (file) {
-      image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
-      data = {
-        image,
-        ...data
-      }
+
+    console.log(data, file, "update data");
+    data = {
+      image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+      ...data
     }
 
     // Define the SQL query to update the user
@@ -145,13 +142,14 @@ const UpdateEntity = async (req, res) => {
         console.error("Error updating User:", error);
         return res.status(500).json({ error: "Internal Server Error" });
       }
-      res.status(201).send(`${id}`);
+      res.status(200).json({ message: `User updated successfully ${id}` });
+
     });
   } catch (error) {
     console.error("Error updating User:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-};
+}
 
 
 
@@ -169,4 +167,4 @@ const Delete_Entite = async (req, res) => {
   }
 };
 
-module.exports = { CreateEntiy, ListEntity, UpdateEntity, Delete_Entite, Get_Entite }
+module.exports = { CreateAdmin, List_Entite, Update_Entite, Delete_Entite, Get_Entite }
