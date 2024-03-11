@@ -9,10 +9,10 @@ const CreateMeeting = async (req, res) => {
     let data = req.body;
     if (file) {
       data = {
-          image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-          ...data,
+        image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        ...data,
       }
-  }
+    }
     console.log(data)
     mycon.query('INSERT INTO Meetings SET ?', data, async (err, result) => {
       if (err) {
@@ -45,51 +45,52 @@ const ListMeetings = async (req, res) => {
 
   // Add conditions for additional filter fields
   if (!!filter) {
-      for (const [field, value] of Object.entries(filter)) {
-          if (value !== '') {
-              sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-          }
+    for (const [field, value] of Object.entries(filter)) {
+      if (value !== '') {
+        sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
       }
+    }
   }
 
   mycon.query(sql, [offset, pageSize], (err, result) => {
+    if (err) {
+      console.error('Error executing MySQL query: ' + err.stack);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    // Execute the count query to get the total number of users
+    let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (name LIKE '%${search}%')`;
+
+    // Add conditions for additional filter fields
+    if (!!filter) {
+      for (const [field, value] of Object.entries(filter)) {
+        if (value !== '') {
+          sqlCount += ` AND ${field} LIKE '%${value}%'`;
+        }
+      }
+    }
+
+    mycon.query(sqlCount, (err, countResult) => {
       if (err) {
-          console.error('Error executing MySQL query: ' + err.stack);
-          res.status(500).json({ error: 'Internal server error' });
-          return;
+        console.error('Error executing MySQL count query: ' + err.stack);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
       }
+      const totalUsers = countResult[0].total;
+      const totalPages = Math.ceil(totalUsers / pageSize);
 
-      // Execute the count query to get the total number of users
-      let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (name LIKE '%${search}%')`;
-
-      // Add conditions for additional filter fields
-      if (!!filter) {
-          for (const [field, value] of Object.entries(filter)) {
-              if (value !== '') {
-                  sqlCount += ` AND ${field} LIKE '%${value}%'`;
-              }
-          }
-      }
-
-      mycon.query(sqlCount, (err, countResult) => {
-          if (err) {
-              console.error('Error executing MySQL count query: ' + err.stack);
-              res.status(500).json({ error: 'Internal server error' });
-              return;
-          }
-          const totalUsers = countResult[0].total;
-          const totalPages = Math.ceil(totalUsers / pageSize);
-
-          res.json({
-              Meetings: result,
-              totalPages: totalPages,
-              currentPage: page,
-              pageSize: pageSize,
-              totalmeeting: totalUsers,
-              startmeeting: offset,
-              endmeeting: offset + pageSize
-          });
+      res.json({
+        Meetings: result,
+        totalPages: totalPages,
+        currentPage: page,
+        pageSize: pageSize,
+        totalmeeting: totalUsers,
+        startmeeting: offset,
+        endmeeting: offset + pageSize,
+        search
       });
+    });
   });
 };
 
@@ -114,32 +115,32 @@ const GetMeeting = (req, res) => {
 
 const UpdateMeetings = async (req, res) => {
   try {
-      const { id } = req.params;
-      let data = req.body;
-      let file = req.file;
-      let image;
-      if (file) {
-          image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
-          data = {
-              image,
-              ...data
-          }
+    const { id } = req.params;
+    let data = req.body;
+    let file = req.file;
+    let image;
+    if (file) {
+      image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+      data = {
+        image,
+        ...data
       }
+    }
 
-      // Define the SQL query to update the user
-      const updateQuery = `UPDATE Meetings SET ? WHERE id = ?`;
+    // Define the SQL query to update the user
+    const updateQuery = `UPDATE Meetings SET ? WHERE id = ?`;
 
-      // Execute the update query
-      mycon.query(updateQuery, [data, id], (error, updateResults) => {
-          if (error) {
-              console.error("Error updating User:", error);
-              return res.status(500).json({ error: "Internal Server Error" });
-          }
-          res.status(201).send(`${id}`);
-      });
+    // Execute the update query
+    mycon.query(updateQuery, [data, id], (error, updateResults) => {
+      if (error) {
+        console.error("Error updating User:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      res.status(201).send(`${id}`);
+    });
   } catch (error) {
-      console.error("Error updating User:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error updating User:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

@@ -8,56 +8,58 @@ const mycon = require('../DB/mycon')
 
 
 
-const CreateTeam = async (req, res) => { try {
-  let file = req.file;
-  let data = req.body;
-  if (file) {
-    data = {
+const CreateTeam = async (req, res) => {
+  try {
+    let file = req.file;
+    let data = req.body;
+    if (file) {
+      data = {
         image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
         ...data,
+      }
     }
-}
-  mycon.query('INSERT INTO Teams SET ?', data, async (err, result) => {
-    if (err) {
-      console.error('Error inserting data: ' + err.stack);
-      return res.status(500).send('Error inserting data');
-    }
-    res.status(201).send(`${result.insertId}`);
+    mycon.query('INSERT INTO Teams SET ?', data, async (err, result) => {
+      if (err) {
+        console.error('Error inserting data: ' + err.stack);
+        return res.status(500).send('Error inserting data');
+      }
+      res.status(201).send(`${result.insertId}`);
 
-  });
-} catch (error) {
-  console.error("Error creating Teams:", error);
-  res.status(500).send("Error creating Teams");
-}}
+    });
+  } catch (error) {
+    console.error("Error creating Teams:", error);
+    res.status(500).send("Error creating Teams");
+  }
+}
 
 const UpdateTeam = async (req, res) => {
   try {
-      const { id } = req.params;
-      let data = req.body;
-      let file = req.file;
-      let image;
-      if (file) {
-          image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
-          data = {
-              image,
-              ...data
-          }
+    const { id } = req.params;
+    let data = req.body;
+    let file = req.file;
+    let image;
+    if (file) {
+      image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+      data = {
+        image,
+        ...data
       }
+    }
 
-      // Define the SQL query to update the Teams
-      const updateQuery = `UPDATE Teams SET ? WHERE id = ?`;
+    // Define the SQL query to update the Teams
+    const updateQuery = `UPDATE Teams SET ? WHERE id = ?`;
 
-      // Execute the update query
-      mycon.query(updateQuery, [data, id], (error, updateResults) => {
-          if (error) {
-              console.error("Error updating Teams:", error);
-              return res.status(500).json({ error: "Internal Server Error" });
-          }
-          res.status(201).send(`${id}`);
-      });
+    // Execute the update query
+    mycon.query(updateQuery, [data, id], (error, updateResults) => {
+      if (error) {
+        console.error("Error updating Teams:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      res.status(201).send(`${id}`);
+    });
   } catch (error) {
-      console.error("Error updating Teams:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error updating Teams:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -92,51 +94,52 @@ const ListTeam = async (req, res) => {
 
   // Add conditions for additional filter fields
   if (!!filter) {
-      for (const [field, value] of Object.entries(filter)) {
-          if (value !== '') {
-              sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-          }
+    for (const [field, value] of Object.entries(filter)) {
+      if (value !== '') {
+        sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
       }
+    }
   }
 
   mycon.query(sql, [offset, pageSize], (err, result) => {
+    if (err) {
+      console.error('Error executing MySQL query: ' + err.stack);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    // Execute the count query to get the total number of users
+    let sqlCount = `SELECT COUNT(*) as total FROM Teams WHERE (name LIKE '%${search}%')`;
+
+    // Add conditions for additional filter fields
+    if (!!filter) {
+      for (const [field, value] of Object.entries(filter)) {
+        if (value !== '') {
+          sqlCount += ` AND ${field} LIKE '%${value}%'`;
+        }
+      }
+    }
+
+    mycon.query(sqlCount, (err, countResult) => {
       if (err) {
-          console.error('Error executing MySQL query: ' + err.stack);
-          res.status(500).json({ error: 'Internal server error' });
-          return;
+        console.error('Error executing MySQL count query: ' + err.stack);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
       }
+      const totalUsers = countResult[0].total;
+      const totalPages = Math.ceil(totalUsers / pageSize);
 
-      // Execute the count query to get the total number of users
-      let sqlCount = `SELECT COUNT(*) as total FROM Teams WHERE (name LIKE '%${search}%')`;
-
-      // Add conditions for additional filter fields
-      if (!!filter) {
-          for (const [field, value] of Object.entries(filter)) {
-              if (value !== '') {
-                  sqlCount += ` AND ${field} LIKE '%${value}%'`;
-              }
-          }
-      }
-
-      mycon.query(sqlCount, (err, countResult) => {
-          if (err) {
-              console.error('Error executing MySQL count query: ' + err.stack);
-              res.status(500).json({ error: 'Internal server error' });
-              return;
-          }
-          const totalUsers = countResult[0].total;
-          const totalPages = Math.ceil(totalUsers / pageSize);
-
-          res.json({
-              Teams: result,
-              totalPages: totalPages,
-              currentPage: page,
-              pageSize: pageSize,
-              totalteams: totalUsers,
-              startteam: offset,
-              endteam: offset + pageSize
-          });
+      res.json({
+        Teams: result,
+        totalPages: totalPages,
+        currentPage: page,
+        pageSize: pageSize,
+        totalteams: totalUsers,
+        startteam: offset,
+        endteam: offset + pageSize,
+        search
       });
+    });
   });
 };
 const getTeamDataById = (req, res) => {
@@ -157,4 +160,4 @@ const getTeamDataById = (req, res) => {
   });
 };
 
-module.exports = {CreateTeam,getTeamDataById,ListTeam,DeleteTeamById,UpdateTeam};
+module.exports = { CreateTeam, getTeamDataById, ListTeam, DeleteTeamById, UpdateTeam };

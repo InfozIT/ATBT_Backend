@@ -211,7 +211,8 @@ const List_User = async (req, res) => {
                 pageSize: pageSize,
                 totalUsers: totalUsers,
                 startUser: offset,
-                endUser: offset + pageSize
+                endUser: offset + pageSize,
+                search
             });
         });
     });

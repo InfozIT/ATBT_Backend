@@ -96,7 +96,8 @@ const ListEntity = async (req, res) => {
         pageSize: pageSize,
         totalEntities: totalUsers,
         startEntity: offset,
-        endEntity: offset + pageSize
+        endEntity: offset + pageSize,
+        search
       });
     });
   });
