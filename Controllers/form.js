@@ -317,6 +317,9 @@ const TeamFrom = async (req, res) => {
                 case 'file':
                     columnType = DataTypes.BLOB;
                     break;
+                case 'phonenumber':
+                        columnType = DataTypes.STRING;
+                        break;    
                 default:
                     columnType = DataTypes.JSON;
                     break;
