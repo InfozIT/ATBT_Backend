@@ -294,9 +294,8 @@ const Get_User = async (req, res) => {
         if (!rows.length) {
             return res.status(404).json({ error: 'User not found' });
         }
-
-        // Parse "userremarkshistory" property to JSON
         const user = rows[0];
+      
         res.status(200).json({ message: `Your id is: ${req.params.id}`, user });
     } catch (error) {
         console.error('Error fetching user:', error);

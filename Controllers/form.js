@@ -306,10 +306,10 @@ const TeamFrom = async (req, res) => {
                     columnType = DataTypes.BOOLEAN;
                     break;
                 case 'number':
-                    columnType = DataTypes.INTEGER;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'date':
-                    columnType = DataTypes.DATEONLY;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'time':
                     columnType = DataTypes.TIME;
@@ -385,8 +385,5 @@ const UpdateTableView = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
-
 
 module.exports = { GetAllLIST, TeamFrom, UserFrom, MeetingFrom, EntityFrom, UpdateTableView }
