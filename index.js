@@ -31,7 +31,7 @@ app.use('/user', authVerify, User_router);
 app.use('/team', authVerify, Team_router);
 app.use('/auth', Auth_router);
 app.use('/form', CreateForm_router);
-app.use('/meeting', authVerify, Meeting_router);
+app.use('/boardmeeting', authVerify, Meeting_router);
 app.use('/rbac', Role_router);
 app.use('/api', authVerify, emailRoute);
 
@@ -52,7 +52,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
 
 app.get('/', (req, res) => {
-  res.send("feat: user/entity/teams/meet")
+  res.send("feat: user/entity/teams v-0.0")
 })
 // toggle 
 app.put('/toggle/:id', Toggle.Add_toggle)
