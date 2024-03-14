@@ -52,7 +52,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
 
 app.get('/', (req, res) => {
-  res.send("feat: Beta222")
+  res.send("feat: Beta22444FDFF")
 })
 // toggle 
 app.put('/toggle/:id', Toggle.Add_toggle)
