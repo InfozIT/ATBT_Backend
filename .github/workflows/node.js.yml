@@ -26,5 +26,4 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build --if-present
-    - run:  pm2 start actions-runner/_work/ATBT_Backend/ATBT_Backend/index.js
-  
+    - run:  pm2 start /home/ubuntu/actions-runner/_work/ATBT_Backend/ATBT_Backend.index.js
