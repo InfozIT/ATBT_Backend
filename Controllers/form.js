@@ -65,7 +65,7 @@ const UserFrom = async (req, res) => {
                     columnType = DataTypes.STRING;
                     break;
                 case 'time':
-                    columnType = DataTypes.TIME;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'file':
                     columnType = DataTypes.STRING;
@@ -146,7 +146,7 @@ const EntityFrom = async (req, res) => {
                     columnType = DataTypes.STRING;
                     break;
                 case 'time':
-                    columnType = DataTypes.TIME;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'file':
                     columnType = DataTypes.BLOB;
@@ -231,7 +231,7 @@ const MeetingFrom = async (req, res) => {
                     columnType = DataTypes.STRING;
                     break;
                 case 'time':
-                    columnType = DataTypes.TIME;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'file':
                     columnType = DataTypes.BLOB;
@@ -315,7 +315,7 @@ const TeamFrom = async (req, res) => {
                     columnType = DataTypes.STRING;
                     break;
                 case 'time':
-                    columnType = DataTypes.TIME;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'file':
                     columnType = DataTypes.BLOB;
