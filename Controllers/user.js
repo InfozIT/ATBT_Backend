@@ -217,6 +217,81 @@ const List_User = async (req, res) => {
         });
     });
 };
+const ListUserPub = async (req, res) => {
+    const body = req.body
+    // Extract query parameters
+    const page = parseInt(req.query.page) || 1; // Default page is 1
+    const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
+    const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+    const search = req.query.search || ''; // Default search is empty strin
+
+    let filter = req.body.filters || '';
+
+    // Calculate offset
+    const offset = (page - 1) * pageSize;
+
+    // MySQL query to fetch paginated users
+    let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+    // Add conditions for additional filter fields
+    if (!!filter) {
+        for (const [field, value] of Object.entries(filter)) {
+            if (value !== '') {
+                sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+            }
+        }
+    }
+    // else{
+    //      sql +=  `SELECT * FROM Users`;
+    // }
+
+
+    sql += ` ORDER BY ${sortBy} DESC LIMIT ?, ?`;
+
+    mycon.query(sql, [offset, pageSize], (err, result) => {
+        if (err) {
+            console.error('Error executing MySQL query: ' + err.stack);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+
+        // Execute the count query to get the total number of users
+        let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+        // Add conditions for additional filter fields
+        if (!!filter) {
+            for (const [field, value] of Object.entries(filter)) {
+                if (value !== '') {
+                    sqlCount += ` AND ${field} LIKE '%${value}%'`;
+                }
+            }
+        }
+        // else{
+        //     sqlCount += `SELECT COUNT(*) as total FROM Users`;
+        // }
+
+        mycon.query(sqlCount, (err, countResult) => {
+            if (err) {
+                console.error('Error executing MySQL count query: ' + err.stack);
+                res.status(500).json({ error: 'Internal server error' });
+                return;
+            }
+            const totalUsers = countResult[0].total;
+            const totalPages = Math.ceil(totalUsers / pageSize);
+
+            res.json({
+                users: result,
+                totalPages: totalPages,
+                currentPage: page,
+                pageSize: pageSize,
+                totalUsers: totalUsers,
+                startUser: offset,
+                endUser: offset + pageSize,
+                search
+            });
+        });
+    });
+};
 
 async function Login_User(req, res) {
     try {
@@ -490,4 +565,5 @@ module.exports = {
     Update_Password,
     Reset_Password,
     Delete_User,
+    ListUserPub
 };

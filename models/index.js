@@ -30,7 +30,7 @@ Role.belongsToMany(Permission, { through: 'RolePermission' });
 Permission.belongsToMany(Role, { through: 'RolePermission' });
 
 
-Permission.belongsToMany(Module, { through: db.PermissionModule }); // Verify that Permission model is defined properly
+Permission.belongsToMany(Module, { through: db.PermissionModule });
 Module.belongsToMany(Permission, { through: db.PermissionModule });
 
 User.belongsTo(Role);

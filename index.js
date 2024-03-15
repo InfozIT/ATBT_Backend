@@ -12,6 +12,7 @@ const Auth_router = require('./Routes/Auth')
 const User_router = require('./Routes/User')
 const Role_router = require('./Routes/Role')
 const Team_router = require('./Routes/Team')
+const Pub_router = require('./Routes/Public')
 const Meeting_router = require('./Routes/Meeting')
 const CreateForm_router = require("./Routes/CreateForm")
 const errorHander = require('./middlewares/errorHandler.middleware')
@@ -28,6 +29,7 @@ app.use('/entity', authVerify, Entite_router);
 app.use('/user', authVerify, User_router);
 // app.use('/entity',Entite_router);
 // app.use('/user', User_router);
+app.use('/public/list', Pub_router);
 app.use('/team', authVerify, Team_router);
 app.use('/auth', Auth_router);
 app.use('/form', CreateForm_router);

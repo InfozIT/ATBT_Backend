@@ -142,6 +142,72 @@ const ListTeam = async (req, res) => {
     });
   });
 };
+
+const ListTeamPub = async (req, res) => {
+  const body = req.body
+  // Extract query parameters
+  const page = parseInt(req.query.page) || 1; // Default page is 1
+  const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
+  const search = req.query.search || ''; // Default search is empty string
+
+  let filter = req.body.filters || '';
+
+  // Calculate offset
+  const offset = (page - 1) * pageSize;
+
+  // MySQL query to fetch paginated users
+  let sql = `SELECT * FROM Teams WHERE (name LIKE '%${search}%')`;
+
+  // Add conditions for additional filter fields
+  if (!!filter) {
+    for (const [field, value] of Object.entries(filter)) {
+      if (value !== '') {
+        sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+      }
+    }
+  }
+
+  mycon.query(sql, [offset, pageSize], (err, result) => {
+    if (err) {
+      console.error('Error executing MySQL query: ' + err.stack);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    // Execute the count query to get the total number of users
+    let sqlCount = `SELECT COUNT(*) as total FROM Teams WHERE (name LIKE '%${search}%')`;
+
+    // Add conditions for additional filter fields
+    if (!!filter) {
+      for (const [field, value] of Object.entries(filter)) {
+        if (value !== '') {
+          sqlCount += ` AND ${field} LIKE '%${value}%'`;
+        }
+      }
+    }
+
+    mycon.query(sqlCount, (err, countResult) => {
+      if (err) {
+        console.error('Error executing MySQL count query: ' + err.stack);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+      }
+      const totalUsers = countResult[0].total;
+      const totalPages = Math.ceil(totalUsers / pageSize);
+
+      res.json({
+        Teams: result,
+        totalPages: totalPages,
+        currentPage: page,
+        pageSize: pageSize,
+        totalteams: totalUsers,
+        startteam: offset,
+        endteam: offset + pageSize,
+        search
+      });
+    });
+  });
+};
 const getTeamDataById = (req, res) => {
   const entityId = req.params.id;
   mycon.query('SELECT * FROM Teams WHERE id = ?', entityId, (err, result) => {
@@ -160,4 +226,4 @@ const getTeamDataById = (req, res) => {
   });
 };
 
-module.exports = { CreateTeam, getTeamDataById, ListTeam, DeleteTeamById, UpdateTeam };
+module.exports = { CreateTeam, getTeamDataById, ListTeam, DeleteTeamById, UpdateTeam,ListTeamPub };
