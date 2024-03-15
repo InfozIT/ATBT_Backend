@@ -143,7 +143,7 @@ const EntityFrom = async (req, res) => {
                     columnType = DataTypes.INTEGER;
                     break;
                 case 'date':
-                    columnType = DataTypes.DATEONLY;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'time':
                     columnType = DataTypes.TIME;
@@ -228,7 +228,7 @@ const MeetingFrom = async (req, res) => {
                     columnType = DataTypes.INTEGER;
                     break;
                 case 'date':
-                    columnType = DataTypes.DATEONLY;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'time':
                     columnType = DataTypes.TIME;
@@ -312,7 +312,7 @@ const TeamFrom = async (req, res) => {
                     columnType = DataTypes.INTEGER;
                     break;
                 case 'date':
-                    columnType = DataTypes.DATEONLY;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'time':
                     columnType = DataTypes.TIME;
