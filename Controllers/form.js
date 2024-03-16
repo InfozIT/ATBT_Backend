@@ -58,7 +58,7 @@ const UserFrom = async (req, res) => {
                 case 'number':
                     columnType = DataTypes.STRING;
                     break;
-	        case 'phonenumber':
+	            case 'phonenumber':
                     columnType = DataTypes.STRING;
                     break; 
                 case 'date':
@@ -140,19 +140,19 @@ const EntityFrom = async (req, res) => {
                     columnType = DataTypes.BOOLEAN;
                     break;
                 case 'number':
-                    columnType = DataTypes.INTEGER;
+                    columnType = DataTypes.STRING;
                     break;
+	            case 'phonenumber':
+                    columnType = DataTypes.STRING;
+                    break; 
                 case 'date':
                     columnType = DataTypes.STRING;
                     break;
-                    case 'phonenumber':
-                        columnType = DataTypes.STRING;
-                        break; 
                 case 'time':
                     columnType = DataTypes.STRING;
                     break;
                 case 'file':
-                    columnType = DataTypes.BLOB;
+                    columnType = DataTypes.STRING;
                     break;
                 default:
                     columnType = DataTypes.JSON;
@@ -227,12 +227,12 @@ const MeetingFrom = async (req, res) => {
                 case 'checkbox':
                     columnType = DataTypes.BOOLEAN;
                     break;
-                    case 'phonenumber':
-                        columnType = DataTypes.STRING;
-                        break; 
                 case 'number':
-                    columnType = DataTypes.INTEGER;
+                    columnType = DataTypes.STRING;
                     break;
+	            case 'phonenumber':
+                    columnType = DataTypes.STRING;
+                    break; 
                 case 'date':
                     columnType = DataTypes.STRING;
                     break;
@@ -240,7 +240,7 @@ const MeetingFrom = async (req, res) => {
                     columnType = DataTypes.STRING;
                     break;
                 case 'file':
-                    columnType = DataTypes.BLOB;
+                    columnType = DataTypes.STRING;
                     break;
                 default:
                     columnType = DataTypes.JSON;
@@ -314,12 +314,12 @@ const TeamFrom = async (req, res) => {
                 case 'checkbox':
                     columnType = DataTypes.BOOLEAN;
                     break;
-                    case 'phonenumber':
-                        columnType = DataTypes.STRING;
-                        break; 
                 case 'number':
-                    columnType = DataTypes.INTEGER;
+                    columnType = DataTypes.STRING;
                     break;
+	            case 'phonenumber':
+                    columnType = DataTypes.STRING;
+                    break; 
                 case 'date':
                     columnType = DataTypes.STRING;
                     break;
@@ -327,7 +327,7 @@ const TeamFrom = async (req, res) => {
                     columnType = DataTypes.STRING;
                     break;
                 case 'file':
-                    columnType = DataTypes.BLOB;
+                    columnType = DataTypes.STRING;
                     break;
                 default:
                     columnType = DataTypes.JSON;
