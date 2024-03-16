@@ -130,6 +130,18 @@ const getAllRoles = async (req, res) => {
   });
 };
 
+const getAllRolesPuB = async (req, res) => {
+  mycon.query('SELECT * FROM Roles', (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      res.status(500).send('Error retrieving data');
+      return;
+    }
+    const names = result.map(item => item.name);
+    res.status(200).json(names);
+  })
+}
+
 
 const getRolePermissionsById = async (req, res) => {
   try {
@@ -255,4 +267,4 @@ const deleteRoleById = async (req, res) => {
   }
 };
 
-module.exports = { createRoleWithPermissions, updateRoleWithPermissions, getAllRoles, deleteRoleById, getRolePermissionsById };
+module.exports = { createRoleWithPermissions, updateRoleWithPermissions, getAllRoles, deleteRoleById, getRolePermissionsById,getAllRolesPuB };
