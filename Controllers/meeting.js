@@ -29,69 +29,188 @@ const CreateMeeting = async (req, res) => {
 };
 
 const ListMeetings = async (req, res) => {
-  const body = req.body
-  // Extract query parameters
-  const page = parseInt(req.query.page) || 1; // Default page is 1
-  const pageSize = parseInt(req.query.pageSize) || 5; // Default page size is 5
-  const search = req.query.search || ''; // Default search is empty string
+  const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+  const filters = {};
+  for (const key in restQueries) {
+      filters[key] = restQueries[key];
 
-  let filter = req.body.filters || '';
-
-  // Calculate offset
-  const offset = (page - 1) * pageSize;
+  }
+  const offset = (parseInt(page) - 1) * (parseInt(pageSize));
 
   // MySQL query to fetch paginated users
+
   let sql = `SELECT * FROM Meetings WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
-  if (!!filter) {
-    for (const [field, value] of Object.entries(filter)) {
+
+  for (const [field, value] of Object.entries(filters)) {
+
       if (value !== '') {
-        sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+
+          sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+
       }
-    }
+
   }
-
   mycon.query(sql, [offset, pageSize], (err, result) => {
-    if (err) {
-      console.error('Error executing MySQL query: ' + err.stack);
-      res.status(500).json({ error: 'Internal server error' });
-      return;
-    }
 
-    // Execute the count query to get the total number of users
-    let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (name LIKE '%${search}%')`;
-
-    // Add conditions for additional filter fields
-    if (!!filter) {
-      for (const [field, value] of Object.entries(filter)) {
-        if (value !== '') {
-          sqlCount += ` AND ${field} LIKE '%${value}%'`;
-        }
-      }
-    }
-
-    mycon.query(sqlCount, (err, countResult) => {
       if (err) {
-        console.error('Error executing MySQL count query: ' + err.stack);
-        res.status(500).json({ error: 'Internal server error' });
-        return;
-      }
-      const totalUsers = countResult[0].total;
-      const totalPages = Math.ceil(totalUsers / pageSize);
 
-      res.json({
-        Meetings: result,
-        totalPages: totalPages,
-        currentPage: page,
-        pageSize: pageSize,
-        totalmeeting: totalUsers,
-        startmeeting: offset,
-        endmeeting: offset + pageSize,
-        search
+          console.error('Error executing MySQL query: ' + err.stack);
+
+          res.status(500).json({ error: 'Internal server error' });
+
+          return;
+      }
+
+      // Execute the count query to get the total number of users
+
+      let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (name LIKE '%${search}%')`;
+
+      // Add conditions for additional filter fields
+
+      for (const [field, value] of Object.entries(filters)) {
+
+          if (value !== '') {
+
+              sqlCount += ` AND ${field} LIKE '%${value}%'`;
+
+          }
+
+      }
+
+      mycon.query(sqlCount, (err, countResult) => {
+
+          if (err) {
+
+              console.error('Error executing MySQL count query: ' + err.stack);
+
+              res.status(500).json({ error: 'Internal server error' });
+
+              return;
+
+          }
+
+          const totalUsers = countResult[0].total;
+
+          const totalPages = Math.ceil(totalUsers / pageSize);
+
+          res.json({
+
+            Meetings: result,
+
+              totalPages: totalPages,
+
+              currentPage: page,
+
+              pageSize: pageSize,
+
+              totalMeetings: totalUsers,
+
+              startMeetings: offset,
+
+              endUser: offset + pageSize,
+
+              search
+
+          });
+
       });
-    });
+
   });
+
+};
+const ListMeetingsPub = async (req, res) => {
+  const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+  const filters = {};
+  for (const key in restQueries) {
+      filters[key] = restQueries[key];
+
+  }
+  const offset = (parseInt(page) - 1) * (parseInt(pageSize));
+
+  // MySQL query to fetch paginated users
+
+  let sql = `SELECT * FROM Meetings WHERE (name LIKE '%${search}%')`;
+
+  // Add conditions for additional filter fields
+
+  for (const [field, value] of Object.entries(filters)) {
+
+      if (value !== '') {
+
+          sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+
+      }
+
+  }
+  mycon.query(sql, [offset, pageSize], (err, result) => {
+
+      if (err) {
+
+          console.error('Error executing MySQL query: ' + err.stack);
+
+          res.status(500).json({ error: 'Internal server error' });
+
+          return;
+      }
+
+      // Execute the count query to get the total number of users
+
+      let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (name LIKE '%${search}%')`;
+
+      // Add conditions for additional filter fields
+
+      for (const [field, value] of Object.entries(filters)) {
+
+          if (value !== '') {
+
+              sqlCount += ` AND ${field} LIKE '%${value}%'`;
+
+          }
+
+      }
+
+      mycon.query(sqlCount, (err, countResult) => {
+
+          if (err) {
+
+              console.error('Error executing MySQL count query: ' + err.stack);
+
+              res.status(500).json({ error: 'Internal server error' });
+
+              return;
+
+          }
+
+          const totalUsers = countResult[0].total;
+
+          const totalPages = Math.ceil(totalUsers / pageSize);
+
+          res.json({
+
+            Meetings: result,
+
+              totalPages: totalPages,
+
+              currentPage: page,
+
+              pageSize: pageSize,
+
+              totalMeetings: totalUsers,
+
+              startMeetings: offset,
+
+              endUser: offset + pageSize,
+
+              search
+
+          });
+
+      });
+
+  });
+
 };
 
 
@@ -163,5 +282,6 @@ module.exports = {
   ListMeetings,
   GetMeeting,
   UpdateMeetings,
-  DeleteMeeting
+  DeleteMeeting,
+  ListMeetingsPub
 };

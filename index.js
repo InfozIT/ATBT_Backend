@@ -11,6 +11,7 @@ const emailRoute = require('./mail/mail')
 const Auth_router = require('./Routes/Auth')
 const User_router = require('./Routes/User')
 const Role_router = require('./Routes/Role')
+const Public_router = require('./Routes/public')
 const Team_router = require('./Routes/Team')
 const Meeting_router = require('./Routes/Meeting')
 const CreateForm_router = require("./Routes/CreateForm")
@@ -31,8 +32,9 @@ app.use('/user', authVerify, User_router);
 app.use('/team', authVerify, Team_router);
 app.use('/auth', Auth_router);
 app.use('/form', CreateForm_router);
-app.use('/meeting', authVerify, Meeting_router);
+app.use('/boardmeeting', authVerify, Meeting_router);
 app.use('/rbac', Role_router);
+app.use('/public', Public_router);
 app.use('/api', authVerify, emailRoute);
 
 

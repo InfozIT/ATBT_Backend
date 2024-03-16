@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     members: {
-      type: DataTypes.STRING,
+      type: DataTypes.JSON,
       allowNull: true
       // allowNull defaults to true
     },

@@ -56,13 +56,16 @@ const UserFrom = async (req, res) => {
                     columnType = DataTypes.BOOLEAN;
                     break;
                 case 'number':
-                    columnType = DataTypes.INTEGER;
+                    columnType = DataTypes.STRING;
                     break;
+	            case 'phonenumber':
+                    columnType = DataTypes.STRING;
+                    break; 
                 case 'date':
-                    columnType = DataTypes.DATEONLY;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'time':
-                    columnType = DataTypes.TIME;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'file':
                     columnType = DataTypes.STRING;
@@ -137,16 +140,19 @@ const EntityFrom = async (req, res) => {
                     columnType = DataTypes.BOOLEAN;
                     break;
                 case 'number':
-                    columnType = DataTypes.INTEGER;
+                    columnType = DataTypes.STRING;
                     break;
+	            case 'phonenumber':
+                    columnType = DataTypes.STRING;
+                    break; 
                 case 'date':
-                    columnType = DataTypes.DATEONLY;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'time':
-                    columnType = DataTypes.TIME;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'file':
-                    columnType = DataTypes.BLOB;
+                    columnType = DataTypes.STRING;
                     break;
                 default:
                     columnType = DataTypes.JSON;
@@ -222,16 +228,19 @@ const MeetingFrom = async (req, res) => {
                     columnType = DataTypes.BOOLEAN;
                     break;
                 case 'number':
-                    columnType = DataTypes.INTEGER;
+                    columnType = DataTypes.STRING;
                     break;
+	            case 'phonenumber':
+                    columnType = DataTypes.STRING;
+                    break; 
                 case 'date':
-                    columnType = DataTypes.DATEONLY;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'time':
-                    columnType = DataTypes.TIME;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'file':
-                    columnType = DataTypes.BLOB;
+                    columnType = DataTypes.STRING;
                     break;
                 default:
                     columnType = DataTypes.JSON;
@@ -306,16 +315,19 @@ const TeamFrom = async (req, res) => {
                     columnType = DataTypes.BOOLEAN;
                     break;
                 case 'number':
-                    columnType = DataTypes.INTEGER;
+                    columnType = DataTypes.STRING;
                     break;
+	            case 'phonenumber':
+                    columnType = DataTypes.STRING;
+                    break; 
                 case 'date':
-                    columnType = DataTypes.DATEONLY;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'time':
-                    columnType = DataTypes.TIME;
+                    columnType = DataTypes.STRING;
                     break;
                 case 'file':
-                    columnType = DataTypes.BLOB;
+                    columnType = DataTypes.STRING;
                     break;
                 default:
                     columnType = DataTypes.JSON;
