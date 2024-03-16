@@ -250,6 +250,18 @@ const List_Pub = async (req, res) => {
 
 };
 
+const getAllRolesPuB = async (req, res) => {
+  mycon.query('SELECT * FROM Roles', (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      res.status(500).send('Error retrieving data');
+      return;
+    }
+    const names = result.map(item => item.name);
+    res.status(200).json(names);
+  })
+}
+
 
 const getRolePermissionsById = async (req, res) => {
   try {
