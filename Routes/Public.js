@@ -9,11 +9,11 @@ const User = require('../Controllers/user')
 
 
 
-router.get('/list/role', role.List_Pub)
-router.get('/list/entity', Entity.ListEntityPub)
-router.get('/list/boardmings',Boardmings.ListMeetingsPub)
-router.get('/list/team', Team.List_Team_Pub)
-router.get('/list/user',User.List_User_Pub)
+router.post('/list/role', role.List_Pub)
+router.post('/list/entity', Entity.ListEntityPub)
+router.post('/list/boardmings',Boardmings.ListMeetingsPub)
+router.post('/list/team', Team.List_Team_Pub)
+router.post('/list/user',User.List_User_Pub)
 
 
 module.exports = router;
