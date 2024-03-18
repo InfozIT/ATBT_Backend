@@ -133,7 +133,7 @@ const getAllRoles = async (req, res) => {
 
           res.json({
 
-            Roles: result,
+            roles: result,
 
               totalPages: totalPages,
 
@@ -226,7 +226,7 @@ const List_Pub = async (req, res) => {
 
           res.json({
 
-            Roles: result,
+            roles: result,
 
               totalPages: totalPages,
 
