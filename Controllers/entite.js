@@ -86,9 +86,7 @@ const ListEntityPub = async (req, res) => {
               sqlCount += ` AND ${field} LIKE '%${value}%'`;
 
           }
-
       }
-
       mycon.query(sqlCount, (err, countResult) => {
 
           if (err) {
@@ -104,10 +102,11 @@ const ListEntityPub = async (req, res) => {
           const totalUsers = countResult[0].total;
 
           const totalPages = Math.ceil(totalUsers / pageSize);
+          const final = result.map(item => { return {name: item.name,id: item.id,image:item.image} });
 
           res.json({
 
-            Entities: result,
+            Entites: final,
 
               totalPages: totalPages,
 
@@ -201,7 +200,7 @@ const ListEntity = async (req, res) => {
 
           res.json({
 
-            Entities: result,
+            Entites: result,
 
               totalPages: totalPages,
 

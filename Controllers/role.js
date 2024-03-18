@@ -208,10 +208,10 @@ const List_Pub = async (req, res) => {
 
           const totalPages = Math.ceil(totalUsers / pageSize);
 
-          const names = result.map(item => item.name);
+          const final = result.map(item => { return {name: item.name,id: item.id} });
           res.json({
 
-            Roles: names,
+            Roles: final,
 
               totalPages: totalPages,
 
