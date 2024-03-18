@@ -117,7 +117,7 @@ const getAllRoles = async (req, res) => {
 
           res.json({
 
-            Roles: result,
+            roles: result,
 
               totalPages: totalPages,
 
@@ -211,7 +211,7 @@ const List_Pub = async (req, res) => {
           const final = result.map(item => { return {name: item.name,id: item.id} });
           res.json({
 
-            Roles: final,
+            roles: final,
 
               totalPages: totalPages,
 
