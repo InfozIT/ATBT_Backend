@@ -54,7 +54,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
 
 app.get('/', (req, res) => {
-  res.send("feat: RFID")
+  res.send("feat: RFID1")
 })
 // toggle 
 app.put('/toggle/:id', Toggle.Add_toggle)
