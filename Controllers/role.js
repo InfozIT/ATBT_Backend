@@ -48,22 +48,6 @@ const createRoleWithPermissions = async (req, res) => {
 
 };
 
-// const getAllRoles = async (req, res) => {
-//   try {
-//     // Fetch all roles
-//     const roles = await Role.findAll();
-//     // If no roles found, return empty array
-//     if (!roles || roles.length === 0) {
-//       return res.status(404).json({ message: 'No roles found' });
-//     }
-//     // Return roles
-//     res.status(200).json({ roles });
-//   } catch (error) {
-//     console.error('Error fetching roles:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
 const getAllRoles = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
   const filters = {};
@@ -224,9 +208,10 @@ const List_Pub = async (req, res) => {
 
           const totalPages = Math.ceil(totalUsers / pageSize);
 
+          const names = result.map(item => item.name);
           res.json({
 
-            Roles: result,
+            Roles: names,
 
               totalPages: totalPages,
 
@@ -249,18 +234,6 @@ const List_Pub = async (req, res) => {
   });
 
 };
-
-const getAllRolesPuB = async (req, res) => {
-  mycon.query('SELECT * FROM Roles', (err, result) => {
-    if (err) {
-      console.error('Error retrieving data: ' + err.stack);
-      res.status(500).send('Error retrieving data');
-      return;
-    }
-    const names = result.map(item => item.name);
-    res.status(200).json(names);
-  })
-}
 
 
 const getRolePermissionsById = async (req, res) => {

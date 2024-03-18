@@ -49,7 +49,7 @@ const ListEntityPub = async (req, res) => {
 
   // MySQL query to fetch paginated users
 
-  let sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+  let sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
 
@@ -75,7 +75,7 @@ const ListEntityPub = async (req, res) => {
 
       // Execute the count query to get the total number of users
 
-      let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+      let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
 
       // Add conditions for additional filter fields
 
@@ -143,7 +143,7 @@ const ListEntity = async (req, res) => {
 
   // MySQL query to fetch paginated users
 
-  let sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+  let sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
 
@@ -169,7 +169,7 @@ const ListEntity = async (req, res) => {
 
       // Execute the count query to get the total number of users
 
-      let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+      let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
 
       // Add conditions for additional filter fields
 

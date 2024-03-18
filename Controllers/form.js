@@ -239,8 +239,6 @@ const MeetingFrom = async (req, res) => {
                 case 'time':
                     columnType = DataTypes.STRING;
                     break;
-		case 'phonenumber':
-                    columnType = DataTypes.STRING;	    
                 case 'file':
                     columnType = DataTypes.STRING;
                     break;
