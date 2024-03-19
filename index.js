@@ -61,7 +61,7 @@ app.get('/', (req, res) => {
       </head>
       <body>
         <h1>New DB</h1>
-        <h2>Beta Image Fix</h2>
+        <h2>Beta Image Fix Join remove</h2>
       </body>
     </html>
   `);
