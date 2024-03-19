@@ -4,7 +4,7 @@ const mycon = mysql.createConnection({
     host: 'atbt.cdwoi4ikm5i7.ap-south-1.rds.amazonaws.com',
     user: 'admin',
     password: 'rootadmin',
-    database: 'ATBT'
+    database: 'JoinDb'
   });
   
   // Connect to the database

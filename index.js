@@ -54,8 +54,18 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
 
 app.get('/', (req, res) => {
-  res.send("feat: RFID1")
-})
+  res.send(`
+    <html>
+      <head>
+        <title>Updates</title>
+      </head>
+      <body>
+        <h1>New DB</h1>
+        <h2>Beta Image Fix</h2>
+      </body>
+    </html>
+  `);
+});
 // toggle 
 app.put('/toggle/:id', Toggle.Add_toggle)
 app.use(errorHander);
