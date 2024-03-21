@@ -8,11 +8,18 @@ db.sequelize = sequelize
 
 
 // Importing models
-db.Entite = require('./Entity')(sequelize, DataTypes);
-db.From = require('./Form')(sequelize, DataTypes)
-db.Meeting = require('./Meeting')(sequelize, DataTypes)
-db.Team = require('./Team')(sequelize, DataTypes)
+// modules
+db.Entity = require('./Entity')(sequelize, DataTypes);
+db.From = require('./Form')(sequelize, DataTypes);
+db.Meeting = require('./Meeting')(sequelize, DataTypes);
+db.Team = require('./Team')(sequelize, DataTypes);
 db.User = require('./User')(sequelize, DataTypes);
+db.Task = require('./Task')(sequelize, DataTypes);
+
+// module associations with user module
+
+
+// role
 db.Role = require('./Role')(sequelize, DataTypes);
 db.Module = require('./Module')(sequelize, DataTypes);
 db.Permission = require('./Permission')(sequelize, DataTypes);
@@ -23,19 +30,40 @@ db.PermissionModule = require('./PermissionModule')(sequelize, DataTypes);
 const Role = db.Role;
 const Module = db.Module;
 const Permission = db.Permission
+const Entity = db.Entity
+const Meeting = db.Meeting
+const Team = db.Team
 const User = db.User
+const Task = db.Task
+
 
 // Define associations
 Role.belongsToMany(Permission, { through: 'RolePermission' });
 Permission.belongsToMany(Role, { through: 'RolePermission' });
 
 
-Permission.belongsToMany(Module, { through: db.PermissionModule }); // Verify that Permission model is defined properly
+Permission.belongsToMany(Module, { through: db.PermissionModule });
 Module.belongsToMany(Permission, { through: db.PermissionModule });
 
 User.belongsTo(Role);
 
+
+User.belongsToMany(Entity, { through: "UserEntity" });
+Entity.belongsToMany(User, { through: "UserEntity" });
+
+User.belongsToMany(Team, { through: "UserTeam" });
+Team.belongsToMany(User, { through: "UserTeam" });
+
+User.belongsToMany(Meeting, { through: "UserMeeting" });
+Meeting.belongsToMany(User, { through: "UserMeeting" });
+
+User.belongsToMany(Task, { through: "UserTask" });
+Task.belongsToMany(User, { through: "UserTask" });
+
+
+
+
+
 db.sequelize.sync();
-//db.sequelize.sync({alter:true});
 console.log("All models were alter successfully.");
 module.exports = db;

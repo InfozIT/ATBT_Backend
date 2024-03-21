@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
-       createdBy: {
+    createdBy: {
       type: DataTypes.STRING,
       allowNull: true,
 

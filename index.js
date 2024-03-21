@@ -60,8 +60,16 @@ app.get('/', (req, res) => {
         <title>Updates</title>
       </head>
       <body>
-        <h1>New DB</h1>
-        <h2>Beta Image Fix Join remove</h2>
+        <h1>Join DB</h1>
+        <h2>Static Joins Added</h2>
+        <ul>
+          <li>
+          get data with join table
+          </li>
+          <li>
+          implement joins dynamically
+          </li>
+        </ul>
       </body>
     </html>
   `);

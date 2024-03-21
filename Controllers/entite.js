@@ -1,6 +1,6 @@
 require('dotenv').config();
 var db = require('../models/index');
-const Entite = db.Entite;
+const Entity = db.Entity;
 const mycon = require('../DB/mycon')
 
 
@@ -9,12 +9,18 @@ const CreateEntiy = async (req, res) => {
     let name = req.body.name
     let file = req.file;
     let data = req.body;
+    const membersId = [4, 12]
+    const members = await db.User.findAll({
+      where: {
+        id: membersId
+      }
+    });
     console.log(req.body, "body")
-    const existingUser = await db.Entite.findOne({ where: { name } });
-    console.log(name, existingUser, "existin user")
-    if (existingUser) {
-      console.error("name already exists.");
-      return res.status(400).send("name already exists");
+    const existingEntity = await db.Entity.findOne({ where: { name } });
+    console.log(name, existingEntity, "existin entity")
+    if (existingEntity) {
+      console.error("entity already exists.");
+      return res.status(400).send("entity already exists");
     }
     console.log(data, file, "create data and file")
     if (file) {
@@ -29,6 +35,10 @@ const CreateEntiy = async (req, res) => {
         console.error('Error inserting data: ' + err.stack);
         return res.status(500).send('Error inserting data');
       }
+      const createdEntity = await db.Entity.findOne({ where: { id: result.insertId } });
+      if (createdEntity && members) {
+        await createdEntity.addUsers(members);
+      }
       res.status(201).send(`${result.insertId}`);
 
     });
@@ -42,7 +52,7 @@ const ListEntityPub = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
   const filters = {};
   for (const key in restQueries) {
-      filters[key] = restQueries[key];
+    filters[key] = restQueries[key];
 
   }
   const offset = (parseInt(page) - 1) * (parseInt(pageSize));
@@ -55,76 +65,76 @@ const ListEntityPub = async (req, res) => {
 
   for (const [field, value] of Object.entries(filters)) {
 
-      if (value !== '') {
+    if (value !== '') {
 
-          sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+      sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
 
-      }
+    }
 
   }
   mycon.query(sql, [offset, pageSize], (err, result) => {
 
+    if (err) {
+
+      console.error('Error executing MySQL query: ' + err.stack);
+
+      res.status(500).json({ error: 'Internal server error' });
+
+      return;
+    }
+
+    // Execute the count query to get the total number of users
+
+    let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
+
+    // Add conditions for additional filter fields
+
+    for (const [field, value] of Object.entries(filters)) {
+
+      if (value !== '') {
+
+        sqlCount += ` AND ${field} LIKE '%${value}%'`;
+
+      }
+    }
+    mycon.query(sqlCount, (err, countResult) => {
+
       if (err) {
 
-          console.error('Error executing MySQL query: ' + err.stack);
+        console.error('Error executing MySQL count query: ' + err.stack);
 
-          res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error' });
 
-          return;
+        return;
+
       }
 
-      // Execute the count query to get the total number of users
+      const totalUsers = countResult[0].total;
 
-      let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
+      const totalPages = Math.ceil(totalUsers / pageSize);
+      const final = result.map(item => { return { name: item.name, id: item.id, image: item.image } });
 
-      // Add conditions for additional filter fields
+      res.json({
 
-      for (const [field, value] of Object.entries(filters)) {
+        Entites: final,
 
-          if (value !== '') {
+        totalPages: totalPages,
 
-              sqlCount += ` AND ${field} LIKE '%${value}%'`;
+        currentPage: page,
 
-          }
-      }
-      mycon.query(sqlCount, (err, countResult) => {
+        pageSize: pageSize,
 
-          if (err) {
+        totalEntities: totalUsers,
 
-              console.error('Error executing MySQL count query: ' + err.stack);
+        startEntities: offset,
 
-              res.status(500).json({ error: 'Internal server error' });
+        endUser: offset + pageSize,
 
-              return;
-
-          }
-
-          const totalUsers = countResult[0].total;
-
-          const totalPages = Math.ceil(totalUsers / pageSize);
-          const final = result.map(item => { return {name: item.name,id: item.id,image:item.image} });
-
-          res.json({
-
-            Entites: final,
-
-              totalPages: totalPages,
-
-              currentPage: page,
-
-              pageSize: pageSize,
-
-              totalEntities: totalUsers,
-
-              startEntities: offset,
-
-              endUser: offset + pageSize,
-
-              search
-
-          });
+        search
 
       });
+
+    });
 
   });
 
@@ -135,7 +145,7 @@ const ListEntity = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
   const filters = {};
   for (const key in restQueries) {
-      filters[key] = restQueries[key];
+    filters[key] = restQueries[key];
 
   }
   const offset = (parseInt(page) - 1) * (parseInt(pageSize));
@@ -148,77 +158,77 @@ const ListEntity = async (req, res) => {
 
   for (const [field, value] of Object.entries(filters)) {
 
-      if (value !== '') {
+    if (value !== '') {
 
-          sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+      sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
 
-      }
+    }
 
   }
   mycon.query(sql, [offset, pageSize], (err, result) => {
 
+    if (err) {
+
+      console.error('Error executing MySQL query: ' + err.stack);
+
+      res.status(500).json({ error: 'Internal server error' });
+
+      return;
+    }
+
+    // Execute the count query to get the total number of users
+
+    let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
+
+    // Add conditions for additional filter fields
+
+    for (const [field, value] of Object.entries(filters)) {
+
+      if (value !== '') {
+
+        sqlCount += ` AND ${field} LIKE '%${value}%'`;
+
+      }
+
+    }
+
+    mycon.query(sqlCount, (err, countResult) => {
+
       if (err) {
 
-          console.error('Error executing MySQL query: ' + err.stack);
+        console.error('Error executing MySQL count query: ' + err.stack);
 
-          res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error' });
 
-          return;
-      }
-
-      // Execute the count query to get the total number of users
-
-      let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
-
-      // Add conditions for additional filter fields
-
-      for (const [field, value] of Object.entries(filters)) {
-
-          if (value !== '') {
-
-              sqlCount += ` AND ${field} LIKE '%${value}%'`;
-
-          }
+        return;
 
       }
 
-      mycon.query(sqlCount, (err, countResult) => {
+      const totalUsers = countResult[0].total;
 
-          if (err) {
+      const totalPages = Math.ceil(totalUsers / pageSize);
 
-              console.error('Error executing MySQL count query: ' + err.stack);
+      res.json({
 
-              res.status(500).json({ error: 'Internal server error' });
+        Entites: result,
 
-              return;
+        totalPages: totalPages,
 
-          }
+        currentPage: page,
 
-          const totalUsers = countResult[0].total;
+        pageSize: pageSize,
 
-          const totalPages = Math.ceil(totalUsers / pageSize);
+        totalEntities: totalUsers,
 
-          res.json({
+        startEntities: offset,
 
-            Entites: result,
+        endUser: offset + pageSize,
 
-              totalPages: totalPages,
-
-              currentPage: page,
-
-              pageSize: pageSize,
-
-              totalEntities: totalUsers,
-
-              startEntities: offset,
-
-              endUser: offset + pageSize,
-
-              search
-
-          });
+        search
 
       });
+
+    });
 
   });
 
@@ -280,7 +290,7 @@ const UpdateEntity = async (req, res) => {
 
 const Delete_Entite = async (req, res) => {
   try {
-    await Entite.destroy({
+    await Entity.destroy({
       where: { id: req.params.id },
       // truncate: true
     });
@@ -292,4 +302,4 @@ const Delete_Entite = async (req, res) => {
   }
 };
 
-module.exports = { CreateEntiy, ListEntity, UpdateEntity, Delete_Entite, Get_Entite,ListEntityPub }
+module.exports = { CreateEntiy, ListEntity, UpdateEntity, Delete_Entite, Get_Entite, ListEntityPub }

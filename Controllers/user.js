@@ -16,7 +16,7 @@ const { generateToken } = require('../utils/utils');
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName, } = req.body;
+        const { email, role: roleName, entityname } = req.body;
         let data = req.body;
         const file = req.file;
         const password = generateRandomPassword();
@@ -29,7 +29,8 @@ const Create_User = async (req, res) => {
             console.error("Email already exists.");
             return res.status(400).send("Email already exists");
         }
-
+        const getEntity = await db.Entity.findOne({ where: { name: entityname } });
+        console.log(getEntity, "getEntity")
         // Retrieve role from the database
         const role = await db.Role.findOne({ where: { name: roleName } });
         if (!role) {
@@ -58,6 +59,10 @@ const Create_User = async (req, res) => {
 
             try {
                 // Send email to the user
+                const createdUser = await db.User.findOne({ where: { email } });
+                if (getEntity) {
+                    await createdUser.addEntity(getEntity);
+                }
                 await sendEmail(email, password);
 
                 // Respond with success message
@@ -302,7 +307,7 @@ const List_User_Pub = async (req, res) => {
 
             const totalPages = Math.ceil(totalUsers / pageSize);
 
-            const final = result.map(item => { return {name: item.name,id: item.id,email:item.email,image:item.image} });
+            const final = result.map(item => { return { name: item.name, id: item.id, email: item.email, image: item.image } });
 
 
             res.json({
@@ -606,7 +611,7 @@ const RenewPassword = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        bcrypt.compare(oldPassword,user.password , async (err, result) => {
+        bcrypt.compare(oldPassword, user.password, async (err, result) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Internal Server Error' });
@@ -614,13 +619,13 @@ const RenewPassword = async (req, res) => {
             if (!result) {
                 return res.status(401).json({ error: 'Old password is incorrect' });
             }
-             let hashedNewPassword = await bcrypt.hash(newPassword, 10);
-            
-             await User.update({ password: hashedNewPassword }, {
+            let hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+            await User.update({ password: hashedNewPassword }, {
                 where: {
-                  id: id
+                    id: id
                 }
-              });
+            });
 
             res.status(200).json({ message: `Password reset successfully` });
         });
