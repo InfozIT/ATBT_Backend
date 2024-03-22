@@ -158,93 +158,63 @@ const ListTeam = async (req, res) => {
   const filters = {};
   for (const key in restQueries) {
     filters[key] = restQueries[key];
-
   }
-  const offset = (parseInt(page) - 1) * (parseInt(pageSize));
+  const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-  // MySQL query to fetch paginated users
-
+  // MySQL query to fetch paginated teams
   let sql = `SELECT * FROM Teams WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
-
   for (const [field, value] of Object.entries(filters)) {
-
     if (value !== '') {
-
       sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-
     }
-
   }
-  mycon.query(sql, [offset, pageSize], (err, result) => {
 
+  // Add LIMIT and OFFSET clauses to the SQL query
+  sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+
+  mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
     if (err) {
-
       console.error('Error executing MySQL query: ' + err.stack);
-
       res.status(500).json({ error: 'Internal server error' });
-
       return;
     }
 
-    // Execute the count query to get the total number of users
-
+    // Execute the count query to get the total number of teams
     let sqlCount = `SELECT COUNT(*) as total FROM Teams WHERE (name LIKE '%${search}%')`;
 
     // Add conditions for additional filter fields
-
     for (const [field, value] of Object.entries(filters)) {
-
       if (value !== '') {
-
         sqlCount += ` AND ${field} LIKE '%${value}%'`;
-
       }
-
     }
 
     mycon.query(sqlCount, (err, countResult) => {
-
       if (err) {
-
         console.error('Error executing MySQL count query: ' + err.stack);
-
         res.status(500).json({ error: 'Internal server error' });
-
         return;
-
       }
 
-      const totalUsers = countResult[0].total;
-
-      const totalPages = Math.ceil(totalUsers / pageSize);
+      const totalTeams = countResult[0].total;
+      const totalPages = Math.ceil(totalTeams / pageSize);
 
       res.json({
-
         Teams: result,
-
-        totalPages: totalPages,
-
-        currentPage: page,
-
-        pageSize: pageSize,
-
-        totalTeams: totalUsers,
-
-        startTeams: offset,
-
-        endTeams: offset + pageSize,
-
+        totalPages: parseInt(totalPages),
+        currentPage: parseInt(page),
+        pageSize: parseInt(pageSize),
+        totalTeams: parseInt(totalTeams),
+        startTeam: parseInt(offset) + 1, // Correct the start team index
+        endTeam: parseInt(offset) + parseInt(pageSize), // Correct the end team index
         search
-
       });
-
     });
-
   });
-
 };
+
 
 const List_Team_Pub = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
@@ -317,17 +287,17 @@ const List_Team_Pub = async (req, res) => {
 
         Teams: result,
 
-        totalPages: totalPages,
+        totalPages: parseInt(totalPages),
 
-        currentPage: page,
+        currentPage: parseInt(page),
 
-        pageSize: pageSize,
+        pageSize: parseInt(pageSize),
 
-        totalTeams: totalUsers,
+        totalTeams: parseInt(totalUsers),
 
-        startTeams: offset,
+        startTeam: parseInt(offset),
 
-        endTeams: offset + pageSize,
+        endTeam: parseInt(offset + pageSize),
 
         search
 

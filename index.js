@@ -61,7 +61,7 @@ app.get('/', (req, res) => {
       </head>
       <body>
         <h1>Join DB</h1>
-        <h2>Static Joins Added</h2>
+        <h2>Fix: pageSize</h2>
         <ul>
           <li>
           get data with join table

@@ -118,17 +118,17 @@ const ListEntityPub = async (req, res) => {
 
         Entites: final,
 
-        totalPages: totalPages,
+        totalPages: parseInt(totalPages),
 
-        currentPage: page,
+        currentPage: parseInt(page),
 
-        pageSize: pageSize,
+        pageSize: parseInt(pageSize),
 
-        totalEntities: totalUsers,
+        totalEntities: parseInt(totalUsers),
 
-        startEntities: offset,
+        startEntity: parseInt(offset),
 
-        endUser: offset + pageSize,
+        endEntity: parseInt(offset + pageSize),
 
         search
 
@@ -146,92 +146,61 @@ const ListEntity = async (req, res) => {
   const filters = {};
   for (const key in restQueries) {
     filters[key] = restQueries[key];
-
   }
-  const offset = (parseInt(page) - 1) * (parseInt(pageSize));
+  const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-  // MySQL query to fetch paginated users
-
+  // MySQL query to fetch paginated entities
   let sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
-
   for (const [field, value] of Object.entries(filters)) {
-
     if (value !== '') {
-
       sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-
     }
-
   }
-  mycon.query(sql, [offset, pageSize], (err, result) => {
 
+  // Add LIMIT and OFFSET clauses to the SQL query
+  sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+
+  mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
     if (err) {
-
       console.error('Error executing MySQL query: ' + err.stack);
-
       res.status(500).json({ error: 'Internal server error' });
-
       return;
     }
 
-    // Execute the count query to get the total number of users
-
+    // Execute the count query to get the total number of entities
     let sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
 
     // Add conditions for additional filter fields
-
     for (const [field, value] of Object.entries(filters)) {
-
       if (value !== '') {
-
         sqlCount += ` AND ${field} LIKE '%${value}%'`;
-
       }
-
     }
 
     mycon.query(sqlCount, (err, countResult) => {
-
       if (err) {
-
         console.error('Error executing MySQL count query: ' + err.stack);
-
         res.status(500).json({ error: 'Internal server error' });
-
         return;
-
       }
 
-      const totalUsers = countResult[0].total;
-
-      const totalPages = Math.ceil(totalUsers / pageSize);
+      const totalEntities = countResult[0].total;
+      const totalPages = Math.ceil(totalEntities / pageSize);
 
       res.json({
-
-        Entites: result,
-
-        totalPages: totalPages,
-
-        currentPage: page,
-
-        pageSize: pageSize,
-
-        totalEntities: totalUsers,
-
-        startEntities: offset,
-
-        endUser: offset + pageSize,
-
+        Entities: result,
+        totalPages: parseInt(totalPages),
+        currentPage: parseInt(page),
+        pageSize: parseInt(pageSize),
+        totalEntities: parseInt(totalEntities),
+        startEntity: parseInt(offset) + 1, // Correct the start entity index
+        endEntity: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
         search
-
       });
-
     });
-
   });
-
 };
 
 

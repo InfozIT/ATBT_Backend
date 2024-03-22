@@ -45,93 +45,63 @@ const ListMeetings = async (req, res) => {
   const filters = {};
   for (const key in restQueries) {
     filters[key] = restQueries[key];
-
   }
-  const offset = (parseInt(page) - 1) * (parseInt(pageSize));
+  const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-  // MySQL query to fetch paginated users
-
+  // MySQL query to fetch paginated meetings
   let sql = `SELECT * FROM Meetings WHERE (name LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
-
   for (const [field, value] of Object.entries(filters)) {
-
     if (value !== '') {
-
       sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-
     }
-
   }
-  mycon.query(sql, [offset, pageSize], (err, result) => {
 
+  // Add LIMIT and OFFSET clauses to the SQL query
+  sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+
+  mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
     if (err) {
-
       console.error('Error executing MySQL query: ' + err.stack);
-
       res.status(500).json({ error: 'Internal server error' });
-
       return;
     }
 
-    // Execute the count query to get the total number of users
-
+    // Execute the count query to get the total number of meetings
     let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (name LIKE '%${search}%')`;
 
     // Add conditions for additional filter fields
-
     for (const [field, value] of Object.entries(filters)) {
-
       if (value !== '') {
-
         sqlCount += ` AND ${field} LIKE '%${value}%'`;
-
       }
-
     }
 
     mycon.query(sqlCount, (err, countResult) => {
-
       if (err) {
-
         console.error('Error executing MySQL count query: ' + err.stack);
-
         res.status(500).json({ error: 'Internal server error' });
-
         return;
-
       }
 
-      const totalUsers = countResult[0].total;
-
-      const totalPages = Math.ceil(totalUsers / pageSize);
+      const totalMeetings = countResult[0].total;
+      const totalPages = Math.ceil(totalMeetings / pageSize);
 
       res.json({
-
         Meetings: result,
-
-        totalPages: totalPages,
-
-        currentPage: page,
-
-        pageSize: pageSize,
-
-        totalMeetings: totalUsers,
-
-        startMeetings: offset,
-
-        endUser: offset + pageSize,
-
+        totalPages: parseInt(totalPages),
+        currentPage: parseInt(page),
+        pageSize: parseInt(pageSize),
+        totalMeetings: parseInt(totalMeetings),
+        startMeeting: parseInt(offset) + 1, // Correct the start meeting index
+        endMeeting: parseInt(offset) + parseInt(pageSize), // Correct the end meeting index
         search
-
       });
-
     });
-
   });
-
 };
+
 const ListMeetingsPub = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
   const filters = {};
@@ -203,17 +173,17 @@ const ListMeetingsPub = async (req, res) => {
 
         Meetings: result,
 
-        totalPages: totalPages,
+        totalPages: parseInt(totalPages),
 
-        currentPage: page,
+        currentPage: parseInt(page),
 
-        pageSize: pageSize,
+        pageSize: parseInt(pageSize),
 
-        totalMeetings: totalUsers,
+        totalMeetings: parseInt(totalUsers),
 
-        startMeetings: offset,
+        startMeeting: parseInt(offset),
 
-        endUser: offset + pageSize,
+        endMeeting: parseInt(offset + pageSize),
 
         search
 
