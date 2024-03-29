@@ -1,26 +1,15 @@
 module.exports = (sequelize, DataTypes) => {
   const Meeting = sequelize.define('Meeting', {
     // Model attributes are defined here
-    name: {
+    meetingnumber: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: "Name"
-
     },
     date: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    time: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    venue: {
-      type: DataTypes.STRING,
-      // allowNull defaults to true
-      allowNull: true
-    },
-    members: {
+    invitees: {
       type: DataTypes.JSON,
       allowNull: true
       // allowNull defaults to true
