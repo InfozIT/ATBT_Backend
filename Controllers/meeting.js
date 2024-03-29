@@ -49,7 +49,7 @@ const ListMeetings = async (req, res) => {
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
   // MySQL query to fetch paginated meetings
-  let sql = `SELECT * FROM Meetings WHERE (name LIKE '%${search}%')`;
+  let sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
   for (const [field, value] of Object.entries(filters)) {
@@ -69,7 +69,7 @@ const ListMeetings = async (req, res) => {
     }
 
     // Execute the count query to get the total number of meetings
-    let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (name LIKE '%${search}%')`;
+    let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
 
     // Add conditions for additional filter fields
     for (const [field, value] of Object.entries(filters)) {
@@ -113,7 +113,7 @@ const ListMeetingsPub = async (req, res) => {
 
   // MySQL query to fetch paginated users
 
-  let sql = `SELECT * FROM Meetings WHERE (name LIKE '%${search}%')`;
+  let sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
 
   // Add conditions for additional filter fields
 
@@ -139,7 +139,7 @@ const ListMeetingsPub = async (req, res) => {
 
     // Execute the count query to get the total number of users
 
-    let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (name LIKE '%${search}%')`;
+    let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
 
     // Add conditions for additional filter fields
 
