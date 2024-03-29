@@ -72,6 +72,9 @@ app.get('/', (req, res) => {
           <li>
           Added pool connection to db aux
           </li>
+          <li>
+          modified search as per id in BM
+          </li>
         </ul>
       </body>
     </html>
