@@ -69,6 +69,9 @@ app.get('/', (req, res) => {
           <li>
           implement joins dynamically
           </li>
+          <li>
+          Added pool connection to db aux
+          </li>
         </ul>
       </body>
     </html>
