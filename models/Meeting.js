@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
-    invitees: {
+    members: {
       type: DataTypes.JSON,
       allowNull: true
       // allowNull defaults to true

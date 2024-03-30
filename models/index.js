@@ -51,19 +51,15 @@ User.belongsTo(Role);
 User.belongsToMany(Entity, { through: "UserEntity" });
 Entity.belongsToMany(User, { through: "UserEntity" });
 
-User.belongsToMany(Team, { through: "UserTeam" });
-Team.belongsToMany(User, { through: "UserTeam" });
+Entity.hasMany(Meeting); // One Entity can have many Meetings
+Meeting.belongsTo(Entity);
 
-User.belongsToMany(Meeting, { through: "UserMeeting" });
-Meeting.belongsToMany(User, { through: "UserMeeting" });
-
-User.belongsToMany(Task, { through: "UserTask" });
-Task.belongsToMany(User, { through: "UserTask" });
+Team.hasMany(Meeting); // One Entity can have many Meetings
+Meeting.belongsTo(Team);
 
 
 
 
-
-db.sequelize.sync();
+db.sequelize.sync({alter:true});
 console.log("All models were alter successfully.");
 module.exports = db;
