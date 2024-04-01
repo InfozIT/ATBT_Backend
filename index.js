@@ -90,6 +90,7 @@ app.get('/', (req, res) => {
           GET  https://atbtbeta.infozit.com/team/add </br>
           GET  https://atbtbeta.infozit.com/task/entity/group/40 </br>
           GET  https://atbtbeta.infozit.com/task/team/group/41 </br>
+          POST https://atbtbeta.infozit.com/boardmeeting/add?entity=7 </br>
 
 
           </li>
