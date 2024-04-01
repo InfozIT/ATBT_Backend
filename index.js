@@ -85,10 +85,11 @@ app.get('/', (req, res) => {
           fix entity name 412024.
           </li>
           <li>
-          feat... Entity & Meeting (members) joined 412024.
-          https://atbtbeta.infozit.com/team/add </br>
-          https://atbtbeta.infozit.com/task/entity/group/40 </br>
-          https://atbtbeta.infozit.com/task/team/group/41 </br>
+          feat... Entity & Meeting (members) joined 412024. </br>
+
+          GET  https://atbtbeta.infozit.com/team/add </br>
+          GET  https://atbtbeta.infozit.com/task/entity/group/40 </br>
+          GET  https://atbtbeta.infozit.com/task/team/group/41 </br>
 
 
           </li>
