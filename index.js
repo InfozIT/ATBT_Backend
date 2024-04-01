@@ -86,9 +86,9 @@ app.get('/', (req, res) => {
           </li>
           <li>
           feat... Entity & Meeting (members) joined 412024.
-          https://atbtbeta.infozit.com/team/add
-          https://atbtbeta.infozit.com/task/entity/group/40
-          https://atbtbeta.infozit.com/task/team/group/41
+          https://atbtbeta.infozit.com/team/add </br>
+          https://atbtbeta.infozit.com/task/entity/group/40 </br>
+          https://atbtbeta.infozit.com/task/team/group/41 </br>
 
 
           </li>
