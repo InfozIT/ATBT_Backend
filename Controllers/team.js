@@ -6,18 +6,23 @@ var db = require('../models/index');
 const mycon = require('../DB/mycon')
 
 
-
-
 const CreateTeam = async (req, res) => {
   try {
+    let name = req.body.name
     let file = req.file;
     let data = req.body;
-    const membersId = [4, 12]
+    const membersId = [4, 12]  // In future it will come from frontend
     const members = await db.User.findAll({
       where: {
         id: membersId
       }
     });
+    const existingEntity = await db.Team.findOne({ where: { name } });
+    console.log(name, existingEntity, "existin entity")
+    if (existingEntity) {
+      console.error("entity already exists.");
+      return res.status(400).send("entity already exists");
+    }
     if (file) {
       data = {
         image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
@@ -29,18 +34,19 @@ const CreateTeam = async (req, res) => {
         console.error('Error inserting data: ' + err.stack);
         return res.status(500).send('Error inserting data');
       }
-      const createdTeam = await db.Team.findOne({ where: { id: result.insertId } });
-      if (createdTeam && members) {
-        await createdTeam.addUsers(members);
+      const createdEntity = await db.Team.findOne({ where: { id: result.insertId } });
+      if (createdEntity && members) {
+        await createdEntity.addUsers(members);
       }
       res.status(201).send(`${result.insertId}`);
 
     });
   } catch (error) {
-    console.error("Error creating Teams:", error);
-    res.status(500).send("Error creating Teams");
+    console.error("Error creating Entity:", error);
+    res.status(500).send("Error creating user");
   }
-}
+};
+
 
 const UpdateTeam = async (req, res) => {
   try {

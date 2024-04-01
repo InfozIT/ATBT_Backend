@@ -9,7 +9,7 @@ const CreateEntiy = async (req, res) => {
     let name = req.body.name
     let file = req.file;
     let data = req.body;
-    const membersId = [4, 12]
+    const membersId = [4, 12]  // In future it will come from frontend
     const members = await db.User.findAll({
       where: {
         id: membersId

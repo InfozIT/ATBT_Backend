@@ -4,8 +4,8 @@ const task = require('../Controllers/task')
 
 
 
-
-router.get('/group/list/:id', task.ListTeam)
+router.get('/entity/group/:id', task.ListEntiyGroup)
+router.get('/team/group/:id', task.ListTeamGroup)
 
 
 
