@@ -44,7 +44,7 @@ const ListEntiyGroup = async (req, res) =>  {
 const ListTeamGroup = async (req, res) =>  {
   const bmId = req.params.id;
   const ids = [];
-  mycon.query('SELECT members, EntityId, TeamId FROM Meetings WHERE id = ?', bmId, (err, result) => {
+  mycon.query('SELECT members,TeamId FROM Meetings WHERE id = ?', bmId, (err, result) => {
     if (err) {
       console.error('Error retrieving data: ' + err.stack);
       res.status(500).send('Error retrieving data');
@@ -54,12 +54,12 @@ const ListTeamGroup = async (req, res) =>  {
       res.status(404).send('Entity data not found');
       return;
     }
-    var EntID = (result[0].EntityId);
+    var EntID = (result[0].TeamId);
     // Iterate over each member and push their id into ids array
     for (let i = 0; i < result[0].members.length; i++) {
       ids.push(result[0].members[i].id);
     }
-    mycon.query('SELECT * FROM UserEntity WHERE  = ?', EntID, (err, result1) => {
+    mycon.query('SELECT * FROM UserTeam WHERE TeamId = ?', EntID, (err, result1) => {
       if (err) {
         console.error('Error retrieving data: ' + err.stack);
         res.status(500).send('Error retrieving data');
@@ -78,5 +78,6 @@ const ListTeamGroup = async (req, res) =>  {
     });
   });
 };
+
 
 module.exports = { ListEntiyGroup,ListTeamGroup };
