@@ -85,7 +85,7 @@ app.get('/', (req, res) => {
           fix entity name 412024.
           </li>
           <li>
-          feat Entity & Meeting (members) joined 412024.
+          feat... Entity & Meeting (members) joined 412024.
           </li>
         </ul>
       </body>
