@@ -16,7 +16,7 @@ const { generateToken } = require('../utils/utils');
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName, entityname } = req.body;
+        const { email, role: roleName, name: entityname } = req.body;
         let data = req.body;
         const file = req.file;
         const password = generateRandomPassword();
