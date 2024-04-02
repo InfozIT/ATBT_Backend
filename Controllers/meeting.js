@@ -5,59 +5,6 @@ const Team = db.Team
 const Entity = db.Entity
 
 
-// const CreateMeeting = async (req, res) => {
-//   try {
-//     let file = req.file;
-//     let data = req.body;
-//     let Query = req.query;
-
-//     // Extracting entityId and teamId from query parameters
-//     const entityId = Query?.entity ?? null;
-//     const teamId = Query?.team ?? null;
-//     console.log(entityId, teamId ,"ruyckvlbjz; spdHAPISWJVFPOERJFUIQhdiscn[ qddf[0DQNFN0")
-
-//     // Using either Sequelize or direct SQL query consistently
-
-//     if (file) {
-//       data = {
-//         image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-//         ...data,
-//       };
-//     }
-
-//     // Inserting data into the Meetings table
-//     console.log(data, "jkbkjdbkjsabvkjsbkvjbkjsbkjvbv")
-//     if (entityId )
-//     mycon.query('INSERT INTO Meetings SET ?', data, async (err, result) => {
-//       if (err) {
-//         console.error('Error inserting data: ' + err.stack);
-//         return res.status(500).send('Error inserting data');
-//       }
-
-//       const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
-      
-//       // Associating the created meeting with an entity or team
-//       if (createdMeeting) {
-//         if (entityId){
-//           const entity = await Entity.findOne({ where: { id: entityId } });
-//           await createdMeeting.setEntity(entity);
-//           console.log(entity, "safafIOAbcnanSXNiniNIOn");
-//         }else if(teamId) {
-//           const team = await Team.findOne({ where: { id: teamId } });
-//           await createdMeeting.setTeam(team);
-//         }
-//       }
-
-//       console.log(createdMeeting, "createdMeeting");
-//       res.status(201).send(`${result.insertId}`);
-//     });
-//   } catch (error) {
-//     console.error("Error creating Entity:", error);
-//     res.status(500).send("Error creating user");
-//   }
-// };
-
-
 const CreateMeeting = async (req, res) => {
   try {
     let file = req.file;
@@ -89,12 +36,10 @@ const CreateMeeting = async (req, res) => {
 
     // Associating the created meeting with an entity or team
     if (createdMeeting) {
-      console.log("inside meeting")
       if (entityId) {
         const entity = await Entity.findOne({ where: { id: entityId } });
         await createdMeeting.setEntity(entity);
       } else if (teamId) {
-        console.log("inside team")
         const team = await Team.findOne({ where: { id: teamId } });
         await createdMeeting.setTeam(team);
       }
