@@ -1,6 +1,7 @@
 require('dotenv').config();
 var db = require('../models/index');
 const Entity = db.Entity;
+const Access = db.UserAccess;
 const mycon = require('../DB/mycon')
 
 
@@ -97,7 +98,7 @@ const ListEntityPub = async (req, res) => {
 
       }
     }
-    mycon.query(sqlCount, (err, countResult) => {
+    mycon.query(sqlCount, async (err, countResult) => {
 
       if (err) {
 
@@ -112,6 +113,10 @@ const ListEntityPub = async (req, res) => {
       const totalUsers = countResult[0].total;
 
       const totalPages = Math.ceil(totalUsers / pageSize);
+
+      const accessdata  = await db.UserAccess.findOne({ where: { user_id : 22} });
+      console.log(accessdata,"accessdata")
+
       const final = result.map(item => { return { name: item.name, id: item.id, image: item.image } });
 
       res.json({

@@ -185,7 +185,7 @@ const List_User = async (req, res) => {
             }
         }
 
-        mycon.query(sqlCount, (err, countResult) => {
+        mycon.query(sqlCount, async (err, countResult) => {
             if (err) {
                 console.error('Error executing MySQL count query: ' + err.stack);
                 res.status(500).json({ error: 'Internal server error' });
@@ -194,17 +194,44 @@ const List_User = async (req, res) => {
 
             const totalUsers = countResult[0].total;
             const totalPages = Math.ceil(totalUsers / pageSize);
+            const accessdata = await db.UserAccess.findOne({ where: { user_id: 22 } });
+            console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
+            if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+                res.json({
+                    users: result,
+                    totalPages: parseInt(totalPages),
+                    currentPage: parseInt(page),
+                    pageSize: parseInt(pageSize),
+                    totalUsers: parseInt(totalUsers),
+                    startUser: parseInt(offset) + 1, // Correct the start user index
+                    endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
+                    search
+                });
+            } else if (!accessdata) {
+                res.json({
+                    users: "Please connect to Admin for data Access",
 
-            res.json({
-                users: result,
-                totalPages: parseInt(totalPages),
-                currentPage: parseInt(page),
-                pageSize: parseInt(pageSize),
-                totalUsers: parseInt(totalUsers),
-                startUser: parseInt(offset) + 1, // Correct the start user index
-                endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
-                search
-            });
+                });
+            } else if(!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+                mycon.query('SELECT * FROM UserEntity WHERE EntityId = ?', accessdata.entity_id, (err, result1) => {
+                    if (err) {
+                      console.error('Error retrieving data: ' + err.stack);
+                      res.status(500).send('Error retrieving data');
+                      return;
+                    }
+                    if (result1.length === 0) {
+                      res.status(404).send('Entity data not found');
+                      return;
+                    }
+                    for (let i = 0; i < result1.length; i++) {
+                      ids.push(result1[i].UserId);
+                    }
+                    const uniq = [...new Set(ids)];
+
+                    // res.status(200).json({ ids: uniq });
+
+                  });
+            }
         });
     });
 };
@@ -306,7 +333,6 @@ const List_User_Pub = async (req, res) => {
 
 };
 
-
 async function Login_User(req, res) {
     try {
         const { email, password } = req.body;
@@ -383,8 +409,6 @@ const Get_User = async (req, res) => {
         if (!rows.length) {
             return res.status(404).json({ error: 'User not found' });
         }
-
-        // Parse "userremarkshistory" property to JSON
         const user = rows[0];
         res.status(200).json({ message: `Your id is: ${req.params.id}`, user });
     } catch (error) {
