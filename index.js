@@ -6,6 +6,7 @@ const path = require('path');
 const upload = require('./utils/store')
 require('./models')
 const Entite_router = require('./Routes/Entity')
+const DataShairing_router = require('./Routes/Acces')
 const Toggle = require('./Controllers/toggle')
 const emailRoute = require('./mail/mail')
 const Auth_router = require('./Routes/Auth')
@@ -33,6 +34,8 @@ app.use('/user', authVerify, User_router);
 // app.use('/user', User_router);
 app.use('/team', authVerify, Team_router);
 app.use('/auth', Auth_router);
+app.use('/access',DataShairing_router);
+
 app.use('/form', CreateForm_router);
 app.use('/boardmeeting', authVerify, Meeting_router);
 app.use('/rbac', Role_router);

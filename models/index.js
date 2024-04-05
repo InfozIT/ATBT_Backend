@@ -15,6 +15,7 @@ db.Meeting = require('./Meeting')(sequelize, DataTypes);
 db.Team = require('./Team')(sequelize, DataTypes);
 db.User = require('./User')(sequelize, DataTypes);
 db.Task = require('./Task')(sequelize, DataTypes);
+db.UserAccess = require('./UserAccess')(sequelize, DataTypes);
 
 // module associations with user module
 
@@ -63,6 +64,6 @@ Meeting.belongsTo(Team);
 
 
 
-db.sequelize.sync({alter:true});
+db.sequelize.sync();
 console.log("All models were alter successfully.");
 module.exports = db;
