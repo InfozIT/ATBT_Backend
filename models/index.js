@@ -48,9 +48,8 @@ Module.belongsToMany(Permission, { through: db.PermissionModule });
 
 User.belongsTo(Role);
 
-
-User.belongsToMany(Entity, { through: "UserEntity" });
 Entity.belongsToMany(User, { through: "UserEntity" });
+User.belongsToMany(Entity, { through: "UserEntity" });
 
 User.belongsToMany(Team, { through: "UserTeam" });
 Team.belongsToMany(User, { through: "UserTeam" });
@@ -64,6 +63,6 @@ Meeting.belongsTo(Team);
 
 
 
-db.sequelize.sync();
+db.sequelize.sync({alter:true});
 console.log("All models were alter successfully.");
 module.exports = db;

@@ -66,6 +66,12 @@ const Create_User = async (req, res) => {
                 await sendEmail(email, password);
 
                 // Respond with success message
+                const createdUser1 = await db.User.findOne({ where: { id: result.insertId } });
+                const createdEntity = await db.User.findOne({ where: { name: entityname } });
+
+                if (createdEntity && createdUser1) {
+                  await createdUser1.addEntity(createdEntity);
+                }
                 res.status(201).send(`${result.insertId}`);
             } catch (emailError) {
                 console.error("Error sending email:", emailError);
