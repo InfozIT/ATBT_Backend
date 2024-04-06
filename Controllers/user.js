@@ -11,8 +11,9 @@ const { generateToken } = require('../utils/utils');
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName, name: entityname } = req.body;
-        let data = req.body;
+        const { email, role: roleName } = req.body;
+        let { entityname, ...data } = req.body;
+        console.log(data, "remove name: entityname")
         const file = req.file;
         const password = generateRandomPassword();
 
@@ -205,25 +206,25 @@ const List_User = async (req, res) => {
                     users: "Please connect to Admin for data Access",
 
                 });
-            } else if(!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+            } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
                 mycon.query('SELECT * FROM UserEntity WHERE EntityId = ?', accessdata.entity_id, (err, result1) => {
                     if (err) {
-                      console.error('Error retrieving data: ' + err.stack);
-                      res.status(500).send('Error retrieving data');
-                      return;
+                        console.error('Error retrieving data: ' + err.stack);
+                        res.status(500).send('Error retrieving data');
+                        return;
                     }
                     if (result1.length === 0) {
-                      res.status(404).send('Entity data not found');
-                      return;
+                        res.status(404).send('Entity data not found');
+                        return;
                     }
                     for (let i = 0; i < result1.length; i++) {
-                      ids.push(result1[i].UserId);
+                        ids.push(result1[i].UserId);
                     }
                     const uniq = [...new Set(ids)];
 
                     // res.status(200).json({ ids: uniq });
 
-                  });
+                });
             }
         });
     });

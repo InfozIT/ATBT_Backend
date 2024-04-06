@@ -34,7 +34,7 @@ app.use('/user', authVerify, User_router);
 // app.use('/user', User_router);
 app.use('/team', authVerify, Team_router);
 app.use('/auth', Auth_router);
-app.use('/access',DataShairing_router);
+app.use('/access', DataShairing_router);
 
 app.use('/form', CreateForm_router);
 app.use('/boardmeeting', authVerify, Meeting_router);
@@ -89,13 +89,13 @@ app.get('/', (req, res) => {
           </li>
           <li>
           feat... Entity & Meeting (members) joined 412024. </br>
-
           GET  https://atbtbeta.infozit.com/team/add </br>
           GET  https://atbtbeta.infozit.com/task/entity/group/40 </br>
           GET  https://atbtbeta.infozit.com/task/team/group/41 </br>
           POST https://atbtbeta.infozit.com/boardmeeting/add?entity=7 </br>
-
-
+          </li>
+          <li>
+          added entity id.
           </li>
         </ul>
       </body>
