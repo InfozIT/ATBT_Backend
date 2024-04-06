@@ -1,17 +1,12 @@
 require('dotenv').config();
 var db = require('../models/index');
 const bcrypt = require('bcrypt');
-const sequelize = require('../DB/dbconncet');
 const User = db.User;
 const mycon = require('../DB/mycon')
 const transporter = require('../utils/nodemailer')
 const saltRounds = 10;
-const formidable = require('formidable');
 const { Role, Module, Permission } = require('../models/index');
 const { generateToken } = require('../utils/utils');
-
-
-
 
 const Create_User = async (req, res) => {
     try {
@@ -61,17 +56,9 @@ const Create_User = async (req, res) => {
                 // Send email to the user
                 const createdUser = await db.User.findOne({ where: { email } });
                 if (getEntity) {
-                    await createdUser.addEntity(getEntity);
+                    await createdUser.setEntity(getEntity);
                 }
                 await sendEmail(email, password);
-
-                // Respond with success message
-                const createdUser1 = await db.User.findOne({ where: { id: result.insertId } });
-                const createdEntity = await db.User.findOne({ where: { name: entityname } });
-
-                if (createdEntity && createdUser1) {
-                  await createdUser1.addEntity(createdEntity);
-                }
                 res.status(201).send(`${result.insertId}`);
             } catch (emailError) {
                 console.error("Error sending email:", emailError);

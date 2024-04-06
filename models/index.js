@@ -48,8 +48,9 @@ Module.belongsToMany(Permission, { through: db.PermissionModule });
 
 User.belongsTo(Role);
 
-Entity.belongsToMany(User, { through: "UserEntity" });
-User.belongsToMany(Entity, { through: "UserEntity" });
+Entity.hasMany(User); // One Entity can have many Users
+User.belongsTo(Entity);
+
 
 User.belongsToMany(Team, { through: "UserTeam" });
 Team.belongsToMany(User, { through: "UserTeam" });
