@@ -24,7 +24,7 @@ const Create_User = async (req, res) => {
             console.error("Email already exists.");
             return res.status(400).send("Email already exists");
         }
-        const getEntity = await db.Entity.findOne({ where: { name: entityname } });
+        const getEntity = await db.Entity.findOne({ where: { id: entityname } });
         console.log(getEntity, "getEntity")
         // Retrieve role from the database
         const role = await db.Role.findOne({ where: { name: roleName } });
