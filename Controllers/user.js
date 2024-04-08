@@ -142,6 +142,7 @@ async function sendEmail(email, password) {
 }
 
 const List_User = async (req, res) => {
+    const { userId } = req.user;
 
     const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
 
@@ -155,7 +156,7 @@ const List_User = async (req, res) => {
 
     const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-    const accessdata = await db.UserAccess.findOne({ where: { user_id: req.userId } });
+    const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
 
     console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
 
