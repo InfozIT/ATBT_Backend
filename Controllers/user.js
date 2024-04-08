@@ -155,7 +155,7 @@ const List_User = async (req, res) => {
 
     const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-    const accessdata = await db.UserAccess.findOne({ where: { user_id: 62 } });
+    const accessdata = await db.UserAccess.findOne({ where: { user_id: req.userId } });
 
     console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
 
