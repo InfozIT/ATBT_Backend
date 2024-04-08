@@ -97,6 +97,9 @@ app.get('/', (req, res) => {
           <li>
           added entity id.
           </li>
+          <li>
+          filterd data only for users list based on data sharing.
+          </li>
         </ul>
       </body>
     </html>

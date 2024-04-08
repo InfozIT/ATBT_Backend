@@ -11,9 +11,8 @@ const { generateToken } = require('../utils/utils');
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName } = req.body;
-        let { entityname, ...data } = req.body;
-        console.log(data, "remove name: entityname")
+        const { email, role: roleName, name: entityname } = req.body;
+        let data = req.body;
         const file = req.file;
         const password = generateRandomPassword();
 
@@ -148,9 +147,23 @@ const List_User = async (req, res) => {
         filters[key] = restQueries[key];
     }
     const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
+    const accessdata = await db.UserAccess.findOne({ where: { user_id: 23 } });
+    console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
     // MySQL query to fetch paginated users
-    let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+    let sql;
+    if(!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+        console.log(accessdata.entity_id,"asfqafFJbhcvbdOUDVuc")
+        sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`
+        
+    } else if(!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+        sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId = ${accessdata.entity_id}`;
+    }else if(!!accessdata && !!accessdata.selected_users && !accessdata.entity_id){ 
+        let userIDs =[27]
+
+        sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+    }
+    // let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%' )`;
+
 
     // Add conditions for additional filter fields
     for (const [field, value] of Object.entries(filters)) {
@@ -170,7 +183,20 @@ const List_User = async (req, res) => {
         }
 
         // Execute the count query to get the total number of users
-        let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+        let sqlCount;
+            if(!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+        console.log(accessdata.entity_id,"asfqafFJbhcvbdOUDVuc")
+        sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+        
+    } else if(!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+        sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId = ${accessdata.entity_id}`;
+    }else if(!!accessdata && !!accessdata.selected_users && !accessdata.entity_id){ 
+        let userIDs =[27,22]
+
+        sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+    }
+
+        // let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
         // Add conditions for additional filter fields
         for (const [field, value] of Object.entries(filters)) {
@@ -188,9 +214,6 @@ const List_User = async (req, res) => {
 
             const totalUsers = countResult[0].total;
             const totalPages = Math.ceil(totalUsers / pageSize);
-            const accessdata = await db.UserAccess.findOne({ where: { user_id: 22 } });
-            console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
-            if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
                 res.json({
                     users: result,
                     totalPages: parseInt(totalPages),
@@ -201,31 +224,6 @@ const List_User = async (req, res) => {
                     endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
                     search
                 });
-            } else if (!accessdata) {
-                res.json({
-                    users: "Please connect to Admin for data Access",
-
-                });
-            } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-                mycon.query('SELECT * FROM UserEntity WHERE EntityId = ?', accessdata.entity_id, (err, result1) => {
-                    if (err) {
-                        console.error('Error retrieving data: ' + err.stack);
-                        res.status(500).send('Error retrieving data');
-                        return;
-                    }
-                    if (result1.length === 0) {
-                        res.status(404).send('Entity data not found');
-                        return;
-                    }
-                    for (let i = 0; i < result1.length; i++) {
-                        ids.push(result1[i].UserId);
-                    }
-                    const uniq = [...new Set(ids)];
-
-                    // res.status(200).json({ ids: uniq });
-
-                });
-            }
         });
     });
 };
