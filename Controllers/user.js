@@ -11,8 +11,9 @@ const { generateToken } = require('../utils/utils');
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName, name: entityname } = req.body;
-        let data = req.body;
+        const { email, role: roleName } = req.body;
+        let { entityname, ...data } = req.body;
+        console.log(data, "remove name: entityname")
         const file = req.file;
         const password = generateRandomPassword();
 
@@ -141,91 +142,147 @@ async function sendEmail(email, password) {
 }
 
 const List_User = async (req, res) => {
+
     const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+
     const filters = {};
+
     for (const key in restQueries) {
+
         filters[key] = restQueries[key];
+
     }
+
     const offset = (parseInt(page) - 1) * parseInt(pageSize);
-    const accessdata = await db.UserAccess.findOne({ where: { user_id: 23 } });
+
+    const accessdata = await db.UserAccess.findOne({ where: { user_id: 62 } });
+
     console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
+
     // MySQL query to fetch paginated users
+
     let sql;
-    if(!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-        console.log(accessdata.entity_id,"asfqafFJbhcvbdOUDVuc")
+
+    if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+
         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`
-        
-    } else if(!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+
+    } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+
         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId = ${accessdata.entity_id}`;
-    }else if(!!accessdata && !!accessdata.selected_users && !accessdata.entity_id){ 
-        let userIDs =[27]
+
+    } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+
+        let userIDs = [27]
 
         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+
     }
+
     // let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%' )`;
 
 
     // Add conditions for additional filter fields
+
     for (const [field, value] of Object.entries(filters)) {
+
         if (value !== '') {
+
             sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+
         }
+
     }
 
     // Add LIMIT and OFFSET clauses to the SQL query
+
     sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
 
     mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
+
         if (err) {
+
             console.error('Error executing MySQL query: ' + err.stack);
+
             res.status(500).json({ error: 'Internal server error' });
+
             return;
+
         }
 
         // Execute the count query to get the total number of users
-        let sqlCount;
-            if(!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-        console.log(accessdata.entity_id,"asfqafFJbhcvbdOUDVuc")
-        sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
-        
-    } else if(!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-        sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId = ${accessdata.entity_id}`;
-    }else if(!!accessdata && !!accessdata.selected_users && !accessdata.entity_id){ 
-        let userIDs =[27,22]
 
-        sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
-    }
+        let sqlCount;
+
+        if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+        } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId = ${accessdata.entity_id}`;
+
+        } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+
+            let userIDs = [27, 22]
+
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+
+        }
 
         // let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
         // Add conditions for additional filter fields
+
         for (const [field, value] of Object.entries(filters)) {
+
             if (value !== '') {
+
                 sqlCount += ` AND ${field} LIKE '%${value}%'`;
+
             }
+
         }
 
         mycon.query(sqlCount, async (err, countResult) => {
+
             if (err) {
+
                 console.error('Error executing MySQL count query: ' + err.stack);
+
                 res.status(500).json({ error: 'Internal server error' });
+
                 return;
+
             }
 
             const totalUsers = countResult[0].total;
+
             const totalPages = Math.ceil(totalUsers / pageSize);
-                res.json({
-                    users: result,
-                    totalPages: parseInt(totalPages),
-                    currentPage: parseInt(page),
-                    pageSize: parseInt(pageSize),
-                    totalUsers: parseInt(totalUsers),
-                    startUser: parseInt(offset) + 1, // Correct the start user index
-                    endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
-                    search
-                });
+
+            res.json({
+
+                users: result,
+
+                totalPages: parseInt(totalPages),
+
+                currentPage: parseInt(page),
+
+                pageSize: parseInt(pageSize),
+
+                totalUsers: parseInt(totalUsers),
+
+                startUser: parseInt(offset) + 1, // Correct the start user index
+
+                endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
+
+                search
+
+            });
+
         });
     });
+
 };
 
 
