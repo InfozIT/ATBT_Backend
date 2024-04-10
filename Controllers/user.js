@@ -178,6 +178,7 @@ const List_User = async (req, res) => {
     } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
 
         let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+        console.log(userIDs, typeof (userIDs), "userIDs")
 
         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
 

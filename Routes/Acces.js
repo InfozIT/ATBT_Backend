@@ -38,7 +38,7 @@ router.post('/entity', authVerify, (req, res) => {
 
     // Insert record into user_access table
     userId
-    UserAccess.create({ user_id: userId, entity_id: entityIds, name: name, description: description })
+    UserAccess.create({ user_id: userId, entity_id: JSON.stringify(entityIds), name: name, description: description })
 
         .then(() => res.status(200).json({ message: 'Access granted to entity-level data' }))
 
