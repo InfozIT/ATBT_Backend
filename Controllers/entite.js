@@ -224,6 +224,10 @@ const ListEntity = async (req, res) => {
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
   const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+  const Data = await db.User.findOne({ where: { id: userId } });
+  let EntityId =Data.EntityId
+
+
 
   console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
 
@@ -233,25 +237,18 @@ const ListEntity = async (req, res) => {
 
   if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
 
-      sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
 
   } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-      let entityIds = [...JSON.parse(accessdata.entity_id)]
+      let entityIds = [...JSON.parse(accessdata.entity_id),EntityId]
       console.log(entityIds, typeof (entityIds), "entityIds")
 
-      sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
-
-  } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
-
-      let userIDs = [...JSON.parse(accessdata.selected_users), userId]
-      console.log(userIDs, typeof (userIDs), "userIDs")
-
-      sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
 
   } else if (!accessdata) {
 
       // sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userId})`;
-      sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
 
 
   }
@@ -293,23 +290,17 @@ const ListEntity = async (req, res) => {
 
       if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
 
-          sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+          sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
 
       } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-          let entityIds = [...JSON.parse(accessdata.entity_id)]
+          let entityIds = [...JSON.parse(accessdata.entity_id),EntityId]
 
-          sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+          sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
 
-      } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
-
-          let userIDs = [...JSON.parse(accessdata.selected_users), userId]
-
-          sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
-
-      } else if (!accessdata) {
+      }  else if (!accessdata) {
 
           // sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userId})`;
-          sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+          sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
 
 
       }
