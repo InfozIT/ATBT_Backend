@@ -11,6 +11,16 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true
     
         },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: 'name',
+          },
+          description: {
+            type: DataTypes.STRING,
+            // allowNull defaults to true
+            allowNull: true
+          },
     
         user_id: {
     
@@ -20,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
     
         },
     
-        entity_id: DataTypes.INTEGER,
+        entity_id: DataTypes.TEXT,
     
         selected_users: DataTypes.TEXT
     
