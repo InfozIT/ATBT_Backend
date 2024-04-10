@@ -21,7 +21,7 @@ const ListEntiyGroup = async (req, res) =>  {
       for (let i = 0; i < result[0].members.length; i++) {
         ids.push(result[0].members[i].id);
       }
-      mycon.query('SELECT * FROM UserEntity WHERE EntityId = ?', EntID, (err, result1) => {
+      mycon.query('SELECT * FROM Users WHERE EntityId = ?', EntID, (err, result1) => {
         if (err) {
           console.error('Error retrieving data: ' + err.stack);
           res.status(500).send('Error retrieving data');
@@ -32,8 +32,12 @@ const ListEntiyGroup = async (req, res) =>  {
           return;
         }
         for (let i = 0; i < result1.length; i++) {
-          ids.push(result1[i].UserId);
+          if (!result1[i] ){
+            ids.push(result1[i].UserId);
+
+          }
         }
+        
         const uniq = [...new Set(ids)];
         
         res.status(200).json({ ids: uniq }); // Sending ids array in the response
