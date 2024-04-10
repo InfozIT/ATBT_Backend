@@ -101,9 +101,8 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 });
 
 
-router.get('/view', authVerify, (req, res) => {
-    res.status(200).json({ message: 'Access granted to selected users\' data' })
-
+router.get('/view', authVerify, async(req, res) => {
+    const users = await db.UserAccess.findAll();
 })
 
 
