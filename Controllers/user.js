@@ -7,6 +7,7 @@ const transporter = require('../utils/nodemailer')
 const saltRounds = 10;
 const { Role, Module, Permission } = require('../models/index');
 const { generateToken } = require('../utils/utils');
+const { json } = require('sequelize');
 
 const Create_User = async (req, res) => {
     try {
@@ -174,9 +175,15 @@ const List_User = async (req, res) => {
 
     } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
 
-        let userIDs = [27]
+        let userIDs = [...JSON.parse(accessdata.selected_users), userId]
 
         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+
+    } else if (!accessdata) {
+
+        // sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userId})`;
+        sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+
 
     }
 
@@ -220,14 +227,21 @@ const List_User = async (req, res) => {
             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
         } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+            let entityIds = [...JSON.parse(accessdata.entity_id)]
 
-            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId = ${accessdata.entity_id}`;
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
 
         } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
 
-            let userIDs = [27, 22]
+            let userIDs = [...JSON.parse(accessdata.selected_users), userId]
 
             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+
+        } else if (!accessdata) {
+
+            // sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userId})`;
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+
 
         }
 

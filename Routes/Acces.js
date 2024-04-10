@@ -7,13 +7,13 @@ const authVerify = require('../middlewares/authVerify.middleware')
 
 
 const router = express.Router();
- 
+
 // Endpoint to grant access to all system data
 
 router.post('/all', authVerify, (req, res) => {
 
     const userId = req.user.userId;
- 
+
     // Insert record into user_access table
 
     UserAccess.create({ user_id: userId })
@@ -29,18 +29,16 @@ router.post('/all', authVerify, (req, res) => {
         });
 
 });
- 
+
 // Endpoint to grant access to entity-level data
 
-router.post('/entity/:entityId', authVerify, (req, res) => {
+router.post('/entity', authVerify, (req, res) => {
 
-    const userId =  req.user.userId;
+    const { name, description, entityIds, userId } = req.body
 
-    const entityId = req.params.entityId;
- 
     // Insert record into user_access table
-
-    UserAccess.create({ user_id: userId, entity_id: entityId })
+    userId
+    UserAccess.create({ user_id: userId, entity_id: entityIds, name: name, description: description })
 
         .then(() => res.status(200).json({ message: 'Access granted to entity-level data' }))
 
@@ -53,7 +51,7 @@ router.post('/entity/:entityId', authVerify, (req, res) => {
         });
 
 });
- 
+
 // Endpoint to grant access to specific selected users' data
 
 router.post('/selected', authVerify, (req, res) => {
@@ -61,7 +59,7 @@ router.post('/selected', authVerify, (req, res) => {
     const userId = req.user.userId;
 
     const selectedUsers = req.body.selectedUsers; // Assuming selectedUsers is an array of user IDs
- 
+
     // Insert record into user_access table
 
     UserAccess.create({ user_id: userId, selected_users: JSON.stringify(selectedUsers) })
@@ -77,15 +75,15 @@ router.post('/selected', authVerify, (req, res) => {
         });
 
 });
- 
+
 // Endpoint to revoke access
 
 router.delete('/remove/:accessId', authVerify, (req, res) => {
 
-    const userId =  req.user.userId;
+    const userId = req.user.userId;
 
     const accessId = req.params.accessId;
- 
+
     // Delete record from user_access table
 
     UserAccess.destroy({ where: { id: accessId, user_id: userId } })
@@ -107,6 +105,6 @@ router.get('/view', authVerify, (req, res) => {
     res.status(200).json({ message: 'Access granted to selected users\' data' })
 
 })
- 
- 
+
+
 module.exports = router;
