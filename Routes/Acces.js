@@ -103,6 +103,7 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 
 router.get('/view', authVerify, async(req, res) => {
     const users = await db.UserAccess.findAll();
+    res.status(200).json(users)
 })
 
 
