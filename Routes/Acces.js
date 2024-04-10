@@ -102,8 +102,16 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 
 
 router.get('/view', authVerify, async(req, res) => {
-    const users = await db.UserAccess.findAll();
-    res.status(200).json(users)
+    const roleId = req.user.roleId;
+    if (roleId == 8 )
+    {
+        const users = await db.UserAccess.findAll();
+        res.status(200).json(users)
+    }else{
+        res.status(402).json({ message: 'Contect to admin' });
+
+    }
+
 })
 
 
