@@ -738,16 +738,17 @@ const Get_User = async (req, res) => {
 
         const user = rows[0];
 
-        mycon.query('SELECT name FROM Entities WHERE id = ?', user.EntityId, (err, result) => {
-            if (err) {
-                console.error('Error retrieving data: ' + err.stack);
-                return res.status(500).send('Error retrieving data');
-            }
+        // mycon.query('SELECT name FROM Entities WHERE id = ?', user.EntityId, (err, result) => {
+        //     if (err) {
+        //         console.error('Error retrieving data: ' + err.stack);
+        //         return res.status(500).send('Error retrieving data');
+        //     }
 
-            const EntityName = result.length > 0 ? result[0].name : null;
+        //     const EntityName = result.length > 0 ? result[0].name : null;
 
-            res.status(200).json({ message: `Your id is: ${req.params.id}`, user, EntityName });
-        });
+        //     res.status(200).json({ message: `Your id is: ${req.params.id}`, user, EntityName });
+        // });
+        res.status(200).json({ message: `Your id is: ${req.params.id}`, user});
     } catch (error) {
         console.error('Error fetching user:', error);
         res.status(500).json({ error: 'Internal Server Error' });
