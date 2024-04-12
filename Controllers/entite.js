@@ -368,4 +368,24 @@ const Delete_Entite = async (req, res) => {
   }
 };
 
-module.exports = { CreateEntiy, ListEntity, UpdateEntity, Delete_Entite, Get_Entite, ListEntityPub }
+
+const ListEntityUsers = (req, res) => {
+  const entityId = req.params.id;
+  console.log(entityId)
+  mycon.query('SELECT * FROM Users WHERE EntityId = ?', entityId, (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      res.status(500).send('Error retrieving data');
+      return;
+    }
+
+    if (result.length === 0) {
+      res.status(404).send('Entity data not found');
+      return;
+    }
+
+    res.status(200).json(result);
+  });
+};
+
+module.exports = { CreateEntiy, ListEntity, UpdateEntity, Delete_Entite, Get_Entite, ListEntityPub,ListEntityUsers }
