@@ -106,6 +106,9 @@ app.get('/', (req, res) => {
           <li>
           dynamic data sharing
           </li>
+          <li>
+          dynamic data sharing user & entity lcbi
+          </li>
         </ul>
       </body>
     </html>
