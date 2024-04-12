@@ -730,19 +730,30 @@ async function Login_User(req, res) {
 }
 const Get_User = async (req, res) => {
     try {
-        // Execute the query using the promise wrapper
         const [rows] = await mycon.promise().query('SELECT * FROM Users WHERE id = ?', [req.params.id]);
 
         if (!rows.length) {
             return res.status(404).json({ error: 'User not found' });
         }
+
         const user = rows[0];
-        res.status(200).json({ message: `Your id is: ${req.params.id}`, user });
+
+        mycon.query('SELECT name FROM Entities WHERE id = ?', user.EntityId, (err, result) => {
+            if (err) {
+                console.error('Error retrieving data: ' + err.stack);
+                return res.status(500).send('Error retrieving data');
+            }
+
+            const EntityName = result.length > 0 ? result[0].name : null;
+
+            res.status(200).json({ message: `Your id is: ${req.params.id}`, user, EntityName });
+        });
     } catch (error) {
         console.error('Error fetching user:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 // const Update_User = async (req, res) => {
 //     try {
 //         const { id } = req.params;
