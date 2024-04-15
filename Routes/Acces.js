@@ -34,7 +34,7 @@ router.post('/all', authVerify, (req, res) => {
 
 router.post('/entity', authVerify, (req, res) => {
 
-    const { name, description, entityIds, userId } = req.body
+    const { name, description, entityIds, userId} = req.body
 
     // Insert record into user_access table
     userId
@@ -56,13 +56,14 @@ router.post('/entity', authVerify, (req, res) => {
 
 router.post('/selected', authVerify, (req, res) => {
 
-    const userId = req.user.userId;
+    const { name, description,userId } = req.body
+
 
     const selectedUsers = req.body.selectedUsers; // Assuming selectedUsers is an array of user IDs
 
     // Insert record into user_access table
 
-    UserAccess.create({ user_id: userId, selected_users: JSON.stringify(selectedUsers) })
+    UserAccess.create({ name: name, description: description,user_id: userId, selected_users: JSON.stringify(selectedUsers) })
 
         .then(() => res.status(200).json({ message: 'Access granted to selected users\' data' }))
 
@@ -84,6 +85,8 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 
     const accessId = req.params.accessId;
 
+
+
     // Delete record from user_access table
 
     UserAccess.destroy({ where: { id: accessId, user_id: userId } })
@@ -101,15 +104,53 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 });
 
 
-router.get('/view', authVerify, async(req, res) => {
+// router.get('/view', authVerify, async(req, res) => {
+//     const roleId = req.user.roleId;
+//     if (roleId === 8 || roleId === 9 ||roleId === 7) {
+//         const users = await db.UserAccess.findAll();
+           
+//         // Define an object to store the results
+//             const result = {};
+
+//             // Loop through each data object
+//             users.forEach(obj => {
+//                 const userId = obj.user_id;
+//                 const entityIds = JSON.parse(obj.entity_id);
+                
+//                 // Check if the user_id already exists in the result object
+//                 if (!result[userId]) {
+//                     result[userId] = [];
+//                 }
+
+//                 // Push the entity IDs to the result object under the user_id
+//                 result[userId].push(entityIds);
+//             });
+
+//             // Convert result to JSON string
+//             const resultJSON = JSON.stringify(result);
+
+//             console.log(resultJSON);
+
+
+      
+//         res.status(200).json(users);
+//     } else {
+//         res.status(402).json({ message: 'Contact an admin' });
+//     }
+// })
+router.get('/view', authVerify, async (req, res) => {
     const roleId = req.user.roleId;
-    if (roleId === 8 || roleId === 9 ||roleId === 7) {
-        const users = await db.UserAccess.findAll();
+    if (roleId === 8 || roleId === 9 || roleId === 7) {
+        const users = await db.UserAccess.findAll()
+
         res.status(200).json(users);
     } else {
         res.status(402).json({ message: 'Contact an admin' });
     }
 })
+
+
+
 
 
 module.exports = router;
