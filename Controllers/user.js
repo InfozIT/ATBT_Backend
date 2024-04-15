@@ -1,23 +1,20 @@
 require('dotenv').config();
 var db = require('../models/index');
 const bcrypt = require('bcrypt');
-const sequelize = require('../DB/dbconncet');
 const User = db.User;
 const mycon = require('../DB/mycon')
 const transporter = require('../utils/nodemailer')
 const saltRounds = 10;
-const formidable = require('formidable');
 const { Role, Module, Permission } = require('../models/index');
 const { generateToken } = require('../utils/utils');
-
-
-
+const { json } = require('sequelize');
 
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName, } = req.body;
-        let data = req.body;
+        const { email, role: roleName } = req.body;
+        let { entityname, ...data } = req.body;
+        console.log(data, "remove name: entityname")
         const file = req.file;
         const password = generateRandomPassword();
 
@@ -29,7 +26,8 @@ const Create_User = async (req, res) => {
             console.error("Email already exists.");
             return res.status(400).send("Email already exists");
         }
-
+        const getEntity = await db.Entity.findOne({ where: { id: entityname } });
+        console.log(getEntity, "getEntity")
         // Retrieve role from the database
         const role = await db.Role.findOne({ where: { name: roleName } });
         if (!role) {
@@ -58,9 +56,11 @@ const Create_User = async (req, res) => {
 
             try {
                 // Send email to the user
+                const createdUser = await db.User.findOne({ where: { email } });
+                if (getEntity) {
+                    await createdUser.setEntity(getEntity);
+                }
                 await sendEmail(email, password);
-
-                // Respond with success message
                 res.status(201).send(`${result.insertId}`);
             } catch (emailError) {
                 console.error("Error sending email:", emailError);
@@ -142,98 +142,328 @@ async function sendEmail(email, password) {
     await transporter.sendMail(mailData);
 }
 
-const List_User = async (req, res) => {
-    const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
-    const filters = {};
-    for (const key in restQueries) {
-        filters[key] = restQueries[key];
+// const List_User = async (req, res) => {
+//     const { userId } = req.user;
 
-    }
-    const offset = (parseInt(page) - 1) * (parseInt(pageSize));
+//     const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
 
-    // MySQL query to fetch paginated users
+//     const filters = {};
 
-    let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+//     for (const key in restQueries) {
 
-    // Add conditions for additional filter fields
+//         filters[key] = restQueries[key];
 
-    for (const [field, value] of Object.entries(filters)) {
+//     }
 
-        if (value !== '') {
+//     const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-            sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+//     const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
 
-        }
+//     console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
 
-    }
-    mycon.query(sql, [offset, pageSize], (err, result) => {
+//     // MySQL query to fetch paginated users
 
-        if (err) {
+//     let sql;
 
-            console.error('Error executing MySQL query: ' + err.stack);
+//     if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
 
-            res.status(500).json({ error: 'Internal server error' });
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`
 
-            return;
-        }
+//     } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+//         let entityIds = [...JSON.parse(accessdata.entity_id)]
+//         console.log(entityIds, typeof (entityIds), "entityIds")
 
-        // Execute the count query to get the total number of users
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
 
-        let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+//     } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
 
-        // Add conditions for additional filter fields
+//         let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+//         console.log(userIDs, typeof (userIDs), "userIDs")
 
-        for (const [field, value] of Object.entries(filters)) {
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
 
-            if (value !== '') {
+//     } else if (!accessdata) {
 
-                sqlCount += ` AND ${field} LIKE '%${value}%'`;
+//         // sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userId})`;
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
 
-            }
 
-        }
+//     }
 
-        mycon.query(sqlCount, (err, countResult) => {
+//     // let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%' )`;
 
-            if (err) {
 
-                console.error('Error executing MySQL count query: ' + err.stack);
+//     // Add conditions for additional filter fields
 
-                res.status(500).json({ error: 'Internal server error' });
+//     for (const [field, value] of Object.entries(filters)) {
 
-                return;
+//         if (value !== '') {
 
-            }
+//             sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
 
-            const totalUsers = countResult[0].total;
+//         }
 
-            const totalPages = Math.ceil(totalUsers / pageSize);
+//     }
 
-            res.json({
+//     // Add LIMIT and OFFSET clauses to the SQL query
 
-                users: result,
+//     sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
 
-                totalPages: totalPages,
+//     mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
 
-                currentPage: page,
+//         if (err) {
 
-                pageSize: pageSize,
+//             console.error('Error executing MySQL query: ' + err.stack);
 
-                totalUsers: totalUsers,
+//             res.status(500).json({ error: 'Internal server error' });
 
-                startUser: offset,
+//             return;
 
-                endUser: offset + pageSize,
+//         }
 
-                search
+//         // Execute the count query to get the total number of users
 
-            });
+//         let sqlCount;
 
-        });
+//         if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
 
-    });
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
 
-};
+//         } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+//             let entityIds = [...JSON.parse(accessdata.entity_id)]
+
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+
+//         } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+
+//             let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+
+//         } else if (!accessdata) {
+
+//             // sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userId})`;
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+
+
+//         }
+
+//         // let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+//         // Add conditions for additional filter fields
+
+//         for (const [field, value] of Object.entries(filters)) {
+
+//             if (value !== '') {
+
+//                 sqlCount += ` AND ${field} LIKE '%${value}%'`;
+
+//             }
+
+//         }
+
+//         mycon.query(sqlCount, async (err, countResult) => {
+
+//             if (err) {
+
+//                 console.error('Error executing MySQL count query: ' + err.stack);
+
+//                 res.status(500).json({ error: 'Internal server error' });
+
+//                 return;
+
+//             }
+
+//             const totalUsers = countResult[0].total;
+
+//             const totalPages = Math.ceil(totalUsers / pageSize);
+
+//             res.json({
+
+//                 users: result,
+
+//                 totalPages: parseInt(totalPages),
+
+//                 currentPage: parseInt(page),
+
+//                 pageSize: parseInt(pageSize),
+
+//                 totalUsers: parseInt(totalUsers),
+
+//                 startUser: parseInt(offset) + 1, // Correct the start user index
+
+//                 endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
+
+//                 search
+
+//             });
+
+//         });
+//     });
+
+// };
+
+// const List_User = async (req, res) => {
+//     const { userId } = req.user;
+
+//     const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+
+//     const filters = {};
+
+//     for (const key in restQueries) {
+
+//         filters[key] = restQueries[key];
+
+//     }
+
+//     const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+//     const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+
+//     console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
+
+//     // MySQL query to fetch paginated users
+
+//     let sql;
+
+//     if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`
+
+//     } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+//         let entityIds = [...JSON.parse(accessdata.entity_id)]
+//         console.log(entityIds, typeof (entityIds), "entityIds")
+
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+
+//     } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+
+//         let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+//         console.log(userIDs, typeof (userIDs), "userIDs")
+
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+
+//     } else if (!accessdata) {
+
+//         // sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userId})`;
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+
+
+//     }
+
+//     // let sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%' )`;
+
+
+//     // Add conditions for additional filter fields
+
+//     for (const [field, value] of Object.entries(filters)) {
+
+//         if (value !== '') {
+
+//             sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+
+//         }
+
+//     }
+
+//     // Add LIMIT and OFFSET clauses to the SQL query
+
+//     sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+
+//     mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
+
+//         if (err) {
+
+//             console.error('Error executing MySQL query: ' + err.stack);
+
+//             res.status(500).json({ error: 'Internal server error' });
+
+//             return;
+
+//         }
+
+//         // Execute the count query to get the total number of users
+
+//         let sqlCount;
+
+//         if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+//         } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+//             let entityIds = [...JSON.parse(accessdata.entity_id)]
+
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+
+//         } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+
+//             let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+
+//         } else if (!accessdata) {
+
+//             // sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userId})`;
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+
+
+//         }
+
+//         // let sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+
+//         // Add conditions for additional filter fields
+
+//         for (const [field, value] of Object.entries(filters)) {
+
+//             if (value !== '') {
+
+//                 sqlCount += ` AND ${field} LIKE '%${value}%'`;
+
+//             }
+
+//         }
+
+//         mycon.query(sqlCount, async (err, countResult) => {
+
+//             if (err) {
+
+//                 console.error('Error executing MySQL count query: ' + err.stack);
+
+//                 res.status(500).json({ error: 'Internal server error' });
+
+//                 return;
+
+//             }
+
+//             const totalUsers = countResult[0].total;
+
+//             const totalPages = Math.ceil(totalUsers / pageSize);
+
+//             res.json({
+
+//                 users: result,
+
+//                 totalPages: parseInt(totalPages),
+
+//                 currentPage: parseInt(page),
+
+//                 pageSize: parseInt(pageSize),
+
+//                 totalUsers: parseInt(totalUsers),
+
+//                 startUser: parseInt(offset) + 1, // Correct the start user index
+
+//                 endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
+
+//                 search
+
+//             });
+
+//         });
+//     });
+
+// };
+ 
 
 const List_User_Pub = async (req, res) => {
     const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
@@ -302,24 +532,24 @@ const List_User_Pub = async (req, res) => {
 
             const totalPages = Math.ceil(totalUsers / pageSize);
 
-            const final = result.map(item => { return {name: item.name,id: item.id,email:item.email,image:item.image} });
+            const final = result.map(item => { return { name: item.name, id: item.id, email: item.email, image: item.image } });
 
 
             res.json({
 
                 users: final,
 
-                totalPages: totalPages,
+                totalPages: parseInt(totalPages),
 
-                currentPage: page,
+                currentPage: parseInt(page),
 
-                pageSize: pageSize,
+                pageSize: parseInt(pageSize),
 
-                totalUsers: totalUsers,
+                totalUsers: parseInt(totalUsers),
 
-                startUser: offset,
+                startUser: parseInt(offset),
 
-                endUser: offset + pageSize,
+                endUser: parseInt(offset + pageSize),
 
                 search
 
@@ -330,6 +560,104 @@ const List_User_Pub = async (req, res) => {
     });
 
 };
+
+// const List_User = async (req, res) => {
+//     const { userId } = req.user;
+
+//     const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt DESC', ...restQueries } = req.query;
+
+//     const filters = {};
+
+//     for (const key in restQueries) {
+//         filters[key] = restQueries[key];
+//     }
+
+//     const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+//     const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+
+//     console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
+
+//     // MySQL query to fetch paginated users
+
+//     let sql;
+
+//     if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`
+//     } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+//         let entityIds = [...JSON.parse(accessdata.entity_id)]
+//         console.log(entityIds, typeof (entityIds), "entityIds")
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+//     } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+//         let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+//         console.log(userIDs, typeof (userIDs), "userIDs")
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+//     } else if (!accessdata) {
+//         sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+//     }
+
+//     // Add conditions for additional filter fields
+
+//     for (const [field, value] of Object.entries(filters)) {
+//         if (value !== '') {
+//             sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+//         }
+//     }
+
+//     // Add LIMIT and OFFSET clauses to the SQL query
+//     sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+
+//     mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
+//         if (err) {
+//             console.error('Error executing MySQL query: ' + err.stack);
+//             res.status(500).json({ error: 'Internal server error' });
+//             return;
+//         }
+
+//         // Execute the count query to get the total number of users
+//         let sqlCount;
+//         if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+//         } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+//             let entityIds = [...JSON.parse(accessdata.entity_id)]
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+//         } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+//             let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+//         } else if (!accessdata) {
+//             sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+//         }
+
+//         // Add conditions for additional filter fields
+//         for (const [field, value] of Object.entries(filters)) {
+//             if (value !== '') {
+//                 sqlCount += ` AND ${field} LIKE '%${value}%'`;
+//             }
+//         }
+
+//         mycon.query(sqlCount, async (err, countResult) => {
+//             if (err) {
+//                 console.error('Error executing MySQL count query: ' + err.stack);
+//                 res.status(500).json({ error: 'Internal server error' });
+//                 return;
+//             }
+
+//             const totalUsers = countResult[0].total;
+//             const totalPages = Math.ceil(totalUsers / pageSize);
+
+//             res.json({
+//                 users: result,
+//                 totalPages: parseInt(totalPages),
+//                 currentPage: parseInt(page),
+//                 pageSize: parseInt(pageSize),
+//                 totalUsers: parseInt(totalUsers),
+//                 startUser: parseInt(offset) + 1, // Correct the start user index
+//                 endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
+//                 search
+//             });
+//         });
+//     });
+// };
 
 
 async function Login_User(req, res) {
@@ -402,21 +730,31 @@ async function Login_User(req, res) {
 }
 const Get_User = async (req, res) => {
     try {
-        // Execute the query using the promise wrapper
         const [rows] = await mycon.promise().query('SELECT * FROM Users WHERE id = ?', [req.params.id]);
 
         if (!rows.length) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Parse "userremarkshistory" property to JSON
         const user = rows[0];
-        res.status(200).json({ message: `Your id is: ${req.params.id}`, user });
+
+        // mycon.query('SELECT name FROM Entities WHERE id = ?', user.EntityId, (err, result) => {
+        //     if (err) {
+        //         console.error('Error retrieving data: ' + err.stack);
+        //         return res.status(500).send('Error retrieving data');
+        //     }
+
+        //     const EntityName = result.length > 0 ? result[0].name : null;
+
+        //     res.status(200).json({ message: `Your id is: ${req.params.id}`, user, EntityName });
+        // });
+        res.status(200).json({ message: `Your id is: ${req.params.id}`, user});
     } catch (error) {
         console.error('Error fetching user:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 // const Update_User = async (req, res) => {
 //     try {
 //         const { id } = req.params;
@@ -447,6 +785,105 @@ const Get_User = async (req, res) => {
 //         res.status(500).json({ error: "Internal Server Error" });
 //     }
 // };
+
+const List_User = async (req, res) => {
+    const { userId } = req.user;
+
+    const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+
+    const filters = {};
+
+    for (const key in restQueries) {
+        filters[key] = restQueries[key];
+    }
+
+    const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+    const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+
+    console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, "accessdata", accessdata)
+
+    // MySQL query to fetch paginated users
+
+    let sql;
+
+    if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+        sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`
+    } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+        let entityIds = [...JSON.parse(accessdata.entity_id)]
+        console.log(entityIds, typeof (entityIds), "entityIds")
+        sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+    } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+        let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+        console.log(userIDs, typeof (userIDs), "userIDs")
+        sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+    } else if (!accessdata) {
+        sql = `SELECT * FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+    }
+
+    // Add conditions for additional filter fields
+
+    for (const [field, value] of Object.entries(filters)) {
+        if (value !== '') {
+            sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+        }
+    }
+
+    // Add LIMIT and OFFSET clauses to the SQL query
+    sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+
+    mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
+        if (err) {
+            console.error('Error executing MySQL query: ' + err.stack);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+
+        // Execute the count query to get the total number of users
+        let sqlCount;
+        if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%')`;
+        } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+            let entityIds = [...JSON.parse(accessdata.entity_id)]
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+        } else if (!!accessdata && !!accessdata.selected_users && !accessdata.entity_id) {
+            let userIDs = [...JSON.parse(accessdata.selected_users), userId]
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id IN (${userIDs.join(',')})`;
+        } else if (!accessdata) {
+            sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%' OR email LIKE '%${search}%') AND id = '${userId}'`;
+        }
+
+        // Add conditions for additional filter fields
+        for (const [field, value] of Object.entries(filters)) {
+            if (value !== '') {
+                sqlCount += ` AND ${field} LIKE '%${value}%'`;
+            }
+        }
+
+        mycon.query(sqlCount, async (err, countResult) => {
+            if (err) {
+                console.error('Error executing MySQL count query: ' + err.stack);
+                res.status(500).json({ error: 'Internal server error' });
+                return;
+            }
+
+            const totalUsers = countResult[0].total;
+            const totalPages = Math.ceil(totalUsers / pageSize);
+
+            res.json({
+                users: result,
+                totalPages: parseInt(totalPages),
+                currentPage: parseInt(page),
+                pageSize: parseInt(pageSize),
+                totalUsers: parseInt(totalUsers),
+                startUser: parseInt(offset) + 1, // Correct the start user index
+                endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
+                search
+            });
+        });
+    });
+};
+
 
 const Update_User = async (req, res) => {
     try {
@@ -606,7 +1043,7 @@ const RenewPassword = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        bcrypt.compare(oldPassword,user.password , async (err, result) => {
+        bcrypt.compare(oldPassword, user.password, async (err, result) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Internal Server Error' });
@@ -614,13 +1051,13 @@ const RenewPassword = async (req, res) => {
             if (!result) {
                 return res.status(401).json({ error: 'Old password is incorrect' });
             }
-             let hashedNewPassword = await bcrypt.hash(newPassword, 10);
-            
-             await User.update({ password: hashedNewPassword }, {
+            let hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+            await User.update({ password: hashedNewPassword }, {
                 where: {
-                  id: id
+                    id: id
                 }
-              });
+            });
 
             res.status(200).json({ message: `Password reset successfully` });
         });
