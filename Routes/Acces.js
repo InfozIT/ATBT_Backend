@@ -43,7 +43,7 @@ router.post('/entity', authVerify, (req, res) => {
 
     // Insert record into user_access table
     userId
-    UserAccess.create({userName:userName,entityNames:entityNames, user_id: userId, entity_id: JSON.stringify(entityIds), name: name, description: description })
+    UserAccess.create({userName:userName,entityNames:JSON.stringify(entityNames), user_id: userId, entity_id: JSON.stringify(entityIds), name: name, description: description })
 
         .then(() => res.status(200).json({ message: 'Access granted to entity-level data' }))
 
@@ -65,7 +65,7 @@ router.post('/selected', authVerify, (req, res) => {
 
     // Insert record into user_access table
 
-    UserAccess.create({userName:userName, selectedUsersNames: selectedUsersNames, name: name, description: description,user_id: userId, selected_users: JSON.stringify(selectedUsers) })
+    UserAccess.create({userName:userName, selectedUsersNames: JSON.stringify(selectedUsersNames), name: name, description: description,user_id: userId, selected_users: JSON.stringify(selectedUsers) })
 
         .then(() => res.status(200).json({ message: 'Access granted to selected users\' data' }))
 
