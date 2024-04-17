@@ -40,14 +40,12 @@ router.post('/all', authVerify, (req, res) => {
 router.post('/entity', authVerify, async(req, res) => {
 
     const { name, description, entityIds, userId,entityNames,userName} = req.body
-
-    // Check if the email already exists
     const existingUser = await db.UserAccess.findOne({ where: { name } });
     if (existingUser) {
         console.error("name already exists.");
         return res.status(400).send("name already exists");
     }
-    UserAccess.create({userName:userName,entityNames:(entityNames), user_id: userId, entity_id: entityIds, name: name, description: description })
+    UserAccess.create({userName:userName,entityNames:entityNames, user_id: userId, entity_id: entityIds, name: name, description: description })
 
         .then(() => res.status(200).json({ message: 'Access granted to entity-level data' }))
 
@@ -63,28 +61,74 @@ router.post('/entity', authVerify, async(req, res) => {
 
 // Endpoint to grant access to specific selected users' data
 
-router.post('/selected', authVerify, async(req, res) => {
+router.post('/entity', authVerify, async(req, res) => {
+    try {
+        const { name, description, entityIds, userId,entityNames,userName} = req.body
 
-    const { name, description,userId ,selectedUsers,selectedUsersNames,userName} = req.body
-    const existingUser = await db.UserAccess.findOne({ where: { name } });
-    if (existingUser) {
-        console.error("name already exists.");
-        return res.status(400).send("name already exists");
-    }
+        // Check if the name already exists
+        const existingUser = await db.UserAccess.findOne({ where: { name } });
+        if (existingUser) {
+            console.error("Name already exists.");
+            return res.status(400).send("Name already exists");
+        }
 
-    UserAccess.create({userName:userName, selectedUsersNames:selectedUsersNames, name: name, description: description,user_id: userId, selected_users:selectedUsers })
+        // Convert selectedUsers to string
+        const selectedUsersString = JSON.stringify(entityIds);
 
-        .then(() => res.status(200).json({ message: 'Access granted to selected users\' data' }))
+        // Parse selectedUsersNames as JSON
+        const parsedSelectedUsersNames = JSON.parse(entityNames);
 
-        .catch(err => {
-
-            console.error(err);
-
-            res.status(500).json({ message: 'Internal Server Error' });
-
+        // Create new entry in the UserAccess table
+        await UserAccess.create({
+            userName: userName,
+            selectedUsersNames: parsedSelectedUsersNames,
+            name: name,
+            description: description,
+            user_id: userId,
+            selected_users: selectedUsersString 
         });
 
+        res.status(200).json({ message: 'Access granted to selected users\' data' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 });
+
+router.post('/selected', authVerify, async(req, res) => {
+    try {
+        const { name, description, userId, selectedUsers, selectedUsersNames, userName } = req.body;
+
+        // Check if the name already exists
+        const existingUser = await db.UserAccess.findOne({ where: { name } });
+        if (existingUser) {
+            console.error("Name already exists.");
+            return res.status(400).send("Name already exists");
+        }
+
+        // Convert selectedUsers to string
+        const selectedUsersString = JSON.stringify(selectedUsers);
+
+        // Parse selectedUsersNames as JSON
+        const parsedSelectedUsersNames = JSON.parse(selectedUsersNames);
+
+        // Create new entry in the UserAccess table
+        await UserAccess.create({
+            userName: userName,
+            selectedUsersNames: parsedSelectedUsersNames,
+            name: name,
+            description: description,
+            user_id: userId,
+            selected_users: selectedUsersString 
+        });
+
+        res.status(200).json({ message: 'Access granted to selected users\' data' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 
 // Endpoint to revoke access
 
@@ -144,13 +188,13 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
       }
       
       // Parsing selectedUsersNames from JSON strings to arrays
-      result.forEach(item => {
-        if (item.selectedUsersNames || item.entityNames) {
-          item.selectedUsersNames = JSON.parse(item.selectedUsersNames);
-          item.entityNames = JSON.parse(item.entityNames);
+    //   result.forEach(item => {
+    //     if (item.selectedUsersNames || item.entityNames) {
+    //       item.selectedUsersNames = JSON.parse(item.selectedUsersNames);
+    //       item.entityNames = JSON.parse(item.entityNames);
 
-        }
-      })
+    //     }
+    //   })
       res.status(200).json(result);
     });
   });
