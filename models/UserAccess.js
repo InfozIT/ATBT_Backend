@@ -11,16 +11,27 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true
     
         },
+        userName: {
+            type: DataTypes.STRING,
+            allowNull: true,
+          },
+          entityNames: {
+            type: DataTypes.JSON,
+            allowNull: true,
+          },
+          selectedUsersNames: {
+            type: DataTypes.JSON,
+            allowNull: true,
+          },
         name: {
             type: DataTypes.STRING,
             allowNull: true,
-            unique: 'name',
           },
           description: {
             type: DataTypes.STRING,
-            // allowNull defaults to true
-            allowNull: true
+
           },
+
     
         user_id: {
     
