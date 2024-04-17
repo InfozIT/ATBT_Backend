@@ -37,12 +37,16 @@ router.post('/all', authVerify, (req, res) => {
 
 // Endpoint to grant access to entity-level data
 
-router.post('/entity', authVerify, (req, res) => {
+router.post('/entity', authVerify, async(req, res) => {
 
     const { name, description, entityIds, userId,entityNames,userName} = req.body
 
-    // Insert record into user_access table
-    userId
+    // Check if the email already exists
+    const existingUser = await db.UserAccess.findOne({ where: { name } });
+    if (existingUser) {
+        console.error("name already exists.");
+        return res.status(400).send("name already exists");
+    }
     UserAccess.create({userName:userName,entityNames:JSON.stringify(entityNames), user_id: userId, entity_id: JSON.stringify(entityIds), name: name, description: description })
 
         .then(() => res.status(200).json({ message: 'Access granted to entity-level data' }))
@@ -59,11 +63,14 @@ router.post('/entity', authVerify, (req, res) => {
 
 // Endpoint to grant access to specific selected users' data
 
-router.post('/selected', authVerify, (req, res) => {
+router.post('/selected', authVerify, async(req, res) => {
 
     const { name, description,userId ,selectedUsers,selectedUsersNames,userName} = req.body
-
-    // Insert record into user_access table
+    const existingUser = await db.UserAccess.findOne({ where: { name } });
+    if (existingUser) {
+        console.error("name already exists.");
+        return res.status(400).send("name already exists");
+    }
 
     UserAccess.create({userName:userName, selectedUsersNames: JSON.stringify(selectedUsersNames), name: name, description: description,user_id: userId, selected_users: JSON.stringify(selectedUsers) })
 
