@@ -109,7 +109,6 @@ router.post('/selected', authVerify, async(req, res) => {
 
 router.delete('/remove/:accessId', authVerify, (req, res) => {
 
-    const userId = req.user.userId;
 
     const accessId = req.params.accessId;
 
@@ -117,7 +116,7 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 
     // Delete record from user_access table
 
-    UserAccess.destroy({ where: { id: accessId, user_id: userId } })
+    UserAccess.destroy({ where: { id: accessId, user_id: accessId } })
 
         .then(() => res.status(200).json({ message: 'Access revoked' }))
 
