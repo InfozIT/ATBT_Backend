@@ -107,28 +107,20 @@ router.post('/selected', authVerify, async(req, res) => {
 
 // Endpoint to revoke access
 
-router.delete('/remove/:accessId', authVerify, (req, res) => {
+router.delete('/remove/:id', authVerify, async(req, res) => {
+     
+        try {
+          await db.UserAccess.destroy({
+            where: { id: req.params.id },
+          });
+      
+          res.status(200).json({ message: `deleted successfully ${req.params.id}` });
+        } catch (error) {
+          console.error("Error deleting:", error);
+          res.status(500).json({ error: "Internal Server Error" });
+        }
+    })
 
-
-    const accessId = req.params.accessId;
-
-
-
-    // Delete record from user_access table
-
-    UserAccess.destroy({ where: { id: accessId, user_id: accessId } })
-
-        .then(() => res.status(200).json({ message: 'Access revoked' }))
-
-        .catch(err => {
-
-            console.error(err);
-
-            res.status(500).json({ message: 'Internal Server Error' });
-
-        });
-
-});
 
 
 // router.put('/update/:id', authVerify, async (req, res) => {
