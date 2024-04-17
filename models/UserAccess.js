@@ -11,6 +11,18 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true
     
         },
+        userName: {
+            type: DataTypes.STRING,
+            allowNull: true,
+          },
+          entityNames: {
+            type: DataTypes.STRING,
+            allowNull: true,
+          },
+          selectedUsersNames: {
+            type: DataTypes.STRING,
+            allowNull: true,
+          },
         name: {
             type: DataTypes.STRING,
             allowNull: true,

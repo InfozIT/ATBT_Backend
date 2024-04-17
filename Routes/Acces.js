@@ -1,9 +1,14 @@
 var db = require('../models/index');
+const Sequelize = require('sequelize');
+
 const UserAccess = db.UserAccess;
+const mycon = require('../DB/mycon');
 
 
 const express = require('express');
-const authVerify = require('../middlewares/authVerify.middleware')
+const authVerify = require('../middlewares/authVerify.middleware');
+const { user } = require('../DB/config');
+const e = require('express');
 
 
 const router = express.Router();
@@ -34,11 +39,11 @@ router.post('/all', authVerify, (req, res) => {
 
 router.post('/entity', authVerify, (req, res) => {
 
-    const { name, description, entityIds, userId} = req.body
+    const { name, description, entityIds, userId,entityNames,userName} = req.body
 
     // Insert record into user_access table
     userId
-    UserAccess.create({ user_id: userId, entity_id: JSON.stringify(entityIds), name: name, description: description })
+    UserAccess.create({userName:userName,entityNames:entityNames, user_id: userId, entity_id: JSON.stringify(entityIds), name: name, description: description })
 
         .then(() => res.status(200).json({ message: 'Access granted to entity-level data' }))
 
@@ -56,14 +61,11 @@ router.post('/entity', authVerify, (req, res) => {
 
 router.post('/selected', authVerify, (req, res) => {
 
-    const { name, description,userId } = req.body
-
-
-    const selectedUsers = req.body.selectedUsers; // Assuming selectedUsers is an array of user IDs
+    const { name, description,userId ,selectedUsers,selectedUsersNames,userName} = req.body
 
     // Insert record into user_access table
 
-    UserAccess.create({ name: name, description: description,user_id: userId, selected_users: JSON.stringify(selectedUsers) })
+    UserAccess.create({userName:userName, selectedUsersNames: selectedUsersNames, name: name, description: description,user_id: userId, selected_users: JSON.stringify(selectedUsers) })
 
         .then(() => res.status(200).json({ message: 'Access granted to selected users\' data' }))
 
@@ -104,41 +106,29 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 });
 
 
-// router.get('/view', authVerify, async(req, res) => {
-//     const roleId = req.user.roleId;
-//     if (roleId === 8 || roleId === 9 ||roleId === 7) {
-//         const users = await db.UserAccess.findAll();
-           
-//         // Define an object to store the results
-//             const result = {};
-
-//             // Loop through each data object
-//             users.forEach(obj => {
-//                 const userId = obj.user_id;
-//                 const entityIds = JSON.parse(obj.entity_id);
-                
-//                 // Check if the user_id already exists in the result object
-//                 if (!result[userId]) {
-//                     result[userId] = [];
-//                 }
-
-//                 // Push the entity IDs to the result object under the user_id
-//                 result[userId].push(entityIds);
-//             });
-
-//             // Convert result to JSON string
-//             const resultJSON = JSON.stringify(result);
-
-//             console.log(resultJSON);
+router.put('/update/:id', authVerify, async (req, res) => {
+    const AccessId = req.params.id;
+    const newData = req.body;
+    // Update data in the entitydata table based on the id
+    mycon.query('UPDATE UserAccesses SET ? WHERE id = ?', [newData, AccessId], (err, result) => {
+      if (err) {
+        console.error('Error updating data: ' + err.stack);
+        res.status(500).send('Error updating data');
+        return;
+      }
+  
+      if (result.affectedRows === 0) {
+        res.status(404).send('Entity data not found');
+        return;
+      }
+  
+      console.log('Updated ' + result.affectedRows + ' row(s)');
+      res.status(200).send('Data updated successfully');
+    });
+  });
 
 
-      
-//         res.status(200).json(users);
-//     } else {
-//         res.status(402).json({ message: 'Contact an admin' });
-//     }
-// })
-router.get('/view', authVerify, async (req, res) => {
+  router.get('/view', authVerify, async (req, res) => {
     const roleId = req.user.roleId;
     if (roleId === 8 || roleId === 9 || roleId === 7) {
         const users = await db.UserAccess.findAll()
@@ -149,7 +139,7 @@ router.get('/view', authVerify, async (req, res) => {
     }
 })
 
-
+  
 
 
 
