@@ -136,15 +136,25 @@ router.put('/update/:id', authVerify, async (req, res) => {
 
 
   router.get('/view', authVerify, async (req, res) => {
-    const roleId = req.user.roleId;
-    if (roleId === 8 || roleId === 9 || roleId === 7) {
-        const users = await db.UserAccess.findAll()
+    mycon.query('SELECT * FROM UserAccesses', (err, result) => {
+      if (err) {
+        console.error('Error retrieving data: ' + err.stack);
+        res.status(500).send('Error retrieving data');
+        return;
+      }
+      
+      // Parsing selectedUsersNames from JSON strings to arrays
+      result.forEach(item => {
+        if (item.selectedUsersNames || item.entityNames) {
+          item.selectedUsersNames = JSON.parse(item.selectedUsersNames);
+          item.entityNames = JSON.parse(item.entityNames);
 
-        res.status(200).json(users);
-    } else {
-        res.status(402).json({ message: 'Contact an admin' });
-    }
-})
+        }
+      })
+      res.status(200).json(result);
+    });
+  });
+  
 
   
 
