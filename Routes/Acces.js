@@ -153,6 +153,8 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 //     });
 //   });
 
+//
+
 
   router.get('/view', authVerify, async (req, res) => {
     mycon.query('SELECT * FROM UserAccesses', (err, result) => {
