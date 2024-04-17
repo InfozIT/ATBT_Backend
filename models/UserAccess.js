@@ -16,11 +16,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
           },
           entityNames: {
-            type: DataTypes.TEXT,
+            type: DataTypes.JSON,
             allowNull: true,
           },
           selectedUsersNames: {
-            type: DataTypes.TEXT,
+            type: DataTypes.JSON,
             allowNull: true,
           },
         name: {

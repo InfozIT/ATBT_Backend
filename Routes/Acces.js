@@ -47,7 +47,7 @@ router.post('/entity', authVerify, async(req, res) => {
         console.error("name already exists.");
         return res.status(400).send("name already exists");
     }
-    UserAccess.create({userName:userName,entityNames:JSON.stringify(entityNames), user_id: userId, entity_id: JSON.stringify(entityIds), name: name, description: description })
+    UserAccess.create({userName:userName,entityNames:(entityNames), user_id: userId, entity_id: entityIds, name: name, description: description })
 
         .then(() => res.status(200).json({ message: 'Access granted to entity-level data' }))
 
@@ -72,7 +72,7 @@ router.post('/selected', authVerify, async(req, res) => {
         return res.status(400).send("name already exists");
     }
 
-    UserAccess.create({userName:userName, selectedUsersNames: JSON.stringify(selectedUsersNames), name: name, description: description,user_id: userId, selected_users: JSON.stringify(selectedUsers) })
+    UserAccess.create({userName:userName, selectedUsersNames:selectedUsersNames, name: name, description: description,user_id: userId, selected_users:selectedUsers })
 
         .then(() => res.status(200).json({ message: 'Access granted to selected users\' data' }))
 
@@ -113,26 +113,26 @@ router.delete('/remove/:accessId', authVerify, (req, res) => {
 });
 
 
-router.put('/update/:id', authVerify, async (req, res) => {
-    const AccessId = req.params.id;
-    const newData = req.body;
-    // Update data in the entitydata table based on the id
-    mycon.query('UPDATE UserAccesses SET ? WHERE id = ?', [newData, AccessId], (err, result) => {
-      if (err) {
-        console.error('Error updating data: ' + err.stack);
-        res.status(500).send('Error updating data');
-        return;
-      }
+// router.put('/update/:id', authVerify, async (req, res) => {
+//     const AccessId = req.params.id;
+//     const newData = req.body;
+//     // Update data in the entitydata table based on the id
+//     mycon.query('UPDATE UserAccesses SET ? WHERE id = ?', [newData, AccessId], (err, result) => {
+//       if (err) {
+//         console.error('Error updating data: ' + err.stack);
+//         res.status(500).send('Error updating data');
+//         return;
+//       }
   
-      if (result.affectedRows === 0) {
-        res.status(404).send('Entity data not found');
-        return;
-      }
+//       if (result.affectedRows === 0) {
+//         res.status(404).send('Entity data not found');
+//         return;
+//       }
   
-      console.log('Updated ' + result.affectedRows + ' row(s)');
-      res.status(200).send('Data updated successfully');
-    });
-  });
+//       console.log('Updated ' + result.affectedRows + ' row(s)');
+//       res.status(200).send('Data updated successfully');
+//     });
+//   });
 
 
   router.get('/view', authVerify, async (req, res) => {
