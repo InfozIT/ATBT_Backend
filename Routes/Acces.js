@@ -37,33 +37,9 @@ router.post('/all', authVerify, (req, res) => {
 
 // Endpoint to grant access to entity-level data
 
-router.post('/entity', authVerify, async(req, res) => {
-
-    const { name, description, entityIds, userId,entityNames,userName} = req.body
-    const existingUser = await db.UserAccess.findOne({ where: { name } });
-    if (existingUser) {
-        console.error("name already exists.");
-        return res.status(400).send("name already exists");
-    }
-    UserAccess.create({userName:userName,entityNames:entityNames, user_id: userId, entity_id: entityIds, name: name, description: description })
-
-        .then(() => res.status(200).json({ message: 'Access granted to entity-level data' }))
-
-        .catch(err => {
-
-            console.error(err);
-
-            res.status(500).json({ message: 'Internal Server Error' });
-
-        });
-
-});
-
-// Endpoint to grant access to specific selected users' data
-
-router.post('/entity', authVerify, async(req, res) => {
+router.post('/entity', authVerify, async (req, res) => {
     try {
-        const { name, description, entityIds, userId,entityNames,userName} = req.body
+        const { name, description, entityIds, userId, entityNames, userName } = req.body;
 
         // Check if the name already exists
         const existingUser = await db.UserAccess.findOne({ where: { name } });
@@ -72,23 +48,22 @@ router.post('/entity', authVerify, async(req, res) => {
             return res.status(400).send("Name already exists");
         }
 
-        // Convert selectedUsers to string
-        const selectedUsersString = JSON.stringify(entityIds);
+        // Convert entityIds to string if it's an array
+        const entityIdsString = Array.isArray(entityIds) ? JSON.stringify(entityIds) : entityIds;
 
-        // Parse selectedUsersNames as JSON
-        const parsedSelectedUsersNames = JSON.parse(entityNames);
+        const parsedEntityNames = JSON.parse(entityNames);
 
         // Create new entry in the UserAccess table
         await UserAccess.create({
             userName: userName,
-            selectedUsersNames: parsedSelectedUsersNames,
-            name: name,
-            description: description,
+            entityNames: parsedEntityNames,
             user_id: userId,
-            selected_users: selectedUsersString 
+            entity_id: entityIdsString, // Save entityIds as string
+            name: name,
+            description: description
         });
 
-        res.status(200).json({ message: 'Access granted to selected users\' data' });
+        res.status(200).json({ message: 'Access granted to entity-level data' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Internal Server Error' });
