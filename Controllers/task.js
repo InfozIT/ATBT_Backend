@@ -146,26 +146,26 @@ const GetTask = async (req, res) => {
   const taskId = req.params.id;
   const Task = await db.Task.findByPk(taskId);
   res.status(201).json(Task);};
-  
+
 const UpdateTask = async (req, res) => {
     try {
       const taskId = req.params.id; // Assuming taskId is part of the URL
       const updateData = req.body; 
+      let {members } = req.body
       let file = req.file;
+      const selectedmember = JSON.stringify(members);
+
       if (file) {
         updateData = {
+          members : selectedmember,
           image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
           ...data,
         }
       }
-
-      const updatedTask = await db.Task.findByIdAndUpdate(taskId, updateData, { new: true });
-  
-      if (!updatedTask) {
-        return res.status(404).send("Task not found");
-      }
-  
-      res.status(200).send(updatedTask);
+      const updatedTask = await db.Task.update(updateData, {
+        where: { id: req.params.id }
+      });
+      res.status(201).json({ message: "successfully updated" })
     } catch (error) {
       console.error("Error updating task:", error);
       res.status(500).send("Error updating task");
