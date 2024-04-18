@@ -145,7 +145,7 @@ const List_Task_Pub = async (req, res) => {    res.status(201).json({ message: "
 const GetTask = async (req, res) => { 
   const taskId = req.params.id;
   const Task = await db.Task.findByPk(taskId);
-  res.status(201).json(Task);};
+  res.status(200).json(Task);};
 
 const UpdateTask = async (req, res) => {
     try {
@@ -165,7 +165,7 @@ const UpdateTask = async (req, res) => {
       const updatedTask = await db.Task.update(updateData, {
         where: { id: req.params.id }
       });
-      res.status(201).json({ message: "successfully updated" })
+      res.status(200).json({ message: "successfully updated" })
     } catch (error) {
       console.error("Error updating task:", error);
       res.status(500).send("Error updating task");
