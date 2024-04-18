@@ -3,50 +3,7 @@ const Meet = db.Meeting;
 const mycon = require('../DB/mycon');
 
 
-// const ListEntiyGroup = async (req, res) => {
-//   const bmId = req.params.id;
-//   const ids = [];
 
-//   try {
-//     const Data = await Meet.findOne({ where: { id: bmId } });
-//     const result = await Meet.findAll({
-//       where: {
-//         id: bmId
-//       },
-//       attributes: ['members'] // Specify the column you want to retrieve
-//     });
-
-//     let members = result.map(meeting => meeting.dataValues.members).flat();
-//     ids.push(...members); // Spread the members array to push individual elements
-
-//     let EntID = Data.EntityId;
-
-//     mycon.query('SELECT * FROM Users WHERE EntityId = ?', EntID, async (err, result1) => {
-//       if (err) {
-//         console.error('Error retrieving data: ' + err.stack);
-//         res.status(500).send('Error retrieving data');
-//         return;
-//       }
-//       ids.push(...result1); // Spread the user IDs array to push individual elements
-
-//       // Removing duplicates from ids array
-//       const uniqIds = [...new Set(ids)];
-//       const ID = uniqIds.ids.map(obj => obj.id);
-//       console.log(ID)
-
-//       await Meet.update({ members: uniqIds }, {
-//         where: {
-//           id: bmId
-//         }
-//       });
-
-//       res.status(200).json({ ids: uniqIds }); // Sending unique ids array in the response
-//     });
-//   } catch (error) {
-//     console.error('Error: ' + error);
-//     res.status(500).send('Error processing request');
-//   }
-// };
 
 
 const ListEntiyGroup = async (req, res) => { // Changed function name to follow camelCase convention
@@ -167,7 +124,6 @@ const ListTeamGroup = async (req, res) =>  {
 // };
 const CreateTask = async (req, res) => {
   try {
-      let file = req.file;
       var data = req.body;
       let bmId = req.params.id;
       console.log(bmId);
@@ -182,11 +138,40 @@ const CreateTask = async (req, res) => {
 
 
 
+
 const ListTask = async (req, res) => {    res.status(201).json({ message: "successfully" });};
 const List_Task_Pub = async (req, res) => {    res.status(201).json({ message: "successfully" });};
 
-const GetTask = async (req, res) => { res.status(201).json({ message: "successfully" });};
-const UpdateTask = async (req, res) => { res.status(201).json({ message: "successfully" });};
+const GetTask = async (req, res) => { 
+  const taskId = req.params.id;
+  const Task = await db.Task.findByPk(taskId);
+  res.status(201).json(Task);};
+  
+const UpdateTask = async (req, res) => {
+    try {
+      const taskId = req.params.id; // Assuming taskId is part of the URL
+      const updateData = req.body; 
+      let file = req.file;
+      if (file) {
+        updateData = {
+          image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+          ...data,
+        }
+      }
+
+      const updatedTask = await db.Task.findByIdAndUpdate(taskId, updateData, { new: true });
+  
+      if (!updatedTask) {
+        return res.status(404).send("Task not found");
+      }
+  
+      res.status(200).send(updatedTask);
+    } catch (error) {
+      console.error("Error updating task:", error);
+      res.status(500).send("Error updating task");
+    }
+  };
+  
 const DeleteTask = async (req, res) => { res.status(201).json({ message: "successfully" });};
 
 

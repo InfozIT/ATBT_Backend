@@ -67,6 +67,6 @@ Meeting.belongsTo(Team);
 
 
 
-db.sequelize.sync({alter:true});
+db.sequelize.sync();
 console.log("All models were alter successfully.");
 module.exports = db;
