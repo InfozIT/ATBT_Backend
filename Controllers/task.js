@@ -1,6 +1,7 @@
 var db = require('../models/index');
 const Meet = db.Meeting;
 const mycon = require('../DB/mycon');
+const transporter = require('../utils/nodemailer')
 
 
 
@@ -38,8 +39,6 @@ const ListEntiyGroup = async (req, res) => { // Changed function name to follow 
     res.status(500).send('Error processing request');
   }
 };
-
-
 
 const ListTeamGroup = async (req, res) =>  {
   const bmId = req.params.id;
@@ -82,46 +81,8 @@ const ListTeamGroup = async (req, res) =>  {
 
 // CRUD for task module
 
-// const CreateTask = async (req, res) => {
-//   try {
-//     let file = req.file;
-//     let data = req.body;
-//     let {decision,members} =req.body
-//     const bmId = req.params.id;
 
-//     const existingEntity = await db.Task.findOne({ where: {decision} });
-//     if (existingEntity) {
-//       console.error("entity already exists.");
-//       return res.status(400).send("entity already exists");
-//     }
 
-//     const selectedMembers = JSON.stringify(members);
-//     if (file) {
-//       data = {
-//         MeetingId : bmId,
-//         file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-//         members : selectedMembers,
-//         ...data,
-//       }
-//     }
-//     console.log(data)
-//     mycon.query('INSERT INTO Entities SET ?', data, async (err, result) => {
-//       if (err) {
-//         console.error('Error inserting data: ' + err.stack);
-//         return res.status(500).send('Error inserting data');
-//       }
-//       const createdEntity = await db.Task.findOne({ where: { id: result.insertId } });
-//       if (createdEntity){
-
-//       }
-//       res.status(201).send(`${result.insertId}`);
-
-//     });
-//   } catch (error) {
-//     console.error("Error creating Entity:", error);
-//     res.status(500).send("Error creating user");
-//   }
-// };
 const CreateTask = async (req, res) => {
   try {
       var data = req.body;
@@ -136,10 +97,68 @@ const CreateTask = async (req, res) => {
   }
 };
 
+async function sendEmail(email, password) {
 
+  const mailData = {
+      from: 'nirajkr00024@gmail.com',
+      to: email,
+      subject: 'Welcome to ATBT! Your Account has been Created',
+      html: `
+          <style>
+              /* Add CSS styles here */
+              .container {
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+                  font-family: Arial, sans-serif;
+                  background-color: #f9f9f9;
+              }
+              .logo {
+                  max-width: 100px;
+                  margin-bottom: 20px;
+              }
+              .button {
+                  display: inline-block;
+                  padding: 10px 20px;
+                  background-color: #007bff;
+                  color: #fff;
+                  text-decoration: none;
+                  border-radius: 5px;
+              }
+              .button:hover {
+                  background-color: #0056b3;
+              }
+              p {
+                  margin-bottom: 15px;
+              }
+          </style>
+          <div class="container">
+              <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Your Company Logo" class="logo" />
+              <p>Hi there,</p>
+              <p>Welcome to ATBT! Your account has been successfully created.</p>
+              <p>Here are your account details:</p>
+              <ul style="list-style: none;">
+                  <li><strong>Email:</strong> ${email}</li>
+                  <li><strong>Password:</strong> ${password}</li>
+                  <li>
+                  <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Login</a>
+                  </li>
+                  <!-- You can add more user details here if needed -->
+              </ul>
+              <p>Feel free to explore our platform and start enjoying our services.</p>
+              <p>If you have any questions or need assistance, don't hesitate to contact us.</p>
+              <p>Thank you for choosing YourCompany!</p>
+              <p>Best regards,</p>
+              <p>Your Company Team</p>
+          </div>
+      `,
+  };
 
+  await transporter.sendMail(mailData);
+}
 
 const ListTask = async (req, res) => {    res.status(201).json({ message: "successfully" });};
+
 const List_Task_Pub = async (req, res) => {    res.status(201).json({ message: "successfully" });};
 
 const GetTask = async (req, res) => { 
@@ -171,6 +190,68 @@ const UpdateTask = async (req, res) => {
       res.status(500).send("Error updating task");
     }
   };
+
+  async function sendEmail(email, password) {
+
+    const mailData = {
+        from: 'nirajkr00024@gmail.com',
+        to: email,
+        subject: 'Welcome to ATBT! Your Account has been Created',
+        html: `
+            <style>
+                /* Add CSS styles here */
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    font-family: Arial, sans-serif;
+                    background-color: #f9f9f9;
+                }
+                .logo {
+                    max-width: 100px;
+                    margin-bottom: 20px;
+                }
+                .button {
+                    display: inline-block;
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: #fff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }
+                .button:hover {
+                    background-color: #0056b3;
+                }
+                p {
+                    margin-bottom: 15px;
+                }
+            </style>
+            <div class="container">
+                <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Your Company Logo" class="logo" />
+                <p>Hi there,</p>
+                <p>Welcome to ATBT! Your account has been successfully created.</p>
+                <p>Here are your account details:</p>
+                <ul style="list-style: none;">
+                    <li><strong>Email:</strong> ${email}</li>
+                    <li><strong>Password:</strong> ${password}</li>
+                    <li>
+                    <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Login</a>
+                    </li>
+                    <!-- You can add more user details here if needed -->
+                </ul>
+                <p>Feel free to explore our platform and start enjoying our services.</p>
+                <p>If you have any questions or need assistance, don't hesitate to contact us.</p>
+                <p>Thank you for choosing YourCompany!</p>
+                <p>Best regards,</p>
+                <p>Your Company Team</p>
+            </div>
+        `,
+    };
+
+    await transporter.sendMail(mailData);
+}
+
+
   
 const DeleteTask = async (req, res) => { res.status(201).json({ message: "successfully" });};
 
