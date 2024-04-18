@@ -1,7 +1,6 @@
 require('dotenv').config();
 var db = require('../models/index');
 const Entity = db.Entity;
-const Access = db.UserAccess;
 const mycon = require('../DB/mycon')
 
 

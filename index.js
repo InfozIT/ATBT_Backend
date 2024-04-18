@@ -41,7 +41,7 @@ app.use('/boardmeeting', authVerify, Meeting_router);
 app.use('/rbac', Role_router);
 app.use('/public', Public_router);
 app.use('/api', authVerify, emailRoute);
-app.use('/task', Task_router);
+app.use('/task',authVerify, Task_router);
 
 
 

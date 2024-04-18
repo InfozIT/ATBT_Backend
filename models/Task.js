@@ -1,25 +1,29 @@
 module.exports = (sequelize, DataTypes) => {
     const Task = sequelize.define('Task', {
         // Model attributes are defined here
-        name: {
+        decision: {
             type: DataTypes.STRING,
             allowNull: true,
-            unique: 'name',
         },
-        description: {
+        meetingId: {
             type: DataTypes.STRING,
             allowNull: true
-        },
-        createdBy: {
-            type: DataTypes.STRING,
-            allowNull: true,
-
-        },
-        customFieldsData: {
+          },
+          members: {
             type: DataTypes.JSON,
             allowNull: true
+            // allowNull defaults to true
+          },
+        dueDate: {
+            type: DataTypes.STRING,
+            allowNull: true
         },
-        image: {
+        status: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+
+        file: {
             type: DataTypes.STRING,
             allowNull: true
         }

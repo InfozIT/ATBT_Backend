@@ -61,6 +61,9 @@ Meeting.belongsTo(Entity);
 Team.hasMany(Meeting); // One Entity can have many Meetings
 Meeting.belongsTo(Team);
 
+// Meeting.hasMany(Task); // One meeting can have many task
+// Task.belongsTo(Meeting);
+
 
 
 
