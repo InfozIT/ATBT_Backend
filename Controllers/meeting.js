@@ -211,7 +211,9 @@ const ListMeetingsPub = async (req, res) => {
 
 const GetMeeting = (req, res) => {
   const entityId = req.params.id;
-  mycon.query('SELECT * FROM Meetings WHERE id = ?', entityId, (err, result) => {
+  console.log(entityId)
+
+  mycon.query('SELECT * FROM Meetings WHERE EntityId = ?', entityId, (err, result) => {
     if (err) {
       console.error('Error retrieving data: ' + err.stack);
       res.status(500).send('Error retrieving data');
@@ -223,7 +225,7 @@ const GetMeeting = (req, res) => {
       return;
     }
 
-    res.status(200).json(result[0]);
+    res.status(200).json(result);
   });
 };
 
