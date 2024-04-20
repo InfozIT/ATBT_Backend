@@ -208,10 +208,9 @@ const ListMeetingsPub = async (req, res) => {
 
 };
 
-
 const GetMeeting = (req, res) => {
-  const entityId = req.params.id;
-  console.log(entityId)
+  const entityId = req.query.EntityId;
+  const userId = req.query.UserId;
 
   mycon.query('SELECT * FROM Meetings WHERE EntityId = ?', entityId, (err, result) => {
     if (err) {
