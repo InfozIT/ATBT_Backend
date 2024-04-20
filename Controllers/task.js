@@ -163,9 +163,13 @@ const List_Task_Pub = async (req, res) => {    res.status(201).json({ message: "
 
 const GetTask = async (req, res) => { 
   const bmId = req.params.id;
-  console.log(bmId)
   const task = await db.Task.findAll({ where: {meetingId: bmId } });
   res.status(200).json(task);};
+
+  const GetTaskbyId = async (req, res) => { 
+    const bmId = req.params.id;
+    const task = await db.Task.findAll({ where: {id: bmId } });
+    res.status(200).json(task);};
 
 const UpdateTask = async (req, res) => {
     try {
@@ -267,5 +271,6 @@ module.exports = {
   DeleteTask,
   List_Task_Pub,
   ListEntiyGroup,
-  ListTeamGroup
+  ListTeamGroup,
+  GetTaskbyId,
 };
