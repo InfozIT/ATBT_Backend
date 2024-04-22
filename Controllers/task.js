@@ -166,10 +166,19 @@ const GetTask = async (req, res) => {
   const task = await db.Task.findAll({ where: {meetingId: bmId } });
   res.status(200).json(task);};
 
-  const GetTaskbyId = async (req, res) => { 
+  const GetTaskbyId = async (req, res) => {
     const bmId = req.params.id;
-    const task = await db.Task.findAll({ where: {id: bmId } });
-    res.status(200).json(task);};
+    try {
+        const tasks = await db.Task.findAll({
+            where: { id: bmId },
+            order: [['id', 'DESC']] // Sort by ID in descending order
+        });
+        res.status(200).json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 
 const UpdateTask = async (req, res) => {
     try {
