@@ -161,10 +161,24 @@ const ListTask = async (req, res) => {    res.status(201).json({ message: "succe
 
 const List_Task_Pub = async (req, res) => {    res.status(201).json({ message: "successfully" });};
 
-const GetTask = async (req, res) => { 
+// const GetTask = async (req, res) => { 
+//   const bmId = req.params.id;
+//   const task = await db.Task.findAll(
+//     { where: {meetingId: bmId } });
+
+
+
+//   res.status(200).json(task);};
+const GetTask = async (req, res) => {
   const bmId = req.params.id;
-  const task = await db.Task.findAll({ where: {meetingId: bmId } });
-  res.status(200).json(task);};
+  const tasks = await db.Task.findAll({
+    where: { meetingId: bmId },
+    order: [['createdAt', 'DESC']] 
+  });
+
+  res.status(200).json(tasks);
+};
+
 
   const GetTaskbyId = async (req, res) => {
     const bmId = req.params.id;
