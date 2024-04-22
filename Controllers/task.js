@@ -171,7 +171,6 @@ const GetTask = async (req, res) => {
     try {
         const tasks = await db.Task.findAll({
             where: { id: bmId },
-            order: [['id', 'DESC']] // Sort by ID in descending order
         });
         res.status(200).json(tasks);
     } catch (error) {
