@@ -119,98 +119,6 @@ const ListMeetings = async (req, res) => {
   });
 };
 
-const ListMeetingsPub = async (req, res) => {
-  const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
-  const filters = {};
-  for (const key in restQueries) {
-    filters[key] = restQueries[key];
-
-  }
-  const offset = (parseInt(page) - 1) * (parseInt(pageSize));
-
-  // MySQL query to fetch paginated users
-
-  let sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
-
-  // Add conditions for additional filter fields
-
-  for (const [field, value] of Object.entries(filters)) {
-
-    if (value !== '') {
-
-      sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-
-    }
-
-  }
-  mycon.query(sql, [offset, pageSize], (err, result) => {
-
-    if (err) {
-
-      console.error('Error executing MySQL query: ' + err.stack);
-
-      res.status(500).json({ error: 'Internal server error' });
-
-      return;
-    }
-
-    // Execute the count query to get the total number of users
-
-    let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
-
-    // Add conditions for additional filter fields
-
-    for (const [field, value] of Object.entries(filters)) {
-
-      if (value !== '') {
-
-        sqlCount += ` AND ${field} LIKE '%${value}%'`;
-
-      }
-
-    }
-
-    mycon.query(sqlCount, (err, countResult) => {
-
-      if (err) {
-
-        console.error('Error executing MySQL count query: ' + err.stack);
-
-        res.status(500).json({ error: 'Internal server error' });
-
-        return;
-
-      }
-
-      const totalUsers = countResult[0].total;
-
-      const totalPages = Math.ceil(totalUsers / pageSize);
-
-      res.json({
-
-        Meetings: result,
-
-        totalPages: parseInt(totalPages),
-
-        currentPage: parseInt(page),
-
-        pageSize: parseInt(pageSize),
-
-        totalMeetings: parseInt(totalUsers),
-
-        startMeeting: parseInt(offset),
-
-        endMeeting: parseInt(offset + pageSize),
-
-        search
-
-      });
-
-    });
-
-  });
-
-};
 
 const GetMeeting = async (req, res) => {
   try {
@@ -330,5 +238,4 @@ module.exports = {
   GetMeeting,
   UpdateMeetings,
   DeleteMeeting,
-  ListMeetingsPub
 };
