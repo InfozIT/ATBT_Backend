@@ -211,79 +211,73 @@ const ListMeetingsPub = async (req, res) => {
   });
 
 };
-// const GetMeeting = async (req, res) => {
-//   let file = req.file;
-//   let data = req.body;
-//   let Query = req.query;
 
-//   // Extracting entityId, teamId, and userId from query parameters
-//   const entityId = Query?.entity ?? null;
-//   const teamId = Query?.team ?? null;
-//   const userId = Query?.user ?? null;
-//   console.log(entityId,"entityId",teamId, "teamId", userId,"userId")
-
-//   try {
-//     const meet = await db.Meeting.findAll({
-//       where: {
-//         [Op.or]: [
-//           { EntityId: 56 },
-//           { TeamId: teamId },
-//           { UserId: userId }
-//         ]
-//       }
-//     });
-//     res.status(200).json(meet);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// }
 const GetMeeting = async (req, res) => {
-  let file = req.file;
-  let data = req.body;
-  let Query = req.query;
-
-  // Extracting entityId, teamId, and userId from query parameters
-  const entityId = Query?.entity ?? null;
-  const teamId = Query?.team ?? null;
-  const userId = Query?.user ?? null;
-
   try {
-    let whereClause = '';
-    let params = [];
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+    const searchQuery = req.query.search || '';
+    const entityId = req.query.entity;
+    const teamId = req.query.team;
+    const userId = req.query.user;
+    var search = ""  // need to add code 
 
+    console.log("Extracting",entityId, teamId, userId, "from query parameters")
+
+    const options = {
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
+      order: sortBy === 'meetingnumber' ? [['meetingnumber']] : sortBy === 'description' ? [['description']] : [[sortBy]],
+      where: {
+        [Op.or]: [
+          { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+          { description: { [Op.like]: `%${searchQuery}%` } },
+          // Add more conditions based on your model's attributes
+        ],
+      },
+    };
+    if (searchQuery) {
+      options.where = {
+        [Op.or]: [
+          { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+          { description: { [Op.like]: `%${searchQuery}%` } },
+        ],
+      };
+    }
     if (entityId) {
-      whereClause += 'EntityId = ? OR ';
-      params.push(entityId);
+      options.where.EntityId = 56;
     }
     if (teamId) {
-      whereClause += 'TeamId = ? OR ';
-      params.push(teamId);
+      options.where.TeamId = teamId;
     }
     if (userId) {
-      whereClause += 'UserId = ? OR ';
-      params.push(userId);
+      options.where.UserId = userId;
     }
 
-    // Remove the last 'OR ' if it exists
-    whereClause = whereClause.replace(/ OR $/, '');
+    const { count, rows: Entities } = await db.Meeting.findAndCountAll(options);
 
-    // Construct the SQL query
-    const query = `SELECT * FROM Meetings WHERE ${whereClause}`;
-    
-    // Execute the query
-    const tasks = await db.sequelize.query(query, {
-      replacements: params,
-      type: db.sequelize.QueryTypes.SELECT
+    // Calculate the range of entities being displayed
+    const startEntity = (page - 1) * pageSize + 1;
+    const endEntity = Math.min(page * pageSize, count);
+
+    const totalPages = Math.ceil(count / pageSize);
+
+    res.status(200).json({
+      Meetings: Entities,
+      totalMeetings: count,
+      totalPages: totalPages,
+      currentPage: page,
+      pageSize : pageSize,
+      startMeeting:startEntity,
+      endMeeting: endEntity,
+      search
     });
-
-    res.status(200).json(tasks);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching Entities:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
-}
-
-
-
+};
 
 const UpdateMeetings = async (req, res) => {
   try {
