@@ -3,6 +3,8 @@ const Meet = db.Meeting;
 const mycon = require('../DB/mycon');
 const Team = db.Team
 const Entity = db.Entity
+const { Op } = require('sequelize');
+
 
 
 const CreateMeeting = async (req, res) => {
@@ -209,26 +211,79 @@ const ListMeetingsPub = async (req, res) => {
   });
 
 };
+// const GetMeeting = async (req, res) => {
+//   let file = req.file;
+//   let data = req.body;
+//   let Query = req.query;
 
-const GetMeeting = (req, res) => {
-  const entityId = req.query.EntityId;
-  const userId = req.query.UserId;
+//   // Extracting entityId, teamId, and userId from query parameters
+//   const entityId = Query?.entity ?? null;
+//   const teamId = Query?.team ?? null;
+//   const userId = Query?.user ?? null;
+//   console.log(entityId,"entityId",teamId, "teamId", userId,"userId")
 
-  mycon.query('SELECT * FROM Meetings WHERE EntityId = ?', entityId, (err, result) => {
-    if (err) {
-      console.error('Error retrieving data: ' + err.stack);
-      res.status(500).send('Error retrieving data');
-      return;
+//   try {
+//     const meet = await db.Meeting.findAll({
+//       where: {
+//         [Op.or]: [
+//           { EntityId: 56 },
+//           { TeamId: teamId },
+//           { UserId: userId }
+//         ]
+//       }
+//     });
+//     res.status(200).json(meet);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// }
+const GetMeeting = async (req, res) => {
+  let file = req.file;
+  let data = req.body;
+  let Query = req.query;
+
+  // Extracting entityId, teamId, and userId from query parameters
+  const entityId = Query?.entity ?? null;
+  const teamId = Query?.team ?? null;
+  const userId = Query?.user ?? null;
+
+  try {
+    let whereClause = '';
+    let params = [];
+
+    if (entityId) {
+      whereClause += 'EntityId = ? OR ';
+      params.push(entityId);
+    }
+    if (teamId) {
+      whereClause += 'TeamId = ? OR ';
+      params.push(teamId);
+    }
+    if (userId) {
+      whereClause += 'UserId = ? OR ';
+      params.push(userId);
     }
 
-    if (result.length === 0) {
-      res.status(404).send('Entity data not found');
-      return;
-    }
+    // Remove the last 'OR ' if it exists
+    whereClause = whereClause.replace(/ OR $/, '');
 
-    res.status(200).json(result);
-  });
-};
+    // Construct the SQL query
+    const query = `SELECT * FROM Meetings WHERE ${whereClause}`;
+    
+    // Execute the query
+    const tasks = await db.sequelize.query(query, {
+      replacements: params,
+      type: db.sequelize.QueryTypes.SELECT
+    });
+
+    res.status(200).json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
+
 
 const UpdateMeetings = async (req, res) => {
   try {
