@@ -14,6 +14,7 @@ const CreateMeeting = async (req, res) => {
     // Extracting entityId and teamId from query parameters
     const entityId = Query?.entity ?? null;
     const teamId = Query?.team ?? null;
+    const userId = Query?.user ?? null;
 
     // Modify data if file is present
     if (file) {
@@ -31,15 +32,16 @@ const CreateMeeting = async (req, res) => {
         resolve(result);
       });
     });
-
     const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
-
-    // Associating the created meeting with an entity or team
     if (createdMeeting) {
       if (entityId) {
         const entity = await Entity.findOne({ where: { id: entityId } });
         await createdMeeting.setEntity(entity);
-      } else if (teamId) {
+      } else if (userId) {
+        const user = await db.User.findOne({ where: { id: userId } });
+        await createdMeeting.setUser(user);
+      }
+      else if (teamId) {
         const team = await Team.findOne({ where: { id: teamId } });
         await createdMeeting.setTeam(team);
       }
