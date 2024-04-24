@@ -85,8 +85,6 @@ async function sendEmail(email, password) {
 
 const ListTask = async (req, res) => { res.status(201).json({ message: "successfully" }); };
 
-const List_Task_Pub = async (req, res) => { res.status(201).json({ message: "successfully" }); };
-
 const GetTask = async (req, res) => {
   const bmId = req.params.id;
   const tasks = await db.Task.findAll({
@@ -320,7 +318,6 @@ module.exports = {
   GetTask,
   UpdateTask,
   DeleteTask,
-  List_Task_Pub,
   GetTaskbyId,
   GetAllTask
 };
