@@ -55,6 +55,8 @@ User.belongsTo(Entity);
 User.belongsToMany(Team, { through: "UserTeam" });
 Team.belongsToMany(User, { through: "UserTeam" });
 
+// Meet
+
 Entity.hasMany(Meeting); // One Entity can have many Meetings
 Meeting.belongsTo(Entity);
 
@@ -63,6 +65,7 @@ Meeting.belongsTo(Team);
 
 User.hasMany(Meeting); // One user can have many Meetings
 Meeting.belongsTo(User);
+
 
 
 
