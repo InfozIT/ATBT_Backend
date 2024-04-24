@@ -154,15 +154,6 @@ router.delete('/remove/:id', authVerify, async (req, res) => {
         res.status(500).send('Error retrieving data');
         return;
       }
-      
-      // Parsing selectedUsersNames from JSON strings to arrays
-    //   result.forEach(item => {
-    //     if (item.selectedUsersNames || item.entityNames) {
-    //       item.selectedUsersNames = JSON.parse(item.selectedUsersNames);
-    //       item.entityNames = JSON.parse(item.entityNames);
-
-    //     }
-    //   })
       res.status(200).json(result);
     });
   });

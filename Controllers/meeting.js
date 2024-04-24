@@ -316,7 +316,6 @@ const ListEntiyGroup = async (req, res) => { // Changed function name to follow 
         res.status(500).send('Error retrieving data');
         return;
       }
-      // Extracting user IDs from result1 array
       ids.push(...result1); // Spread the user IDs array to push individual elements
 
       // Removing duplicates from ids array
