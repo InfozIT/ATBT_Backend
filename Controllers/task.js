@@ -3,6 +3,7 @@ const Meet = db.Meeting;
 const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
 const { Op } = require('sequelize');
+const Task = require('../models/Task');
 
 
 
@@ -16,7 +17,7 @@ const ListEntiyGroup = async (req, res) => { // Changed function name to follow 
     const meetdata = await Meet.findOne({ where: { id: bmId } });
     ids.push(...meetdata.members)
     let EntID = (meetdata.EntityId)
-    
+
     mycon.query('SELECT * FROM Users WHERE EntityId = ?', EntID, async (err, result1) => { // Passed EntID as an array
       if (err) {
         console.error('Error retrieving data: ' + err.stack);
@@ -41,7 +42,7 @@ const ListEntiyGroup = async (req, res) => { // Changed function name to follow 
   }
 };
 
-const ListTeamGroup = async (req, res) =>  {
+const ListTeamGroup = async (req, res) => {
   const bmId = req.params.id;
   const ids = [];
   mycon.query('SELECT members,TeamId FROM Meetings WHERE id = ?', bmId, (err, result) => {
@@ -85,25 +86,25 @@ const ListTeamGroup = async (req, res) =>  {
 
 const CreateTask = async (req, res) => {
   try {
-      var data = req.body;
-      let bmId = req.params.id;
-      console.log(bmId);
-      
-      const task = await db.Task.create({ meetingId: bmId },data);
-      res.status(201).send(task);
+    var data = req.body;
+    let bmId = req.params.id;
+    console.log(bmId);
+
+    const task = await db.Task.create({ meetingId: bmId }, data);
+    res.status(201).send(task);
   } catch (error) {
-      console.error("Error creating task:", error);
-      res.status(500).send("Error creating task");
+    console.error("Error creating task:", error);
+    res.status(500).send("Error creating task");
   }
 };
 
 async function sendEmail(email, password) {
 
   const mailData = {
-      from: 'nirajkr00024@gmail.com',
-      to: email,
-      subject: 'Welcome to ATBT! Your Account has been Created',
-      html: `
+    from: 'nirajkr00024@gmail.com',
+    to: email,
+    subject: 'Welcome to ATBT! Your Account has been Created',
+    html: `
           <style>
               /* Add CSS styles here */
               .container {
@@ -157,66 +158,66 @@ async function sendEmail(email, password) {
   await transporter.sendMail(mailData);
 }
 
-const ListTask = async (req, res) => {    res.status(201).json({ message: "successfully" });};
+const ListTask = async (req, res) => { res.status(201).json({ message: "successfully" }); };
 
-const List_Task_Pub = async (req, res) => {    res.status(201).json({ message: "successfully" });};
+const List_Task_Pub = async (req, res) => { res.status(201).json({ message: "successfully" }); };
 
 const GetTask = async (req, res) => {
   const bmId = req.params.id;
   const tasks = await db.Task.findAll({
     where: { meetingId: bmId },
-    order: [['createdAt', 'DESC']] 
+    order: [['createdAt', 'DESC']]
   });
 
   res.status(200).json(tasks);
 };
 
 
-  const GetTaskbyId = async (req, res) => {
-    const bmId = req.params.id;
-    try {
-        const tasks = await db.Task.findAll({
-            where: { id: bmId },
-        });
-        res.status(200).json(tasks);
-    } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
+const GetTaskbyId = async (req, res) => {
+  const bmId = req.params.id;
+  try {
+    const tasks = await db.Task.findAll({
+      where: { id: bmId },
+    });
+    res.status(200).json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 
 const UpdateTask = async (req, res) => {
-    try {
-      const taskId = req.params.id; // Assuming taskId is part of the URL
-      const updateData = req.body; 
-      let {members } = req.body
-      let file = req.file;
-      const selectedmember = JSON.stringify(members);
+  try {
+    const taskId = req.params.id; // Assuming taskId is part of the URL
+    const updateData = req.body;
+    let { members } = req.body
+    let file = req.file;
+    const selectedmember = JSON.stringify(members);
 
-      if (file) {
-        updateData = {
-          members : selectedmember,
-          image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-          ...data,
-        }
+    if (file) {
+      updateData = {
+        members: selectedmember,
+        image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        ...data,
       }
-      const updatedTask = await db.Task.update(updateData, {
-        where: { id: req.params.id }
-      });
-      res.status(200).json({ message: "successfully updated" })
-    } catch (error) {
-      console.error("Error updating task:", error);
-      res.status(500).send("Error updating task");
     }
-  };
+    const updatedTask = await db.Task.update(updateData, {
+      where: { id: req.params.id }
+    });
+    res.status(200).json({ message: "successfully updated" })
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).send("Error updating task");
+  }
+};
 
-  async function sendEmail(email, password) {
+async function sendEmail(email, password) {
 
-    const mailData = {
-        from: 'nirajkr00024@gmail.com',
-        to: email,
-        subject: 'Welcome to ATBT! Your Account has been Created',
-        html: `
+  const mailData = {
+    from: 'nirajkr00024@gmail.com',
+    to: email,
+    subject: 'Welcome to ATBT! Your Account has been Created',
+    html: `
             <style>
                 /* Add CSS styles here */
                 .container {
@@ -265,9 +266,9 @@ const UpdateTask = async (req, res) => {
                 <p>Your Company Team</p>
             </div>
         `,
-    };
+  };
 
-    await transporter.sendMail(mailData);
+  await transporter.sendMail(mailData);
 }
 
 const DeleteTask = async (req, res) => {
@@ -371,127 +372,73 @@ const DeleteTask = async (req, res) => {
 
 
 const GetAllTask = async (req, res) => {
-  const { userId } = req.user;
-
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+  let Query = req.query;
+
+  // Extracting entityId and teamId from query parameters
+  const entityId = Query?.entity ?? null;
+  const teamId = Query?.team ?? null;
+  const userId = Query?.user ?? null;
+
+  console.log(entityId, teamId, userId, "recived form params ")
 
   const filters = {};
 
   for (const key in restQueries) {
-      filters[key] = restQueries[key];
+    filters[key] = restQueries[key];
   }
 
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
+  if (entityId) {
+    let EntiyMeet = await db.Meeting.findAll({ where: { EntityId: entityId } });
+    const EntID = EntiyMeet.map(meeting => meeting.dataValues.id);
+    console.log(EntID)
+    var { count, rows } = await db.Task.findAndCountAll({
+      where: {
+        meetingId: EntID
+      },
+      raw: true // Get raw data instead of Sequelize model instances
+    });
+  }
+  else if (teamId) {
+    let TeamMeet = await db.Meeting.findAll({ where: { TeamId: teamId } });
+    const TmID = TeamMeet.map(meeting => meeting.dataValues.id);
+    var { count, rows } = await db.Task.findAndCountAll({
+      where: {
+        meetingId: TmID
+      },
+      raw: true // Get raw data instead of Sequelize model instances
+    });
 
-  const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
-  const Data = await db.User.findOne({ where: { id: userId } });
-  let EntityId =Data.EntityId
+  }
+  else if (userId) {
+    let UserMeet = await db.Meeting.findAll({ where: { UserId: userId } });
+    const UsrID = UserMeet.map(meeting => meeting.dataValues.id);
+    console.log(UsrID)
+    var { count, rows } = await db.Task.findAndCountAll({
+      where: {
+        meetingId: UsrID
+      },
+      raw: true // Get raw data instead of Sequelize model instances
+    });
 
-  console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
-
-  // MySQL query to fetch paginated entities
-  let sql;
-
-  if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-    console.log("hello _ 1")
-      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
-  } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-    console.log("hello _ 2")
-      let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-      console.log(entityIds, typeof (entityIds), "entityIds")
-      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-    } 
-    else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-      console.log("hello _ 3", accessdata.selected_users)
-      //get array of user entity ids
-      // userEntityIds = [56]
-      const users = await db.User.findAll({
-        attributes: ['EntityId'], // Only fetch the entityId column
-        where: {
-          id: [...JSON.parse(accessdata.selected_users)] // Filter users based on userIds array
-        },
-        raw: true // Get raw data instead of Sequelize model instances
-      });
-      const entityIds = users.map(user => user.EntityId);
-      console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
-      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-      // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
-  } 
-  else if (!accessdata) {
-    console.log("hello _ 4")
-      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
   }
 
-  // Add conditions for additional filter fields
-  for (const [field, value] of Object.entries(filters)) {
-      if (value !== '') {
-          sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-      }
-  }
+  const totalEntities = count;
+  const totalPages = Math.ceil(totalEntities / pageSize);
 
-  // Add LIMIT and OFFSET clauses to the SQL query
-  sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
-
-  mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
-      if (err) {
-          console.error('Error executing MySQL query: ' + err.stack);
-          res.status(500).json({ error: 'Internal server error' });
-          return;
-      }
-
-      // Execute the count query to get the total number of entities
-      let sqlCount;
-      if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-        console.log("first _ 1")
-          sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
-      } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-        console.log("first _ 2")
-          let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-          console.log(entityIds, "entityIds")
-          sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-      } 
-      else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-        console.log("first _ 3")
-        //get array of user entity ids
-        userEntityIds = [81]
-        sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${userEntityIds.join(',')})`;
-        // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
-    }
-       else if (!accessdata) {
-        console.log("first _ 4")
-          sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
-      }
-
-      // Add conditions for additional filter fields
-      for (const [field, value] of Object.entries(filters)) {
-          if (value !== '') {
-              sqlCount += ` AND ${field} LIKE '%${value}%'`;
-          }
-      }
-
-      mycon.query(sqlCount, async (err, countResult) => {
-          if (err) {
-              console.error('Error executing MySQL count query: ' + err.stack);
-              res.status(500).json({ error: 'Internal server error' });
-              return;
-          }
-
-          const totalEntities = countResult[0].total;
-          const totalPages = Math.ceil(totalEntities / pageSize);
-
-          res.json({
-              Entities: result,
-              totalPages: parseInt(totalPages),
-              currentPage: parseInt(page),
-              pageSize: parseInt(pageSize),
-              totalEntities: parseInt(totalEntities),
-              startEntity: parseInt(offset) + 1, // Correct the start entity index
-              endEntity: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
-              search
-          });
-      });
+  res.json({
+    Task: rows,
+    totalPages: parseInt(totalPages),
+    currentPage: parseInt(page),
+    pageSize: parseInt(pageSize),
+    totalTask: parseInt(totalEntities),
+    startTask: parseInt(offset) + 1, // Correct the start entity index
+    endTask: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
+    search
   });
-};
+
+}
 
 
 module.exports = {
