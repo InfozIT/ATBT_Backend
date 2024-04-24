@@ -3,8 +3,11 @@ const router = express.Router()
 const Meeting = require('../Controllers/meeting')
 const upload = require('../utils/store');
 const hasPermission = require('../middlewares/rolePermission');
-const { Permission } = require('../models');
 
+
+
+router.get('/entity/group/:id',Meeting.ListEntiyGroup)
+router.get('/team/group/:id',Meeting.ListTeamGroup)
 
 
 router.post('/add', hasPermission("entity", "canCreate"), upload.single('image'), Meeting.CreateMeeting)

@@ -230,75 +230,146 @@ const DeleteMeeting = async (req, res) => {
     console.error("Error deleting:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-};;
+};
 
-const GetTaskbyId = async (req, res) => {
+// const GetTaskbyId = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page, 10) || 1;
+//     const pageSize = parseInt(req.query.pageSize, 10) || 10;
+//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+//     const searchQuery = req.query.search || '';
+//     const entityId = req.query.entity;
+//     const teamId = req.query.team;
+//     const userId = req.query.user;
+//     var search = ""  // need to add code 
+
+//     console.log("Extracting",entityId, teamId, userId, "from query parameters")
+
+//     const options = {
+//       offset: (page - 1) * pageSize,
+//       limit: pageSize,
+//       order: sortBy === 'meetingnumber' ? [['meetingnumber']] : sortBy === 'description' ? [['description']] : [[sortBy]],
+//       where: {
+//         [Op.or]: [
+//           { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+//           { description: { [Op.like]: `%${searchQuery}%` } },
+//           // Add more conditions based on your model's attributes
+//         ],
+//       },
+//     };
+//     if (searchQuery) {
+//       options.where = {
+//         [Op.or]: [
+//           { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+//           { description: { [Op.like]: `%${searchQuery}%` } },
+//         ],
+//       };
+//     }
+//     if (entityId) {
+//       options.where.EntityId = 56;
+//     }
+//     if (teamId) {
+//       options.where.TeamId = teamId;
+//     }
+//     if (userId) {
+//       options.where.UserId = userId;
+//     }
+
+//     const { count, rows: Entities } = await db.Meeting.findAndCountAll(options);
+
+//     // Calculate the range of entities being displayed
+//     const startEntity = (page - 1) * pageSize + 1;
+//     const endEntity = Math.min(page * pageSize, count);
+
+//     const totalPages = Math.ceil(count / pageSize);
+
+//     res.status(200).json({
+//       Meetings: Entities,
+//       totalMeetings: count,
+//       totalPages: totalPages,
+//       currentPage: page,
+//       pageSize : pageSize,
+//       startMeeting:startEntity,
+//       endMeeting: endEntity,
+//       search
+//     });
+//   } catch (error) {
+//     console.error("Error fetching Entities:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
+// group of bm users
+
+const ListEntiyGroup = async (req, res) => { // Changed function name to follow camelCase convention
+  const bmId = req.params.id;
+  const ids = [];
+
   try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const pageSize = parseInt(req.query.pageSize, 10) || 10;
-    const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
-    const searchQuery = req.query.search || '';
-    const entityId = req.query.entity;
-    const teamId = req.query.team;
-    const userId = req.query.user;
-    var search = ""  // need to add code 
+    const meetdata = await Meet.findOne({ where: { id: bmId } });
+    ids.push(...meetdata.members)
+    let EntID = (meetdata.EntityId)
 
-    console.log("Extracting",entityId, teamId, userId, "from query parameters")
+    mycon.query('SELECT * FROM Users WHERE EntityId = ?', EntID, async (err, result1) => { // Passed EntID as an array
+      if (err) {
+        console.error('Error retrieving data: ' + err.stack);
+        res.status(500).send('Error retrieving data');
+        return;
+      }
+      // Extracting user IDs from result1 array
+      ids.push(...result1); // Spread the user IDs array to push individual elements
 
-    const options = {
-      offset: (page - 1) * pageSize,
-      limit: pageSize,
-      order: sortBy === 'meetingnumber' ? [['meetingnumber']] : sortBy === 'description' ? [['description']] : [[sortBy]],
-      where: {
-        [Op.or]: [
-          { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
-          { description: { [Op.like]: `%${searchQuery}%` } },
-          // Add more conditions based on your model's attributes
-        ],
-      },
-    };
-    if (searchQuery) {
-      options.where = {
-        [Op.or]: [
-          { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
-          { description: { [Op.like]: `%${searchQuery}%` } },
-        ],
-      };
-    }
-    if (entityId) {
-      options.where.EntityId = 56;
-    }
-    if (teamId) {
-      options.where.TeamId = teamId;
-    }
-    if (userId) {
-      options.where.UserId = userId;
-    }
+      // Removing duplicates from ids array
+      const uniqIds = [...new Set(ids)];
 
-    const { count, rows: Entities } = await db.Meeting.findAndCountAll(options);
 
-    // Calculate the range of entities being displayed
-    const startEntity = (page - 1) * pageSize + 1;
-    const endEntity = Math.min(page * pageSize, count);
+      res.status(200).json({ User: uniqIds }); // Sending unique ids array in the respons
 
-    const totalPages = Math.ceil(count / pageSize);
-
-    res.status(200).json({
-      Meetings: Entities,
-      totalMeetings: count,
-      totalPages: totalPages,
-      currentPage: page,
-      pageSize : pageSize,
-      startMeeting:startEntity,
-      endMeeting: endEntity,
-      search
     });
   } catch (error) {
-    console.error("Error fetching Entities:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error('Error: ' + error);
+    res.status(500).send('Error processing request');
   }
 };
 
+const ListTeamGroup = async (req, res) => {
+  const bmId = req.params.id;
+  const ids = [];
+  mycon.query('SELECT members,TeamId FROM Meetings WHERE id = ?', bmId, (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      res.status(500).send('Error retrieving data');
+      return;
+    }
+    if (result.length === 0) {
+      res.status(404).send('Entity data not found');
+      return;
+    }
+    var EntID = (result[0].TeamId);
+    // Iterate over each member and push their id into ids array
+    for (let i = 0; i < result[0].members.length; i++) {
+      ids.push(result[0].members[i].id);
+    }
+    mycon.query('SELECT * FROM UserTeam WHERE TeamId = ?', EntID, (err, result1) => {
+      if (err) {
+        console.error('Error retrieving data: ' + err.stack);
+        res.status(500).send('Error retrieving data');
+        return;
+      }
+      if (result1.length === 0) {
+        res.status(404).send('Entity data not found');
+        return;
+      }
+      for (let i = 0; i < result1.length; i++) {
+        ids.push(result1[i].UserId);
+      }
+      // Filter out null values from the ids array
+      const filteredIds = ids.filter(id => id !== null);
+      const uniq = [...new Set(filteredIds)];
+      res.status(200).json({ ids: uniq }); // Sending ids array in the response
+    });
+  });
+};
 
 
 module.exports = {
@@ -307,4 +378,6 @@ module.exports = {
   GetMeeting,
   UpdateMeetings,
   DeleteMeeting,
+  ListEntiyGroup,
+  ListTeamGroup,
 };

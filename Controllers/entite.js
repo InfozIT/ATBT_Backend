@@ -15,21 +15,16 @@ const CreateEntiy = async (req, res) => {
         id: membersId
       }
     });
-    console.log(req.body, "body")
     const existingEntity = await db.Entity.findOne({ where: { name } });
-    console.log(name, existingEntity, "existin entity")
     if (existingEntity) {
-      console.error("entity already exists.");
       return res.status(400).send("entity already exists");
     }
-    console.log(data, file, "create data and file")
     if (file) {
       data = {
         image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
         ...data,
       }
     }
-    console.log(data)
     mycon.query('INSERT INTO Entities SET ?', data, async (err, result) => {
       if (err) {
         console.error('Error inserting data: ' + err.stack);

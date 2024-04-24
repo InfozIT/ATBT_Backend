@@ -50,7 +50,6 @@ const imagesFolder = path.join(__dirname, 'Public');
 app.use('/images', express.static(imagesFolder));
 
 app.post('/upload', upload.single('image'), (req, res) => {
-  console.log(req.file)
   res.status(200).json({
     success: 1,
     profile_url: `${process.env.IMAGE_URI}/images/${req.file.filename}`

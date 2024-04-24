@@ -4,82 +4,13 @@ const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
 const { Op } = require('sequelize');
 const Task = require('../models/Task');
+const User = require('../models/User');
 
 
 
 
 
-const ListEntiyGroup = async (req, res) => { // Changed function name to follow camelCase convention
-  const bmId = req.params.id;
-  const ids = [];
 
-  try {
-    const meetdata = await Meet.findOne({ where: { id: bmId } });
-    ids.push(...meetdata.members)
-    let EntID = (meetdata.EntityId)
-
-    mycon.query('SELECT * FROM Users WHERE EntityId = ?', EntID, async (err, result1) => { // Passed EntID as an array
-      if (err) {
-        console.error('Error retrieving data: ' + err.stack);
-        res.status(500).send('Error retrieving data');
-        return;
-      }
-      // Extracting user IDs from result1 array
-      console.log(result1)
-      ids.push(...result1); // Spread the user IDs array to push individual elements
-
-      // Removing duplicates from ids array
-      const uniqIds = [...new Set(ids)];
-
-
-      res.status(200).json({ ids: uniqIds }); // Sending unique ids array in the response
-
-
-    });
-  } catch (error) {
-    console.error('Error: ' + error);
-    res.status(500).send('Error processing request');
-  }
-};
-
-const ListTeamGroup = async (req, res) => {
-  const bmId = req.params.id;
-  const ids = [];
-  mycon.query('SELECT members,TeamId FROM Meetings WHERE id = ?', bmId, (err, result) => {
-    if (err) {
-      console.error('Error retrieving data: ' + err.stack);
-      res.status(500).send('Error retrieving data');
-      return;
-    }
-    if (result.length === 0) {
-      res.status(404).send('Entity data not found');
-      return;
-    }
-    var EntID = (result[0].TeamId);
-    // Iterate over each member and push their id into ids array
-    for (let i = 0; i < result[0].members.length; i++) {
-      ids.push(result[0].members[i].id);
-    }
-    mycon.query('SELECT * FROM UserTeam WHERE TeamId = ?', EntID, (err, result1) => {
-      if (err) {
-        console.error('Error retrieving data: ' + err.stack);
-        res.status(500).send('Error retrieving data');
-        return;
-      }
-      if (result1.length === 0) {
-        res.status(404).send('Entity data not found');
-        return;
-      }
-      for (let i = 0; i < result1.length; i++) {
-        ids.push(result1[i].UserId);
-      }
-      // Filter out null values from the ids array
-      const filteredIds = ids.filter(id => id !== null);
-      const uniq = [...new Set(filteredIds)];
-      res.status(200).json({ ids: uniq }); // Sending ids array in the response
-    });
-  });
-};
 
 // CRUD for task module
 
@@ -171,7 +102,6 @@ const GetTask = async (req, res) => {
 
   res.status(200).json(tasks);
 };
-
 
 const GetTaskbyId = async (req, res) => {
   const bmId = req.params.id;
@@ -285,92 +215,6 @@ const DeleteTask = async (req, res) => {
   }
 };
 
-
-
-// Get all task by Entiy,team,User
-
-// const GetAllTask = async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page, 10) || 1;
-//     const pageSize = parseInt(req.query.pageSize, 10) || 10;
-//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
-//     const searchQuery = req.query.search || '';
-//     const entityId = req.query.entity;
-//     const teamId = req.query.team;
-//     const userId = req.query.user;
-//     var search = ""  // need to add code 
-
-//     console.log("Extracting",entityId, teamId, userId, "from query parameters")
-
-//     const options = {
-//       offset: (page - 1) * pageSize,
-//       limit: pageSize,
-//       order: sortBy === 'id' ? [['id']] : [[sortBy]],
-//       where: {
-//         [Op.or]: [
-//           { id: { [Op.like]: `%${searchQuery}%` } },
-//           // Add more conditions based on your model's attributes
-//         ],
-//       },
-//     };
-//     if (searchQuery) {
-//       options.where = {
-//         [Op.or]: [
-//           { id: { [Op.like]: `%${searchQuery}%` } },
-//         ],
-//       };
-//     }
-//     if (entityId) {
-//       console.log(entityId, "entityId it is from params")
-//       var Meet = await db.Meeting.findAll({
-//         where: {
-//           EntityId: entityId
-//       }});
-//       const ids = Meet.map(meeting => meeting.dataValues.id);
-//       console.log(ids , "borad meeting ids from meeting table")
-//       const task = await db.Task.findAll({
-//         where: {
-//           meetingId: ids // Filter users based on userIds array
-//         },
-//         raw: true // Get raw data instead of Sequelize model instances
-//       });
-//       console.log(task)
-//     }
-
-//     if (teamId) {
-//       options.where.TeamId = teamId;
-//     }
-//     if (userId) {
-//       options.where.UserId = userId;
-//     }
-
-//     const { count, rows: Entities } = await db.m.findAndCountAll(options);
-
-//     // Calculate the range of entities being displayed
-//     const startEntity = (page - 1) * pageSize + 1;
-//     const endEntity = Math.min(page * pageSize, count);
-
-//     const totalPages = Math.ceil(count / pageSize);
-
-//     res.status(200).json({
-//       Meetings: Meet,
-//       totalMeetings: count,
-//       totalPages: totalPages,
-//       currentPage: page,
-//       pageSize : pageSize,
-//       startMeeting:startEntity,
-//       endMeeting: endEntity,
-//       search
-//     });
-//   } catch (error) {
-//     console.error("Error fetching Entities:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };'
-
-
-
-
 const GetAllTask = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
   let Query = req.query;
@@ -448,8 +292,6 @@ module.exports = {
   UpdateTask,
   DeleteTask,
   List_Task_Pub,
-  ListEntiyGroup,
-  ListTeamGroup,
   GetTaskbyId,
   GetAllTask
 };

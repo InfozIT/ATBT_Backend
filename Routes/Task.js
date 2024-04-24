@@ -4,10 +4,6 @@ const task = require('../Controllers/task')
 const upload = require('../utils/store');
 const hasPermission = require('../middlewares/rolePermission');
 
-router.get('/entity/group/:id',task.ListEntiyGroup)
-router.get('/team/group/:id',task.ListTeamGroup)
-
-
 
 
 router.post('/add/:id', hasPermission("task", "canCreate"), upload.single('image'), task.CreateTask)
