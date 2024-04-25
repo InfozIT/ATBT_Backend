@@ -15,6 +15,8 @@ db.Meeting = require('./Meeting')(sequelize, DataTypes);
 db.Team = require('./Team')(sequelize, DataTypes);
 db.User = require('./User')(sequelize, DataTypes);
 db.Task = require('./Task')(sequelize, DataTypes);
+db.SubTask = require('./Subtask')(sequelize, DataTypes);
+
 db.UserAccess = require('./UserAccess')(sequelize, DataTypes);
 
 // module associations with user module
@@ -36,6 +38,7 @@ const Meeting = db.Meeting
 const Team = db.Team
 const User = db.User
 const Task = db.Task
+const SubTask = db.SubTask
 
 
 // Define associations
@@ -65,6 +68,9 @@ Meeting.belongsTo(Team);
 
 User.hasMany(Meeting); // One user can have many Meetings
 Meeting.belongsTo(User);
+
+Task.hasMany(SubTask); // One Task can have many Subtask
+SubTask.belongsTo(Task);
 
 
 

@@ -140,9 +140,6 @@ const GetTaskbyId = async (req, res) => {
   }
 };
 
-
-
-
 const UpdateTask = async (req, res) => {
   try {
     const taskId = req.params.id; // Assuming taskId is part of the URL
@@ -312,6 +309,23 @@ const GetAllTask = async (req, res) => {
 }
 
 
+const SubTask = async (req, res) => {   
+  try {
+  var data = req.body;
+  console.log(req.params.id)
+  const task = await db.SubTask.create({ TaskId: req.params.id }, data);
+  res.status(201).send(task);
+} catch (error) {
+  console.error("Error creating task:", error);
+  res.status(500).send("Error creating task");
+}
+};
+
+
+
+
+
+
 module.exports = {
   CreateTask,
   ListTask,
@@ -319,7 +333,8 @@ module.exports = {
   UpdateTask,
   DeleteTask,
   GetTaskbyId,
-  GetAllTask
+  GetAllTask,
+  SubTask
 };
 
 
