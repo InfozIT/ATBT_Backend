@@ -389,6 +389,59 @@ const SubTaskDelete = async (req, res) =>{
   });
 };
 
+const GetSublistId = (req, res) => {
+  const SubId = req.params.id;
+  mycon.query('SELECT * FROM SubTasks WHERE id = ?', SubId, (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      res.status(500).send('Error retrieving data');
+      return;
+    }
+
+    if (result.length === 0) {
+      res.status(404).send('No data not found');
+      return;
+    }
+
+    res.status(200).json(result);
+  });
+};
+
+
+const GetSubList = async (req, res) => {
+  const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+  const filters = {};
+
+  for (const key in restQueries) {
+    filters[key] = restQueries[key];
+  }
+  const offset = (parseInt(page) - 1) * parseInt(pageSize);
+    var { count, rows } = await db.SubTask.findAndCountAll({
+      where: {
+        TaskId: req.params.id
+      },
+      raw: true // Get raw data instead of Sequelize model instances
+    });
+
+    const totalEntities = count;
+    const totalPages = Math.ceil(totalEntities / pageSize);
+    res.json({
+      Task: rows,
+      totalPages: parseInt(totalPages),
+      currentPage: parseInt(page),
+      pageSize: parseInt(pageSize),
+      totalTask: parseInt(totalEntities),
+      startTask: parseInt(offset) + 1, // Correct the start entity index
+      endTask: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
+      search
+    });
+  }
+
+
+
+
+
+
 
 module.exports = {
   CreateTask,
@@ -401,7 +454,9 @@ module.exports = {
   SubTaskAdd,
   SubTaskUpdate,
   SubTaskDelete,
-  GetSubTaskbyId
+  GetSubTaskbyId,
+  GetSublistId,
+  GetSubList
 };
 
 
