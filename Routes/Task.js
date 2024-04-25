@@ -16,6 +16,8 @@ router.get('/listAll', hasPermission("meeting", "canRead"), task.GetAllTask)
 router.post('/subtaskAdd/:id', hasPermission("task", "canCreate"), upload.single('image'), task.SubTaskAdd)
 router.patch('/subtaskUpdate/:id', hasPermission("task", "canUpdate"), upload.single('image'),task.SubTaskUpdate)
 router.delete('/subtaskdelete/:id', hasPermission("task", "canDelete"), task.SubTaskDelete)
+router.get('/subtaskbyid/:id', hasPermission("task", "canRead"),task.GetSubTaskbyId)
+
 
 
 

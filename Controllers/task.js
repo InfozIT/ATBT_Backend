@@ -371,6 +371,24 @@ const SubTaskDelete = async (req, res) =>{
   }
  }
 
+ const GetSubTaskbyId = (req, res) => {
+  const SubId = req.params.id;
+  mycon.query('SELECT * FROM SubTasks WHERE id = ?', SubId, (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      res.status(500).send('Error retrieving data');
+      return;
+    }
+
+    if (result.length === 0) {
+      res.status(404).send('No data not found');
+      return;
+    }
+
+    res.status(200).json(result);
+  });
+};
+
 
 module.exports = {
   CreateTask,
@@ -382,7 +400,8 @@ module.exports = {
   GetAllTask,
   SubTaskAdd,
   SubTaskUpdate,
-  SubTaskDelete
+  SubTaskDelete,
+  GetSubTaskbyId
 };
 
 
