@@ -69,7 +69,7 @@ Meeting.belongsTo(Team);
 User.hasMany(Meeting); // One user can have many Meetings
 Meeting.belongsTo(User);
 
-Task.hasMany(SubTask); // One Task can have many Subtask
+Task.hasMany(SubTask,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
 SubTask.belongsTo(Task);
 
 

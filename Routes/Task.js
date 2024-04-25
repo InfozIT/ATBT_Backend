@@ -13,7 +13,11 @@ router.patch('/update/:id', hasPermission("task", "canUpdate"), upload.single('i
 router.delete('/delete/:id', hasPermission("task", "canDelete"), task.DeleteTask)
 router.get('/listbyid/:id', hasPermission("task", "canRead"),task.GetTaskbyId)
 router.get('/listAll', hasPermission("meeting", "canRead"), task.GetAllTask)
-router.post('/subtask/:id', hasPermission("task", "canCreate"), upload.single('image'), task.SubTask)
+router.post('/subtaskAdd/:id', hasPermission("task", "canCreate"), upload.single('image'), task.SubTaskAdd)
+router.patch('/subtaskUpdate/:id', hasPermission("task", "canUpdate"), upload.single('image'),task.SubTaskUpdate)
+router.delete('/subtaskdelete/:id', hasPermission("task", "canDelete"), task.SubTaskDelete)
+
+
 
 
 

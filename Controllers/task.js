@@ -309,7 +309,7 @@ const GetAllTask = async (req, res) => {
 }
 
 
-const SubTask = async (req, res) => {   
+const SubTaskAdd = async (req, res) => {   
   try {
   var data = req.body;
   console.log(req.params.id)
@@ -320,10 +320,32 @@ const SubTask = async (req, res) => {
   res.status(500).send("Error creating task");
 }
 };
+const SubTaskUpdate = async (req, res) =>{
+try {
+  const updateData = req.body;
+  const updatedTask = await db.SubTask.update(updateData, {
+    where: { id: req.params.id }
+  });
+  res.status(200).json({ message: "successfully updated",updatedTask })
+} catch (error) {
+  console.error("Error updating task:", error);
+  res.status(500).send("Error updating task");
+}
+}
 
+const SubTaskDelete = async (req, res) =>{
+  try {
+    await db.SubTask.destroy({
+      where: { id: req.params.id },
+      // truncate: true
+    });
 
-
-
+    res.status(200).json({ message: `deleted successfully ${req.params.id}` });
+  } catch (error) {
+    console.error("Error deleting:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+ }
 
 
 module.exports = {
@@ -334,7 +356,9 @@ module.exports = {
   DeleteTask,
   GetTaskbyId,
   GetAllTask,
-  SubTask
+  SubTaskAdd,
+  SubTaskUpdate,
+  SubTaskDelete
 };
 
 
