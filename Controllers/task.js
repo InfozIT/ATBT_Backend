@@ -91,8 +91,32 @@ const GetTask = async (req, res) => {
     where: { meetingId: bmId },
     order: [['createdAt', 'DESC']]
   });
+  const meetingIds = tasks.map(item => parseInt(item.meetingId));
+  const meetings = await db.Meeting.findAll({
+    attributes: ['id', 'date', 'meetingnumber'],
+    where: {
+      id: meetingIds // Filter meetings based on meetingIds array
+    },
+    raw: true // Get raw data instead of Sequelize model instances
+  });
+      const combinedResult = tasks.map(task => {
+      const taskData = task.dataValues; // Extracting dataValues from Sequelize object
+      const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+      return {
+        ...taskData,
+        id: taskData.id,
+        decision: taskData.decision,
+        date: meetingDetails.date,
+        meetingnumber: meetingDetails.meetingnumber,
+        priority: taskData.priority,
+        members: taskData.members,
+        dueDate: taskData.dueDate,
+        status: taskData.status,
+        file: taskData.file,
+      };
+    });
 
-  res.status(200).json(tasks);
+    res.status(200).json(combinedResult);
 };
 
 const GetTaskbyId = async (req, res) => {
