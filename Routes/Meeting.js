@@ -6,7 +6,7 @@ const hasPermission = require('../middlewares/rolePermission');
 
 
 
-router.get('/entity/group/:id',Meeting.ListEntiyGroup)
+router.get('/groupMember/:id',Meeting.ListEntiyGroup)
 router.get('/team/group/:id',Meeting.ListTeamGroup)
 
 
