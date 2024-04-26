@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true
           },
+        members: {
+            type: DataTypes.JSON,
+            allowNull: true
+            // allowNull defaults to true
+          },
         dueDate: {
             type: DataTypes.STRING,
             allowNull: true
