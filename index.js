@@ -4,6 +4,10 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path');
 const upload = require('./utils/store')
+// const { s3Uploadv2 } = require('./utils/wearhouse');
+const multer = require('multer');
+
+
 require('./models')
 const Entite_router = require('./Routes/Entity')
 const DataShairing_router = require('./Routes/Acces')
@@ -56,6 +60,25 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
   })
 });
+
+// S3 bucket
+// const storage = multer.memoryStorage();
+
+
+// const upload = multer({
+//   storage,
+//   limits: { fileSize: 1000000000, files: 2 },
+// });
+// app.post("/upload", upload.array("file"), async (req, res) => {
+//   try {
+//     const results = await s3Uploadv2(req.files);
+//     console.log(results);
+//     return res.json({ status: "success" });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });
+
 
 
 app.get('/', (req, res) => {
