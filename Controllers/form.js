@@ -290,12 +290,6 @@ const TeamFrom = async (req, res) => {
         const compared = filterFields(filterableInputsInSearch, filteredKeys)
         const excludedFields = ['id', 'createdAt', 'updatedAt'];
         const filteredFields = compared.filter(field => !excludedFields.includes(field));
-        // for (const key in filteredFields) {
-        //     await sequelize.getQueryInterface().addColumn('Users', filteredFields[key], {
-        //         type: DataTypes.STRING, // You may adjust the data type based on your requirement
-        //         allowNull: true, // You may adjust this based on your requirement
-        //     });
-        // }
         for (const key of filteredFields) {
             const obj = arrayOfObjects.find(item => item.inputname === key);
             let columnType;
