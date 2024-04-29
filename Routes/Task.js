@@ -18,7 +18,7 @@ router.patch('/subtaskUpdate/:id', hasPermission("task", "canUpdate"), upload.si
 router.delete('/subtaskdelete/:id', hasPermission("task", "canDelete"), task.SubTaskDelete)
 router.get('/subtaskbyid/:id', hasPermission("task", "canRead"),task.GetSubTaskbyId)
 router.get('/subList/:id', hasPermission("task", "canRead"),task.GetSubList)
-router.post('/addDoc', hasPermission("task", "canCreate"), upload.single('image'), task.CreateTskDoc)
+router.post('/addComments', hasPermission("task", "canCreate"), upload.single('image'), task.CreateTskDoc)
 
 
 
