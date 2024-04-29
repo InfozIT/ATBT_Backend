@@ -16,6 +16,7 @@ db.Team = require('./Team')(sequelize, DataTypes);
 db.User = require('./User')(sequelize, DataTypes);
 db.Task = require('./Task')(sequelize, DataTypes);
 db.SubTask = require('./Subtask')(sequelize, DataTypes);
+db.SubTaskDoc = require('./TaskSubDoc')(sequelize, DataTypes);
 
 db.UserAccess = require('./UserAccess')(sequelize, DataTypes);
 
@@ -39,6 +40,7 @@ const Team = db.Team
 const User = db.User
 const Task = db.Task
 const SubTask = db.SubTask
+const SubTaskDoc = db.SubTaskDoc
 
 
 // Define associations
@@ -71,6 +73,14 @@ Meeting.belongsTo(User);
 
 Task.hasMany(SubTask,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
 SubTask.belongsTo(Task);
+
+// Comment and Uplods
+
+Task.hasMany(SubTaskDoc,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
+SubTaskDoc.belongsTo(Task);
+
+SubTask.hasMany(SubTaskDoc,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
+SubTaskDoc.belongsTo(SubTask);
 
 
 
