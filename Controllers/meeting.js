@@ -154,7 +154,7 @@ const GetMeeting = async (req, res) => {
       };
     }
     if (entityId) {
-      options.where.EntityId = 56;
+      options.where.EntityId = entityId;
     }
     if (teamId) {
       options.where.TeamId = teamId;
