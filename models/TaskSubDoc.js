@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true,
         },
-        massage: {
+        message: {
             type: DataTypes.STRING,
             allowNull: true
         },

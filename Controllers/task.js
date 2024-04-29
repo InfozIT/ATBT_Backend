@@ -484,6 +484,19 @@ const GetSubList = async (req, res) => {
     }
   };
 
+  const patchTskDoc = async (req, res) =>{
+    try {
+      const updateData = req.body;
+      const updatedTask = await db.SubTaskDoc.update(updateData, {
+        where: { id: req.params.id }
+      });
+      res.status(200).json({ message: "successfully updated",updatedTask })
+    } catch (error) {
+      console.error("Error updating task:", error);
+      res.status(500).send("Error updating task");
+    }
+    }
+
 
 
 
@@ -503,7 +516,8 @@ module.exports = {
   GetSubTaskbyId,
   GetSublistId,
   GetSubList,
-  CreateTskDoc
+  CreateTskDoc,
+  patchTskDoc
 };
 
 
