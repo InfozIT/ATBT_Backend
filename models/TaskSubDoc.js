@@ -1,11 +1,11 @@
 module.exports = (sequelize, DataTypes) => {
     const TaskSubDoc = sequelize.define('TaskSubDoc', {
         // Model attributes are defined here
-        senderid: {
+        senderId: {
             type: DataTypes.STRING,
             allowNull: true,
         },
-        Comment: {
+        massage: {
             type: DataTypes.STRING,
             allowNull: true
         },

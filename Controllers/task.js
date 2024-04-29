@@ -438,6 +438,52 @@ const GetSubList = async (req, res) => {
   }
 
 
+  const CreateTskDoc = async (req, res) => {
+    try {
+      let file = req.file;
+      let data = req.body;
+      let Query = req.query;
+  
+      // Extracting entityId and teamId from query parameters
+
+      const TaskId = Query?.task ?? null;
+      const SubTaskId = Query?.subtask ?? null;
+  
+      // Modify data if file is present
+      if (file) {
+        data = {
+          image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+          ...data,
+        };
+      }
+  
+      // Inserting data into the Meetings table
+      const insertQuery = 'INSERT INTO TaskSubDocs SET ?';
+      const result = await new Promise((resolve, reject) => {
+        mycon.query(insertQuery, data, (err, result) => {
+          if (err) reject(err);
+          resolve(result);
+        });
+      });
+      const createDoc = await db.SubTaskDoc.findOne({ where: { id: result.insertId } });
+      if (createDoc) {
+        if (TaskId) {
+          const TASK = await db.Task.findOne({ where: { id: TaskId } });
+          await createDoc.setTask(TASK);
+        } else if (SubTaskId) {
+          const SubTask = await db.SubTask.findOne({ where: { id: SubTaskId } });
+          await createDoc.setSubTask(SubTask);
+        }
+
+      }
+  
+      res.status(201).send(`${result.insertId}`);
+    } catch (error) {
+      console.error("Error creating Meeting:", error);
+      res.status(500).send("Error creating meeting");
+    }
+  };
+
 
 
 
@@ -456,7 +502,8 @@ module.exports = {
   SubTaskDelete,
   GetSubTaskbyId,
   GetSublistId,
-  GetSubList
+  GetSubList,
+  CreateTskDoc
 };
 
 
