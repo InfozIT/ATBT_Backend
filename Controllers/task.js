@@ -121,7 +121,8 @@ const GetTask = async (req, res) => {
 
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
-  console.log(taskId, "this guy is from params ")
+  console.log(taskId, "this guy is from params ");
+
   try {
     // Fetch the task details
     const tasks = await db.Task.findAll({
@@ -140,12 +141,26 @@ const GetTaskbyId = async (req, res) => {
       raw: true // Get raw data instead of Sequelize model instances
     });
 
-    // Combine task details with their associated meeting details
+    // Convert taskId to a number
+    const taskIdNum = parseInt(taskId);
+
+    // Fetch task comments for the given task
+    const taskComments = await db.SubTaskDoc.findAll({
+      where: {
+        TaskId: taskId
+      },
+      raw: true // Get raw data instead of Sequelize model instances
+    });
+
+    // Combine task details with their associated meeting details, subtasks, and comments
     const combinedResult = tasks.map(task => {
       const taskData = task.dataValues; // Extracting dataValues from Sequelize object
       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+
+      // Find task comments associated with the current task
+      const commentsForTask = taskComments.filter(comment => comment.TaskId === taskIdNum);
+
       return {
-        ...taskData,
         id: taskData.id,
         decision: taskData.decision,
         date: meetingDetails.date,
@@ -155,6 +170,7 @@ const GetTaskbyId = async (req, res) => {
         dueDate: taskData.dueDate,
         status: taskData.status,
         file: taskData.file,
+        comments: commentsForTask
       };
     });
 
@@ -163,6 +179,8 @@ const GetTaskbyId = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
 
 const UpdateTask = async (req, res) => {
   try {
