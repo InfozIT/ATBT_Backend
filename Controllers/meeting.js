@@ -233,10 +233,10 @@ const DeleteMeeting = async (req, res) => {
 };
 
 
-const ListEntiyGroup = async (req, res) => { // Changed function name to follow camelCase convention
+
+const ListEntiyGroup = async (req, res) => { 
   const bmId = req.params.id;
   const ids = [];
-
   try {
     const meetdata = await Meet.findOne({ where: { id: bmId } });
     ids.push(...meetdata.members)
