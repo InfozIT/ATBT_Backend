@@ -471,7 +471,15 @@ const GetAllTask = async (req, res) => {
 const SubTaskAdd = async (req, res) => {   
   try {
   var data = req.body;
-  console.log(req.params.id)
+  let file = req.file;
+
+  if (file) {
+    data = {
+      image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+      ...data,
+    }
+  }
+
   const task = await db.SubTask.create({ TaskId: req.params.id }, data);
   res.status(201).send(task);
 } catch (error) {
