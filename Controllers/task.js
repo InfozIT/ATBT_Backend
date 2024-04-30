@@ -119,6 +119,64 @@ const GetTask = async (req, res) => {
     res.status(200).json(combinedResult);
 };
 
+// const GetTaskbyId = async (req, res) => {
+//   const taskId = req.params.id;
+//   console.log(taskId, "this guy is from params ")
+//   try {
+//     // Fetch the task details
+//     const tasks = await db.Task.findAll({
+//       where: { id: taskId },
+//     });
+//     // Extracting meetingId from tasks
+//     const meetingIds = tasks.map(item => parseInt(item.meetingId));
+
+//     // Fetch the meeting details
+//     const meetings = await db.Meeting.findAll({
+//       attributes: ['id', 'date', 'meetingnumber'],
+//       where: {
+//         id: meetingIds // Filter meetings based on meetingIds array
+//       },
+//       raw: true // Get raw data instead of Sequelize model instances
+//     });
+
+//     let SubTask = await db.SubTask.findAll({
+//       where: {
+//         TaskId: taskId // Filter meetings based on meetingIds array
+//       },
+//       raw: true // Get raw data instead of Sequelize model instances
+//     });
+//     const taskComment = await db.SubTaskDoc.findAll({
+//       where: {
+//         TaskId: taskId // Filter meetings based on meetingIds array
+//       },
+//       raw: true // Get raw data instead of Sequelize model instance,s
+//     });
+
+//     // Combine task details with their associated meeting details
+//     const combinedResult = tasks.map(task => {
+//       const taskData = task.dataValues; // Extracting dataValues from Sequelize object
+//       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+      
+
+//       return {
+//         id: taskData.id,
+//         decision: taskData.decision,
+//         date: meetingDetails.date,
+//         meetingnumber: meetingDetails.meetingnumber,
+//         priority: taskData.priority,
+//         members: taskData.members,
+//         dueDate: taskData.dueDate,
+//         status: taskData.status,
+//         file: taskData.file,
+//       };
+//     });
+
+//     res.status(200).json(combinedResult);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
   console.log(taskId, "this guy is from params ");
