@@ -132,7 +132,7 @@ app.get('/', (req, res) => {
           dynamic data sharing user & entity lcbi
           </li>
           <li>
-          task add 
+          task add comments
           </li>
         </ul>
       </body>
