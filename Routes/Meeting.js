@@ -4,7 +4,7 @@ const Meeting = require('../Controllers/meeting')
 const upload = require('../utils/store');
 const hasPermission = require('../middlewares/rolePermission');
 
-
+// list group
 
 router.get('/groupMember/:id',Meeting.ListEntiyGroup)
 router.get('/team/group/:id',Meeting.ListTeamGroup)
