@@ -265,44 +265,74 @@ const ListEntiyGroup = async (req, res) => {
   }
 };
 
+// const ListTeamGroup = async (req, res) => { 
+//   const bmId = req.params.id;
+//   console.log(bmId)
+//   const ids = [];
+//   try {
+//     const meetdata = await Meet.findOne({ where: { id: bmId } })
+//     ids.push(...meetdata.members)
+//     let EntID = (meetdata.TeamId)
+//     mycon.query('SELECT members FROM Teams WHERE id = ?', EntID, async (err, result1) => { // Passed EntID as an array
+//       if (err) {
+//         console.error('Error retrieving data: ' + err.stack);
+//         res.status(500).send('Error retrieving data');
+//         return;
+//       }
+//       ids.push(...result1); // Spread the user IDs array to push individual elements
+
+//       // Removing duplicates from ids array
+//       const uniqIds = [...new Set(ids)];
+
+
+//       res.status(200).json({ User: uniqIds }); // Sending unique ids array in the respons
+
+//     });
+//   } catch (error) {
+//     console.error('Error: ' + error);
+//     res.status(500).send('Error processing request');
+//   }
+// };
+
 const ListTeamGroup = async (req, res) => {
   const bmId = req.params.id;
+  console.log(bmId);
   const ids = [];
-  mycon.query('SELECT members,TeamId FROM Meetings WHERE id = ?', bmId, (err, result) => {
-    if (err) {
-      console.error('Error retrieving data: ' + err.stack);
-      res.status(500).send('Error retrieving data');
-      return;
-    }
-    if (result.length === 0) {
-      res.status(404).send('Entity data not found');
-      return;
-    }
-    var EntID = (result[0].TeamId);
-    // Iterate over each member and push their id into ids array
-    for (let i = 0; i < result[0].members.length; i++) {
-      ids.push(result[0].members[i].id);
-    }
-    mycon.query('SELECT * FROM UserTeam WHERE TeamId = ?', EntID, (err, result1) => {
+  
+  try {
+    const meetdata = await Meet.findOne({ where: { id: bmId } });
+    ids.push(...meetdata.members);
+    const EntID = meetdata.TeamId;
+    
+    mycon.query('SELECT members FROM Teams WHERE id = ?', EntID, async (err, result1) => {
       if (err) {
         console.error('Error retrieving data: ' + err.stack);
         res.status(500).send('Error retrieving data');
         return;
       }
-      if (result1.length === 0) {
-        res.status(404).send('Entity data not found');
-        return;
-      }
-      for (let i = 0; i < result1.length; i++) {
-        ids.push(result1[i].UserId);
-      }
-      // Filter out null values from the ids array
-      const filteredIds = ids.filter(id => id !== null);
-      const uniq = [...new Set(filteredIds)];
-      res.status(200).json({ ids: uniq }); // Sending ids array in the response
+      
+      ids.push(...result1);
+
+      // Flatten the ids array to contain only user objects
+      const users = ids.flatMap(item => Array.isArray(item) ? item : [item]); // Flattens the array, if needed
+
+      // Extract only the 'members' property if it exists
+      const userList = users.map(user => user.members || user);
+
+      // Merge all user objects into a single array
+      const mergedUserArray = [].concat(...userList);
+
+      // Removing duplicates from ids array
+      const uniqIds = [...new Set(mergedUserArray)];
+
+      res.status(200).json({ User: uniqIds });
     });
-  });
+  } catch (error) {
+    console.error('Error: ' + error);
+    res.status(500).send('Error processing request');
+  }
 };
+
 
 const ListUserGroup = async (req, res) => { 
   const bmId = req.params.id;
