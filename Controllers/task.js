@@ -293,6 +293,8 @@ const GetTaskbyId = async (req, res) => {
         members: taskData.members,
         dueDate: taskData.dueDate,
         status: taskData.status,
+        createdAt :taskData.createdAt,
+        updatedAt : taskData.updatedAt,
         file: taskData.file,
         comments: commentsForTask
       };
