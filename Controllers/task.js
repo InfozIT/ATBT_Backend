@@ -529,24 +529,56 @@ const SubTaskDelete = async (req, res) =>{
   }
  }
 
- const GetSubTaskbyId = (req, res) => {
+//  const GetSubTaskbyId = (req, res) => {
+//   const SubId = req.params.id;
+//   mycon.query('SELECT * FROM SubTasks WHERE id = ?', SubId, (err, result) => {
+//     if (err) {
+//       console.error('Error retrieving data: ' + err.stack);
+//       res.status(500).send('Error retrieving data');
+//       return;
+//     }
+
+//     if (result.length === 0) {
+//       res.status(404).send('No data not found');
+//       return;
+//     }
+
+//     res.status(200).json(result);
+//   });
+// };
+
+const GetSubTaskbyId = async (req, res) => {
   const SubId = req.params.id;
-  mycon.query('SELECT * FROM SubTasks WHERE id = ?', SubId, (err, result) => {
-    if (err) {
-      console.error('Error retrieving data: ' + err.stack);
-      res.status(500).send('Error retrieving data');
-      return;
-    }
+  console.log(SubId, "this guy is from params ");
 
-    if (result.length === 0) {
-      res.status(404).send('No data not found');
-      return;
-    }
+  try {
+    // Fetch the task details
+    const SubTask = await db.SubTask.findAll({
+      where: { id: SubId },
+    });
+    const taskId = SubTask.map(item => parseInt(item.TaskId));
+    const taskIdNum = parseInt(taskId);
+    const taskComments = await db.SubTaskDoc.findAll({
+      where: {
+        TaskId: taskIdNum
+      },
+      raw: true // Get raw data instead of Sequelize model instances
+    });
+    const combinedResult = SubTask.map(SubTask => {
+      const taskData = SubTask.dataValues; // Extracting dataValues from Sequelize object
+      const commentsForTask = taskComments.filter(comment => comment.TaskId === taskIdNum);
 
-    res.status(200).json(result);
-  });
+      return {
+        ...taskData,
+        comments: commentsForTask
+      };
+    });
+
+    res.status(200).json(combinedResult);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
-
 const GetSublistId = (req, res) => {
   const SubId = req.params.id;
   mycon.query('SELECT * FROM SubTasks WHERE id = ?', SubId, (err, result) => {
