@@ -11,10 +11,16 @@ const User = require('../models/User');
 
 const CreateTask = async (req, res) => {
   try {
+    let file = req.file;
     var data = req.body;
     let bmId = req.params.id;
-    console.log(bmId);
 
+    if (file) {
+      data = {
+        file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        ...data,
+      }
+    }
     const task = await db.Task.create({ meetingId: bmId }, data);
     res.status(201).send(task);
   } catch (error) {
@@ -310,7 +316,7 @@ const UpdateTask = async (req, res) => {
     if (file) {
       updateData = {
         members: selectedmember,
-        image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
         ...data,
       }
     }
@@ -490,6 +496,15 @@ const SubTaskAdd = async (req, res) => {
 const SubTaskUpdate = async (req, res) =>{
 try {
   const updateData = req.body;
+  let file = req.file;
+
+  if (file) {
+    updateData = {
+      file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+      ...updateData,
+    }
+  }
+
   const updatedTask = await db.SubTask.update(updateData, {
     where: { id: req.params.id }
   });
@@ -595,11 +610,10 @@ const GetSubList = async (req, res) => {
       // Modify data if file is present
       if (file) {
         data = {
-          image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+          file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
           ...data,
         };
       }
-  
       // Inserting data into the Meetings table
       const insertQuery = 'INSERT INTO TaskSubDocs SET ?';
       const result = await new Promise((resolve, reject) => {
@@ -619,7 +633,7 @@ const GetSubList = async (req, res) => {
         }
 
       }
-  
+      console.log(result.insertId)
       res.status(201).send(`${result.insertId}`);
     } catch (error) {
       console.error("Error creating Meeting:", error);
@@ -630,6 +644,14 @@ const GetSubList = async (req, res) => {
   const patchTskDoc = async (req, res) =>{
     try {
       const updateData = req.body;
+      let file = req.file;
+
+      if (file) {
+        updateData = {
+          file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+          ...updateData,
+        }
+      }
       const updatedTask = await db.SubTaskDoc.update(updateData, {
         where: { id: req.params.id }
       });
