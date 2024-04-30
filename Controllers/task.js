@@ -228,6 +228,7 @@ const GetTaskbyId = async (req, res) => {
         dueDate: taskData.dueDate,
         status: taskData.status,
         file: taskData.file,
+        subtasks: subtasksForTask,
         comments: commentsForTask
       };
     });
