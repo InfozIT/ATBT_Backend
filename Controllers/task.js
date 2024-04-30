@@ -695,6 +695,19 @@ const GetSubList = async (req, res) => {
     }
 
 
+    const DeleteTskDoc = async (req, res) =>{
+      try {
+        await db.SubTaskDoc.destroy({
+          where: { id: req.params.id },
+          // truncate: true
+        });
+    
+        res.status(200).json({ message: `deleted successfully ${req.params.id}` });
+      } catch (error) {
+        console.error("Error deleting:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+     }
 
 
 
@@ -714,7 +727,8 @@ module.exports = {
   GetSublistId,
   GetSubList,
   CreateTskDoc,
-  patchTskDoc
+  patchTskDoc,
+  DeleteTskDoc
 };
 
 

@@ -27,6 +27,8 @@ router.get('/subList/:id', hasPermission("task", "canRead"),task.GetSubList)
 
 router.post('/addComments', hasPermission("task", "canCreate"), upload.single('image'), task.CreateTskDoc)
 router.patch('/patchComments/:id', hasPermission("task", "canUpdate"), upload.single('image'),task.patchTskDoc)
+router.delete('/delComments/:id', hasPermission("task", "canDelete"), task.DeleteTskDoc)
+
 
 
 
