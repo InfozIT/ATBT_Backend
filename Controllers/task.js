@@ -556,17 +556,17 @@ const GetSubTaskbyId = async (req, res) => {
     const SubTask = await db.SubTask.findAll({
       where: { id: SubId },
     });
-    const taskId = SubTask.map(item => parseInt(item.TaskId));
-    const taskIdNum = parseInt(taskId);
+    const taskIdNum = parseInt(SubId);
+
     const taskComments = await db.SubTaskDoc.findAll({
       where: {
-        TaskId: taskIdNum
+        SubTaskId: taskIdNum
       },
       raw: true // Get raw data instead of Sequelize model instances
     });
     const combinedResult = SubTask.map(SubTask => {
       const taskData = SubTask.dataValues; // Extracting dataValues from Sequelize object
-      const commentsForTask = taskComments.filter(comment => comment.TaskId === taskIdNum);
+      const commentsForTask = taskComments.filter(comment => comment.SubTaskId === taskIdNum);
 
       return {
         ...taskData,
