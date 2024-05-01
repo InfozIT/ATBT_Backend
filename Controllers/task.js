@@ -405,7 +405,6 @@ const DeleteTask = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 const GetAllTask = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
   let Query = req.query;
@@ -583,7 +582,7 @@ const GetSubTaskbyId = async (req, res) => {
 };
 const GetSublistId = (req, res) => {
   const SubId = req.params.id;
-  mycon.query('SELECT * FROM SubTasks WHERE id = ?', SubId, (err, result) => {
+  mycon.query('SELECT * FROM SubTasks WHERE id = ? ORDER BY id DESC', SubId, (err, result) => {
     if (err) {
       console.error('Error retrieving data: ' + err.stack);
       res.status(500).send('Error retrieving data');
@@ -601,7 +600,7 @@ const GetSublistId = (req, res) => {
 
 
 const GetSubList = async (req, res) => {
-  const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+  const { search = '', page = 1, pageSize = 5, ...restQueries } = req.query;
   const filters = {};
 
   for (const key in restQueries) {
@@ -612,8 +611,10 @@ const GetSubList = async (req, res) => {
       where: {
         TaskId: req.params.id
       },
+      order: [['createdAt', 'DESC']],
       raw: true // Get raw data instead of Sequelize model instances
     });
+
 
     const totalEntities = count;
     const totalPages = Math.ceil(totalEntities / pageSize);
@@ -695,7 +696,6 @@ const GetSubList = async (req, res) => {
       res.status(500).send("Error updating task");
     }
     }
-
 
     const DeleteTskDoc = async (req, res) =>{
       try {
