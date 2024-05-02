@@ -12,6 +12,14 @@ module.exports = (sequelize, DataTypes) => {
         file: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        TaskId: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        SubTaskId: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     }, {
         // Other model options go here

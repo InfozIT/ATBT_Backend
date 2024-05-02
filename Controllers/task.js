@@ -552,7 +552,6 @@ const GetSubList = async (req, res) => {
       let Query = req.query;
   
       // Extracting entityId and teamId from query parameters
-
       const TaskId = Query?.task ?? null;
       const SubTaskId = Query?.subtask ?? null;
   
@@ -561,34 +560,33 @@ const GetSubList = async (req, res) => {
         data = {
           file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
           ...data,
+          TaskId: TaskId,
+          SubTaskId: SubTaskId
+        };
+      } else {
+        data = {
+          ...data,
+          TaskId: TaskId,
+          SubTaskId: SubTaskId
         };
       }
-      // Inserting data into the Meetings table
-      const insertQuery = 'INSERT INTO TaskSubDocs SET ?';
-      const result = await new Promise((resolve, reject) => {
-        mycon.query(insertQuery, data, (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        });
-      });
-      const createDoc = await db.SubTaskDoc.findOne({ where: { id: result.insertId } });
-      if (createDoc) {
-        if (TaskId) {
-          const TASK = await db.Task.findOne({ where: { id: TaskId } });
-          await createDoc.setTask(TASK);
-        } else if (SubTaskId) {
-          const SubTask = await db.SubTask.findOne({ where: { id: SubTaskId } });
-          await createDoc.setSubTask(SubTask);
-        }
-
+  
+      let task;
+      if (TaskId) {
+        task = await db.SubTaskDoc.create(data);
+      } else if (SubTaskId) {
+        task = await db.SubTaskDoc.create(data);
       }
-      console.log(result.insertId)
-      res.status(201).send(`${result.insertId}`);
+  
+      res.status(201).send({ message: "Task created successfully", task: task });
     } catch (error) {
-      console.error("Error creating Meeting:", error);
-      res.status(500).send("Error creating meeting");
+      console.error("Error creating Task:", error);
+      res.status(500).send("Error creating task");
     }
   };
+  
+  module.exports = CreateTskDoc;
+  
 
   const patchTskDoc = async (req, res) =>{
     try {
