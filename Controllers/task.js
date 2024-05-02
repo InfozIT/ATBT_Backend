@@ -516,38 +516,191 @@ const SubTaskDelete = async (req, res) =>{
     res.status(500).json({ error: "Internal Server Error" });
   }
  }
+// const GetSubTaskbyId = async (req, res) => {
+//   const SubId = req.params.id;
+//   console.log(SubId, "this guy is from params ");
+//   try {
+//     // Fetch the task details
+//     const SubTask = await db.SubTask.findAll({
+//       where: { id: SubId },
+//     });
+//     const taskIdNum = parseInt(SubId);
+//     const taskComments = await db.SubTaskDoc.findAll({
+//       where: {
+//         SubTaskId: taskIdNum
+//       },
+//       raw: true // Get raw data instead of Sequelize model instances
+//     });
+
+//     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+
+//     // Fetch user details based on userIds
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'image', 'name'],
+//       where: {
+//         id: userIds
+//       },
+//       raw: true // Get raw data instead of Sequelize model instances
+//     });
+//     // Create a map of userIds to corresponding user details for quick lookup
+//     const userMap = {};
+//     users.forEach(user => {
+//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
+//     })
+
+//       return {
+//         id: taskData.id,
+//         decision: taskData.decision,
+//         date: meetingDetails.date,
+//         meetingnumber: meetingDetails.meetingnumber,
+//         priority: taskData.priority,
+//         members: taskData.members,
+//         dueDate: taskData.dueDate,
+//         status: taskData.status,
+//         createdAt: taskData.createdAt,
+//         updatedAt: taskData.updatedAt,
+//         file: taskData.file,
+//         comments: taskComments // Include comments with senderImage and senderName
+//       };
+//     });
+
+
+
+//     res.status(200).json(combinedResult);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+// const GetSubTaskbyId = async (req, res) => {
+//   const subId = req.params.id;
+//   console.log(subId, "this guy is from params "); // Debugging log
+
+//   try {
+//     // Fetch the SubTask details based on subId
+//     const subTask = await db.SubTask.findAll({
+//       where: { id: subId },
+//     });
+
+//     // Convert subId to a number for querying
+//     const taskIdNum = parseInt(subId);
+
+//     // Fetch all SubTaskDoc (comments) related to the taskIdNum
+//     const taskComments = await db.SubTaskDoc.findAll({
+//       where: { SubTaskId: taskIdNum },
+//       raw: true, // Get raw data instead of Sequelize model instances
+//     });
+
+//     // Extract unique userIds from taskComments
+//     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+
+//     // Fetch user details based on userIds
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'image', 'name'],
+//       where: { id: userIds },
+//       raw: true, // Get raw data instead of Sequelize model instances
+//     });
+
+//     // Create a map of userIds to corresponding user details for quick lookup
+//     const userMap = {};
+//     users.forEach(user => {
+//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
+//     });
+
+//     // Construct the response object
+//     const response = {
+         
+//          comments: taskComments.map(comment => ({
+//         ...comment,
+//         senderImage: userMap[parseInt(comment.senderId)].senderImage,
+//         senderName: userMap[parseInt(comment.senderId)].senderName,
+//       })),
+//     };
+
+//     // Return the constructed response
+//     return res.status(200).json(response);
+
+//   } catch (error) {
+//     console.error("Error fetching subtask by id:", error);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
 const GetSubTaskbyId = async (req, res) => {
-  const SubId = req.params.id;
-  console.log(SubId, "this guy is from params ");
+  const subId = req.params.id;
+  console.log(subId, "this guy is from params "); // Debugging log
 
   try {
-    // Fetch the task details
-    const SubTask = await db.SubTask.findAll({
-      where: { id: SubId },
-    });
-    const taskIdNum = parseInt(SubId);
+    // Fetch the SubTask details based on subId
+    const subTask = await db.SubTask.findByPk(subId); // Change to findByPk for single record lookup
 
+    if (!subTask) {
+      return res.status(404).json({ message: "SubTask not found" });
+    }
+
+    // Fetch all SubTaskDoc (comments) related to the SubTask
     const taskComments = await db.SubTaskDoc.findAll({
-      where: {
-        SubTaskId: taskIdNum
-      },
-      raw: true // Get raw data instead of Sequelize model instances
-    });
-    const combinedResult = SubTask.map(SubTask => {
-      const taskData = SubTask.dataValues; // Extracting dataValues from Sequelize object
-      const commentsForTask = taskComments.filter(comment => comment.SubTaskId === taskIdNum);
-
-      return {
-        ...taskData,
-        comments: commentsForTask
-      };
+      where: { SubTaskId: subId },
+      raw: true, // Get raw data instead of Sequelize model instances
     });
 
-    res.status(200).json(combinedResult);
+    // Fetch additional Task details associated with the SubTask (assuming TaskId exists)
+    const task = await db.Task.findByPk(subTask.TaskId);
+
+    // Extract user IDs from comments
+    const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+
+    // Fetch user details based on userIds
+    const users = await db.User.findAll({
+      attributes: ['id', 'name', 'image'],
+      where: { id: userIds },
+      raw: true, // Get raw data instead of Sequelize model instances
+    });
+
+    // Create a map of userIds to corresponding user details for quick lookup
+    const userMap = {};
+    users.forEach(user => {
+      userMap[user.id] = { senderName: user.name, senderImage: user.image };
+    });
+
+    // Construct the response object
+    const response = {
+      id: subTask.id,
+      decision: subTask.decision,
+      date: subTask.date,
+      meetingnumber: subTask.meetingnumber,
+      priority: subTask.priority,
+      members: subTask.members,
+      dueDate: subTask.dueDate,
+      status: subTask.status,
+      createdAt: subTask.createdAt,
+      updatedAt: subTask.updatedAt,
+      file: subTask.file,
+      comments: taskComments.map(comment => ({
+        id: comment.id,
+        senderId: comment.senderId,
+        message: comment.message,
+        file: comment.file,
+        TaskId: comment.TaskId,
+        SubTaskId: comment.SubTaskId,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        senderName: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderName : null,
+        senderImage: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderImage : null,
+      })),
+    };
+
+    // Return the constructed response
+    return res.status(200).json([response]); // Wrap response in an array as shown in the desired format
+
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching subtask by id:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+module.exports = { GetSubTaskbyId };
+
+
 const GetSublistId = (req, res) => {
   const SubId = req.params.id;
   mycon.query('SELECT * FROM SubTasks WHERE id = ? ORDER BY id DESC', SubId, (err, result) => {

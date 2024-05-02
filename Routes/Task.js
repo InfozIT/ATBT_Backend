@@ -4,7 +4,7 @@ const task = require('../Controllers/task')
 const upload = require('../utils/store');
 const hasPermission = require('../middlewares/rolePermission');
 
-
+// task 
 
 router.post('/add/:id', hasPermission("task", "canCreate"), upload.single('image'), task.CreateTask)
 router.get('/list/:id', hasPermission("task", "canRead"),task.GetTask)
@@ -13,7 +13,7 @@ router.delete('/delete/:id', hasPermission("task", "canDelete"), task.DeleteTask
 router.get('/listbyid/:id', hasPermission("task", "canRead"),task.GetTaskbyId)
 router.get('/listAll', hasPermission("meeting", "canRead"), task.GetAllTask)
 
-
+// sub task
 
 
 router.post('/subtaskAdd/:id', hasPermission("task", "canCreate"), upload.single('image'), task.SubTaskAdd)
