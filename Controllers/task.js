@@ -125,10 +125,99 @@ const GetTask = async (req, res) => {
     res.status(200).json(combinedResult);
 };
 
+// VVO
 
+// const GetTaskbyId = async (req, res) => {
+//   const taskId = req.params.id;
+//   try {
+//     // Fetch the task details
+//     const tasks = await db.Task.findAll({
+//       where: { id: taskId },
+//     });
+
+//     // Extracting meetingId from tasks
+//     const meetingIds = tasks.map(item => parseInt(item.meetingId));
+//     // Fetch the meeting details
+//     const meetings = await db.Meeting.findAll({
+//       attributes: ['id', 'date', 'meetingnumber'],
+//       where: {
+//         id: meetingIds // Filter meetings based on meetingIds array
+//       },
+//       raw: true // Get raw data instead of Sequelize model instances
+//     });
+
+//     // Convert taskId to a number
+//     const taskIdNum = parseInt(taskId);
+
+//     // Fetch task comments for the given task
+//     const taskComments = await db.SubTaskDoc.findAll({
+//       where: {
+//         TaskId: taskId
+//       },
+//       raw: true // Get raw data instead of Sequelize model instances
+//     });
+//     // Extract unique userIds from comments
+//     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+//     console.log(userIds)
+
+//     // Fetch user details based on userIds
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'image', 'name'],
+//       where: {
+//         id: userIds
+//       },
+//       raw: true // Get raw data instead of Sequelize model instances
+//     });
+     
+//     // Map userIds to corresponding user details for quick lookup
+//     const userMap = {};
+//     users.forEach(user => {
+//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
+//     });
+
+//     // Combine task details with their associated meeting details, subtasks, and comments
+//     const combinedResult = tasks.map(task => {
+//       const taskData = task.dataValues; // Extracting dataValues from Sequelize object
+//       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+
+//       // Find task comments associated with the current task
+//       const commentsForTask = taskComments
+//         .filter(comment => comment.TaskId === taskIdNum)
+//         .map(comment => ({
+//           id: comment.id,
+//           senderId: comment.senderId,
+//           message: comment.message,
+//           file: comment.file,
+//           createdAt: comment.createdAt,
+//           updatedAt: comment.updatedAt,
+//           TaskId: comment.TaskId,
+//           SubTaskId: comment.SubTaskId,
+//           senderName: userMap[parseInt(comment.senderId)].senderName, // Attach senderName directly
+//           senderImage: userMap[parseInt(comment.senderId)].senderImage // Attach senderImage directly
+//         }));
+
+//       return {
+//         id: taskData.id,
+//         decision: taskData.decision,
+//         date: meetingDetails.date,
+//         meetingnumber: meetingDetails.meetingnumber,
+//         priority: taskData.priority,
+//         members: taskData.members,
+//         dueDate: taskData.dueDate,
+//         status: taskData.status,
+//         createdAt: taskData.createdAt,
+//         updatedAt: taskData.updatedAt,
+//         file: taskData.file,
+//         comments: commentsForTask
+//       };
+//     });
+//     res.status(200).json(combinedResult);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
-
   try {
     // Fetch the task details
     const tasks = await db.Task.findAll({
@@ -147,13 +236,10 @@ const GetTaskbyId = async (req, res) => {
       raw: true // Get raw data instead of Sequelize model instances
     });
 
-    // Convert taskId to a number
-    const taskIdNum = parseInt(taskId);
-
-    // Fetch task comments for the given task
+    // Fetch task comments for the given task (using task's own ID)
     const taskComments = await db.SubTaskDoc.findAll({
       where: {
-        TaskId: taskId
+        TaskId: taskId // Filter by the current task's ID
       },
       raw: true // Get raw data instead of Sequelize model instances
     });
@@ -170,7 +256,7 @@ const GetTaskbyId = async (req, res) => {
       raw: true // Get raw data instead of Sequelize model instances
     });
 
-    // Map userIds to corresponding user details for quick lookup
+    // Create a map of userIds to corresponding user details for quick lookup
     const userMap = {};
     users.forEach(user => {
       userMap[user.id] = { senderImage: user.image, senderName: user.name };
@@ -181,21 +267,18 @@ const GetTaskbyId = async (req, res) => {
       const taskData = task.dataValues; // Extracting dataValues from Sequelize object
       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
 
-      // Find task comments associated with the current task
-      const commentsForTask = taskComments
-        .filter(comment => comment.TaskId === taskIdNum)
-        .map(comment => ({
-          id: comment.id,
-          senderId: comment.senderId,
-          message: comment.message,
-          file: comment.file,
-          createdAt: comment.createdAt,
-          updatedAt: comment.updatedAt,
-          TaskId: comment.TaskId,
-          SubTaskId: comment.SubTaskId,
+      // Filter task comments for the current task
+      const taskCommentsForTask = taskComments.filter(comment => comment.TaskId === taskId);
+
+      // Map userIds in comments to user details using userMap
+      const commentsWithUserInfo = taskCommentsForTask.map(comment => {
+      const userId = parseInt(comment.senderId);
+      return {
+          ...comment,
           senderName: userMap[parseInt(comment.senderId)].senderName, // Attach senderName directly
           senderImage: userMap[parseInt(comment.senderId)].senderImage // Attach senderImage directly
-        }));
+        };
+      });
 
       return {
         id: taskData.id,
@@ -209,15 +292,19 @@ const GetTaskbyId = async (req, res) => {
         createdAt: taskData.createdAt,
         updatedAt: taskData.updatedAt,
         file: taskData.file,
-        comments: commentsForTask
+        comments: commentsWithUserInfo // Include comments with senderImage and senderName
       };
     });
 
     res.status(200).json(combinedResult);
   } catch (error) {
+    console.error('Error fetching task details:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+module.exports = { GetTaskbyId };
+
 
 
 
