@@ -88,9 +88,6 @@ async function sendEmail(email, password) {
 
   await transporter.sendMail(mailData);
 }
-
-const ListTask = async (req, res) => { res.status(201).json({ message: "successfully" }); };
-
 const GetTask = async (req, res) => {
   const bmId = req.params.id;
   const tasks = await db.Task.findAll({
@@ -124,7 +121,6 @@ const GetTask = async (req, res) => {
 
     res.status(200).json(combinedResult);
 };
-
 // VVO
 
 // const GetTaskbyId = async (req, res) => {
@@ -302,12 +298,6 @@ const GetTaskbyId = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-module.exports = { GetTaskbyId };
-
-
-
-
 const UpdateTask = async (req, res) => {
   try {
     const taskId = req.params.id; // Assuming taskId is part of the URL
@@ -472,10 +462,7 @@ const GetAllTask = async (req, res) => {
     endTask: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
     search
   });
-
 }
-
-
 const SubTaskAdd = async (req, res) => {   
   try {
   var data = req.body;
@@ -516,7 +503,6 @@ try {
   res.status(500).send("Error updating task");
 }
 }
-
 const SubTaskDelete = async (req, res) =>{
   try {
     await db.SubTask.destroy({
@@ -530,25 +516,6 @@ const SubTaskDelete = async (req, res) =>{
     res.status(500).json({ error: "Internal Server Error" });
   }
  }
-
-//  const GetSubTaskbyId = (req, res) => {
-//   const SubId = req.params.id;
-//   mycon.query('SELECT * FROM SubTasks WHERE id = ?', SubId, (err, result) => {
-//     if (err) {
-//       console.error('Error retrieving data: ' + err.stack);
-//       res.status(500).send('Error retrieving data');
-//       return;
-//     }
-
-//     if (result.length === 0) {
-//       res.status(404).send('No data not found');
-//       return;
-//     }
-
-//     res.status(200).json(result);
-//   });
-// };
-
 const GetSubTaskbyId = async (req, res) => {
   const SubId = req.params.id;
   console.log(SubId, "this guy is from params ");
@@ -598,7 +565,6 @@ const GetSublistId = (req, res) => {
     res.status(200).json(result);
   });
 };
-
 
 const GetSubList = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, ...restQueries } = req.query;
@@ -710,7 +676,6 @@ const DeleteTskDoc = async (req, res) =>{
 
 module.exports = {
   CreateTask,
-  ListTask,
   GetTask,
   UpdateTask,
   DeleteTask,
