@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true
         },
+        Collaborators: {
+            type: DataTypes.JSON,
+            allowNull: true
+          },
 
         file: {
             type: DataTypes.STRING,

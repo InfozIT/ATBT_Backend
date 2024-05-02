@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true
         },
+        Collaborators: {
+            type: DataTypes.JSON,
+            allowNull: true
+          },
         SubTaskId: {
             type: DataTypes.STRING,
             allowNull: true

@@ -13,15 +13,19 @@ const CreateTask = async (req, res) => {
   try {
     let file = req.file;
     var data = req.body;
+    let Collaborators = req.body
     let bmId = req.params.id;
+
+    // const CollaboratorsString = JSON.stringify(Collaborators);
+
 
     if (file) {
       data = {
         file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
-        ...data,
+        ...data
       }
     }
-    const task = await db.Task.create({ meetingId: bmId }, data);
+    const task = await db.Task.create({ meetingId: bmId, Collaborators : Collaborators }, data);
     res.status(201).send(task);
   } catch (error) {
     console.error("Error creating task:", error);
@@ -467,6 +471,7 @@ const SubTaskAdd = async (req, res) => {
   try {
   var data = req.body;
   let file = req.file;
+  let Collaborators = req.body
 
   if (file) {
     data = {
@@ -475,7 +480,7 @@ const SubTaskAdd = async (req, res) => {
     }
   }
 
-  const task = await db.SubTask.create({ TaskId: req.params.id }, data);
+  const task = await db.SubTask.create({ TaskId: req.params.id,Collaborators : Collaborators }, data);
   res.status(201).send(task);
 } catch (error) {
   console.error("Error creating task:", error);
