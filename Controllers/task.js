@@ -632,7 +632,7 @@ const GetSubList = async (req, res) => {
   }
 
 
-  const CreateTskDoc = async (req, res) => {
+const CreateTskDoc = async (req, res) => {
     try {
       let file = req.file;
       let data = req.body;
