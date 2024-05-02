@@ -630,8 +630,6 @@ const GetSubList = async (req, res) => {
       search
     });
   }
-
-
 const CreateTskDoc = async (req, res) => {
     try {
       let file = req.file;
@@ -671,11 +669,8 @@ const CreateTskDoc = async (req, res) => {
       res.status(500).send("Error creating task");
     }
   };
-  
-  module.exports = CreateTskDoc;
-  
-
-  const patchTskDoc = async (req, res) =>{
+    
+const patchTskDoc = async (req, res) =>{
     try {
       const updateData = req.body;
       let file = req.file;
@@ -696,7 +691,7 @@ const CreateTskDoc = async (req, res) => {
     }
     }
 
-    const DeleteTskDoc = async (req, res) =>{
+const DeleteTskDoc = async (req, res) =>{
       try {
         await db.SubTaskDoc.destroy({
           where: { id: req.params.id },
