@@ -5,6 +5,7 @@ const transporter = require('../utils/nodemailer')
 const { Op } = require('sequelize');
 const Task = require('../models/Task');
 const User = require('../models/User');
+const { cloneDeep } = require('sequelize/lib/utils');
 
 
 
@@ -32,9 +33,7 @@ const CreateTask = async (req, res) => {
     res.status(500).send("Error creating task");
   }
 };
-
 async function sendEmail(email, password) {
-
   const mailData = {
     from: 'nirajkr00024@gmail.com',
     to: email,
@@ -216,85 +215,181 @@ const GetTask = async (req, res) => {
 //     res.status(500).json({ error: 'Internal server error' });
 //   }
 // };
+
+
+// const GetTaskbyId = async (req, res) => {
+//   const taskId = req.params.id;
+//   try {
+//     // Fetch the task details
+//     const tasks = await db.Task.findAll({
+//       where: { id: taskId },
+//     });
+
+//     // Fetch the meeting details for all related tasks
+//     const meetingIds = tasks.map(item => parseInt(item.meetingId));
+//     const meetings = await db.Meeting.findAll({
+//       attributes: ['id', 'date', 'meetingnumber'],
+//       where: {
+//         id: meetingIds
+//       },
+//       raw: true
+//     });
+
+//     // Fetch task comments for the given task
+//     const taskComments = await db.SubTaskDoc.findAll({
+//       where: { TaskId: taskId },
+//       raw: true
+//     });
+
+//     // Extract unique userIds from comments
+//     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+
+//     // Fetch user details based on userIds
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'image', 'name'],
+//       where: { id: userIds },
+//       raw: true
+//     });
+
+//     // Create a map of userIds to corresponding user details for quick lookup
+//     const userMap = {};
+//     users.forEach(user => {
+//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
+//     });
+
+//     // Prepare combined result
+//     const combinedResult = tasks.map(task => {
+//       const taskData = task.dataValues;
+//       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+//       const taskCommentsForTask = taskComments.filter(comment => comment.TaskId === taskId);
+
+//       // Map userIds in comments to user details using userMap
+//       const commentsWithUserInfo = taskCommentsForTask.map(comment => ({
+//         ...comment,
+//         senderName: userMap[parseInt(comment.senderId)].senderName,
+//         senderImage: userMap[parseInt(comment.senderId)].senderImage
+//       }));
+
+//       var taskCreator = taskData.taskCreateby;
+//       if (taskCreator.name == "users") {
+//         let Uid = taskCreator.id
+//         mycon.query('SELECT EntityId FROM Users WHERE id = ?', Uid, (err, result) => {
+//           if (err) {
+//             console.error('Error retrieving data: ' + err.stack);
+//             res.status(500).send('Error retrieving data');
+//             return;
+//           }
+//         const EntID = [...new Set(result.map(item => parseInt(item.EntityId)))];
+//         var EntIDNum = parseInt(EntID)
+//         mycon.query('SELECT name FROM Entities WHERE id = ?', EntIDNum, (err, result) => {
+//           if (err) {
+//             console.error('Error retrieving data: ' + err.stack);
+//             res.status(500).send('Error retrieving data');
+//             return;
+//           }
+      
+//         });
+//       }
+
+//       return {
+//         id: taskData.id,
+//         decision: taskData.decision,
+//         date: meetingDetails.date,
+//         meetingnumber: meetingDetails.meetingnumber,
+//         priority: taskData.priority,
+//         members: taskData.members,
+//         dueDate: taskData.dueDate,
+//         status: taskData.status,
+//         createdAt: taskData.createdAt,
+//         updatedAt: taskData.updatedAt,
+//         file: taskData.file,
+//         comments: commentsWithUserInfo
+//       };
+//     });
+
+//     res.status(200).json(combinedResult);
+//   } catch (error) {
+//     console.error('Error fetching task details:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
   try {
-    // Fetch the task details
     const tasks = await db.Task.findAll({
       where: { id: taskId },
     });
 
-    // Extracting meetingId from tasks
-    const meetingIds = tasks.map(item => parseInt(item.meetingId));
+    const task = tasks[0]; // Assuming there's only one task with the given ID
 
-    // Fetch the meeting details
-    const meetings = await db.Meeting.findAll({
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    const meeting = await db.Meeting.findOne({
       attributes: ['id', 'date', 'meetingnumber'],
-      where: {
-        id: meetingIds // Filter meetings based on meetingIds array
-      },
-      raw: true // Get raw data instead of Sequelize model instances
+      where: { id: task.meetingId },
+      raw: true
     });
 
-    // Fetch task comments for the given task (using task's own ID)
     const taskComments = await db.SubTaskDoc.findAll({
-      where: {
-        TaskId: taskId // Filter by the current task's ID
-      },
-      raw: true // Get raw data instead of Sequelize model instances
+      where: { TaskId: taskId },
+      raw: true
     });
 
-    // Extract unique userIds from comments
-    const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
-
-    // Fetch user details based on userIds
+    const userIds = [...new Set(taskComments.map(comment => parseInt(comment.senderId)))];
     const users = await db.User.findAll({
       attributes: ['id', 'image', 'name'],
-      where: {
-        id: userIds
-      },
-      raw: true // Get raw data instead of Sequelize model instances
+      where: { id: userIds },
+      raw: true
     });
 
-    // Create a map of userIds to corresponding user details for quick lookup
     const userMap = {};
     users.forEach(user => {
       userMap[user.id] = { senderImage: user.image, senderName: user.name };
     });
 
-    // Combine task details with their associated meeting details, subtasks, and comments
-    const combinedResult = tasks.map(task => {
-      const taskData = task.dataValues; // Extracting dataValues from Sequelize object
-      const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+    const commentsWithUserInfo = taskComments.map(comment => ({
+      ...comment,
+      senderName: userMap[parseInt(comment.senderId)]?.senderName || '',
+      senderImage: userMap[parseInt(comment.senderId)]?.senderImage || ''
+    }));
 
-      // Filter task comments for the current task
-      const taskCommentsForTask = taskComments.filter(comment => comment.TaskId === taskId);
-
-      // Map userIds in comments to user details using userMap
-      const commentsWithUserInfo = taskCommentsForTask.map(comment => {
-      const userId = parseInt(comment.senderId);
-      return {
-          ...comment,
-          senderName: userMap[parseInt(comment.senderId)].senderName, // Attach senderName directly
-          senderImage: userMap[parseInt(comment.senderId)].senderImage // Attach senderImage directly
-        };
+    let taskCreator = task.taskCreateby;
+    if (taskCreator && taskCreator.name === "users") {
+      const userEntity = await db.User.findOne({ 
+        attributes: ['EntityId'],
+        where: { id: taskCreator.id }
       });
+      if (userEntity) {
+        const EntID = userEntity.EntityId;
+        const entity = await db.Entity.findOne({ 
+          attributes: ['name'],
+          where: { id: EntID }
+        });
+        var name = entity.dataValues.name;
+        console.log(name)
 
-      return {
-        id: taskData.id,
-        decision: taskData.decision,
-        date: meetingDetails.date,
-        meetingnumber: meetingDetails.meetingnumber,
-        priority: taskData.priority,
-        members: taskData.members,
-        dueDate: taskData.dueDate,
-        status: taskData.status,
-        createdAt: taskData.createdAt,
-        updatedAt: taskData.updatedAt,
-        file: taskData.file,
-        comments: commentsWithUserInfo // Include comments with senderImage and senderName
-      };
-    });
+      }
+    }
+
+    const combinedResult = {
+      id: task.id,
+      decision: task.decision,
+      taskCreatedby : name,
+      date: meeting?.date || '',
+      meetingnumber: meeting?.meetingnumber || '',
+      priority: task.priority,
+      members: task.members,
+      dueDate: task.dueDate,
+      status: task.status,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+      file: task.file,
+      comments: commentsWithUserInfo,
+      taskCreateby: taskCreator
+    };
 
     res.status(200).json(combinedResult);
   } catch (error) {
@@ -302,6 +397,12 @@ const GetTaskbyId = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
+
+
+
+
 const UpdateTask = async (req, res) => {
   try {
     const taskId = req.params.id; // Assuming taskId is part of the URL
