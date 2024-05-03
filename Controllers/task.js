@@ -13,8 +13,7 @@ const CreateTask = async (req, res) => {
   try {
     let file = req.file;
     var data = req.body;
-    let collaborators = req.body.collaborators
-    let taskCreatedBy = req.body.taskCreatedBy
+    let {collaborators,taskCreatedBy} = req.body
     let bmId = req.params.id;
 
     // const CollaboratorsString = JSON.stringify(Collaborators);
