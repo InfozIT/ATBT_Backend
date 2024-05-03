@@ -221,6 +221,24 @@ const GetTaskbyId = async (req, res) => {
 
       }
     }
+    else if (taskCreator && taskCreator.name === "entity"){
+      const entity = await db.Entity.findOne({ 
+        attributes: ['name'],
+        where: { id: taskCreator.id }
+      });
+      combinedResult.taskCreateby = entity ? entity.name : "";
+      combinedResult.collaborators = task ? task.collaborators : "";
+
+    }
+    else if (taskCreator && taskCreator.name === "team"){
+      const entity = await db.Team.findOne({ 
+        attributes: ['name'],
+        where: { id: taskCreator.id }
+      });
+      combinedResult.taskCreateby = entity ? entity.name : "";
+      combinedResult.collaborators = task ? task.collaborators : "";
+
+    }
 
     res.status(200).json([combinedResult]); // Wrap result in an array to match the specified format
   } catch (error) {
