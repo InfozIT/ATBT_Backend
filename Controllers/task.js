@@ -194,6 +194,7 @@ const GetTaskbyId = async (req, res) => {
       meetingnumber: meeting ? meeting.meetingnumber : null,
       priority: task.priority || null, // Use task priority or null if undefined
       members: task.members,
+      collaborators: "",
       dueDate: task.dueDate,
       status: task.status,
       createdAt: task.createdAt,
@@ -216,6 +217,8 @@ const GetTaskbyId = async (req, res) => {
           where: { id: EntID }
         });
         combinedResult.taskCreateby = entity ? entity.name : "";
+        combinedResult.collaborators = task ? task.collaborators : "";
+
       }
     }
 
