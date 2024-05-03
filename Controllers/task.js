@@ -13,9 +13,9 @@ const CreateTask = async (req, res) => {
   try {
     let file = req.file;
     var data = req.body;
-    let collaborators = req.body
+    let collaborators = req.body.collaborators
+    let taskCreatedBy = req.body.taskCreatedBy
     let bmId = req.params.id;
-    console.log(req.body)
 
     // const CollaboratorsString = JSON.stringify(Collaborators);
 
@@ -26,7 +26,7 @@ const CreateTask = async (req, res) => {
         ...data
       }
     }
-    const task = await db.Task.create({ meetingId: bmId, collaborators : collaborators }, data);
+    const task = await db.Task.create({ meetingId: bmId, collaborators : collaborators,taskCreateby:taskCreatedBy  }, data);
     res.status(201).send(task);
   } catch (error) {
     console.error("Error creating task:", error);
