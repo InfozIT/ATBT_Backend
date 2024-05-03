@@ -216,8 +216,18 @@ const GetTaskbyId = async (req, res) => {
           attributes: ['name'],
           where: { id: EntID }
         });
-        combinedResult.taskCreateby = entity ? entity.name : "";
-        combinedResult.collaborators = task ? task.collaborators : "";
+      if(task.collaborators){
+         var colabs = await db.User.findAll({
+          attributes: ['id', 'name','image'],
+          where: {
+            id: { [Op.in]: task.collaborators }
+          },
+          raw: true
+        });
+      }
+      console.log(colabs)
+      combinedResult.taskCreateby = entity ? entity.name : "";
+      combinedResult.collaborators = colabs;
 
       }
     }
