@@ -303,36 +303,53 @@ const ListTeamGroup = async (req, res) => {
   }
 };
 
-
-const ListUserGroup = async (req, res) => { 
-  const bmId = req.params.id;
-  console.log(bmId)
-  const ids = [];
+const ListUserGroup = async (req, res) => {
+  console.log(req.params.id);
   try {
-    const meetdata = await Meet.findOne({ where: { id: bmId } })
-    ids.push(...meetdata.members)
-    let UserId = (meetdata.UserId)
-
-    mycon.query('SELECT * FROM Users WHERE id = ?', UserId, async (err, result1) => { // Passed EntID as an array
-      if (err) {
-        console.error('Error retrieving data: ' + err.stack);
-        res.status(500).send('Error retrieving data');
-        return;
-      }
-      ids.push(...result1); // Spread the user IDs array to push individual elements
-
-      // Removing duplicates from ids array
-      const uniqIds = [...new Set(ids)];
-
-
-      res.status(200).json({ User: uniqIds }); // Sending unique ids array in the respons
-
+    var users = await db.Meeting.findAll({
+      attributes: ['members','UserId'],
+      where: {
+        id: req.params.id
+      },
+      raw: true
     });
+    const extractedIds = users.flatMap(entry => entry.members.map(member => member.id));
+    const userId = users.map(item => parseInt(item.UserId))
+    var idToCheck = parseInt(userId);
+    const uniqIds = [...new Set(extractedIds)];
+    const members = await db.User.findAll({
+      attributes: ['id', 'image', 'name','email','EntityId'],
+      where: {
+        id: { [Op.in]: uniqIds }
+      },
+    });
+    const self = await db.User.findAll({
+      attributes: ['id', 'image', 'name','email','EntityId'],
+      where: {
+        id: { [Op.in]: userId }
+      },
+    });
+    
+    let combinedUsers = [...self, ...members];
+
+    let uniqueUsers = new Map();
+    combinedUsers.forEach(user => {
+      uniqueUsers.set(user.id, user);
+    });
+
+    // Convert map values (unique user objects) back to an array
+    combinedUsers = Array.from(uniqueUsers.values());
+
+
+    res.status(200).json(combinedUsers); // Send users as JSON response      
+  
+
   } catch (error) {
     console.error('Error: ' + error);
     res.status(500).send('Error processing request');
   }
 };
+
 
 
 
