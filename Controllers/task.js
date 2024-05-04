@@ -218,7 +218,7 @@ const GetTaskbyId = async (req, res) => {
         });
       if(task.collaborators){
          var colabs = await db.User.findAll({
-          attributes: ['id', 'name','image'],
+          attributes: ['id', 'name','image','email','EntityId'],
           where: {
             id: { [Op.in]: task.collaborators }
           },
