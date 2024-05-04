@@ -236,34 +236,59 @@ const DeleteMeeting = async (req, res) => {
 
 const ListEntiyGroup = async (req, res) => { 
   const bmId = req.params.id;
-  console.log(bmId)
-  const ids = [];
+  
   try {
-    const meetdata = await Meet.findOne({ where: { id: bmId } })
-    ids.push(...meetdata.members)
-    let EntID = (meetdata.EntityId)
-    console.log(EntID)
+    // Find the meeting details by ID
+    const meetData = await Meet.findOne({ where: { id: bmId } });
+    if (!meetData) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+    
+    const entityId = meetData.EntityId;
 
-    mycon.query('SELECT * FROM Users WHERE EntityId = ?', EntID, async (err, result1) => { // Passed EntID as an array
-      if (err) {
-        console.error('Error retrieving data: ' + err.stack);
-        res.status(500).send('Error retrieving data');
-        return;
-      }
-      ids.push(...result1); // Spread the user IDs array to push individual elements
-
-      // Removing duplicates from ids array
-      const uniqIds = [...new Set(ids)];
-
-
-      res.status(200).json({ User: uniqIds }); // Sending unique ids array in the respons
-
+    // Find all meeting members' IDs
+    const meetingMembers = await db.Meeting.findOne({
+      attributes: ['members'],
+      where: { id: bmId },
+      raw: true
     });
+
+    if (!meetingMembers || !meetingMembers.members) {
+      return res.status(404).json({ error: 'No members found for the meeting' });
+    }
+
+    const extractedIds = meetingMembers.members.map(member => member.id);
+
+    // Fetch user details based on extracted IDs
+    const users = await db.User.findAll({
+      attributes: ['id', 'image', 'name', 'email', 'EntityId'],
+      where: { id: { [Op.in]: extractedIds } }
+    });
+
+    // Include the meeting data user if it's not already in the users list
+    var meetingData = await db.User.findAll({
+      attributes: ['id', 'image', 'name', 'email', 'EntityId'],
+      where: { EntityId: entityId }
+    });
+    
+    let combinedUsers = [...meetingData,...users]
+   
+    let uniqueUsers = new Map();
+    combinedUsers.forEach(user => {
+      uniqueUsers.set(user.id, user);
+    });
+
+    // Convert map values (unique user objects) back to an array
+    combinedUsers = Array.from(uniqueUsers.values());
+
+
+    res.status(200).json(combinedUsers); // Send users as JSON response  
   } catch (error) {
     console.error('Error: ' + error);
     res.status(500).send('Error processing request');
   }
 };
+
 const ListTeamGroup = async (req, res) => {
   const bmId = req.params.id;
   console.log(bmId);
