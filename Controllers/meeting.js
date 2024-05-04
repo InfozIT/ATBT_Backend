@@ -304,7 +304,6 @@ const ListTeamGroup = async (req, res) => {
 };
 
 const ListUserGroup = async (req, res) => {
-  console.log(req.params.id);
   try {
     var users = await db.Meeting.findAll({
       attributes: ['members','UserId'],
