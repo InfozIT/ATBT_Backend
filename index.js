@@ -3,8 +3,8 @@ require('dotenv').config();
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path');
-const upload = require('./utils/store')
-// const { s3Uploadv2 } = require('./utils/wearhouse');
+// const upload = require('./utils/store')
+const { s3Uploadv2 } = require('./utils/wearhouse');  // for s3
 const multer = require('multer');
 
 
