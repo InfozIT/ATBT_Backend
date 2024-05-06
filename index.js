@@ -62,7 +62,7 @@ app.use('/task',authVerify, Task_router);
 // });
 
 // S3 bucket
-// const storage = multer.memoryStorage();
+const storage = multer.memoryStorage();
 
 
 const upload = multer({
