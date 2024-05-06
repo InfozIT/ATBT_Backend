@@ -11,7 +11,7 @@ const Add_toggle = async (req, res) => {
     // Find the user by ID
     const user = await User.findByPk(userId);
 
-    // Toggle the User_status
+    // Toggle the User_status.
     const newStatus = !user.userstatus;
     const remarks = req.body.user_remarks_history;
 
