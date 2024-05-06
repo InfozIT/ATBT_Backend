@@ -438,13 +438,13 @@ const List_User = async (req, res) => {
 const Update_User = async (req, res) => {
     try {
         const { id } = req.params;
-        const { role: roleName } = req.body;
+        const { role: roleId } = req.body;
         let data = req.body;
         const file = req.file;
         let image;
 
         // Find role in the database
-        const role = await db.Role.findOne({ where: { name: roleName } });
+        const role = await db.Role.findOne({ where: {id: roleId } });
         if (!role) {
             console.error("Role not found.");
             return res.status(404).send("Role not found");
