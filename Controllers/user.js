@@ -14,7 +14,7 @@ const Create_User = async (req, res) => {
         console.log(req.file, req.body, "multer")
         const { email, role: roleId } = req.body;
         let { entityname, ...data } = req.body;
-        console.log(data, "remove name: entityname")
+        console.log(entityname)
         const file = req.file;
         const password = generateRandomPassword();
 
@@ -27,7 +27,7 @@ const Create_User = async (req, res) => {
             return res.status(400).send("Email already exists");
         }
         const getEntity = await db.Entity.findOne({ where: { id: entityname } });
-        console.log(getEntity, "getEntity")
+        // console.log(getEntity, "getEntity")
         // Retrieve role from the database
         const role = await db.Role.findOne({ where: { id: roleId } });
         if (!role) {
@@ -43,6 +43,7 @@ const Create_User = async (req, res) => {
         }
         // Insert user data into the database
         const user = {
+            entityname: entityname,
             RoleId: role.id,
             password: hashedPassword,
             ...data

@@ -65,6 +65,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.JSON,
             allowNull: true
         },
+        entityname: {
+            type: DataTypes.STRING,
+            allowNull: true,}
+
     }, {
         hooks: {
             beforeCreate: async (user) => {
