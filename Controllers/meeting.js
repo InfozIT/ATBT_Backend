@@ -232,8 +232,6 @@ const DeleteMeeting = async (req, res) => {
   }
 };
 
-
-
 const ListEntiyGroup = async (req, res) => { 
   const bmId = req.params.id;
   
@@ -289,45 +287,6 @@ const ListEntiyGroup = async (req, res) => {
   }
 };
 
-const ListTeamGroup = async (req, res) => {
-  const bmId = req.params.id;
-  console.log(bmId);
-  const ids = [];
-  
-  try {
-    const meetdata = await Meet.findOne({ where: { id: bmId } });
-    ids.push(...meetdata.members);
-    const EntID = meetdata.TeamId;
-    
-    mycon.query('SELECT members FROM Teams WHERE id = ?', EntID, async (err, result1) => {
-      if (err) {
-        console.error('Error retrieving data: ' + err.stack);
-        res.status(500).send('Error retrieving data');
-        return;
-      }
-      
-      ids.push(...result1);
-
-      // Flatten the ids array to contain only user objects
-      const users = ids.flatMap(item => Array.isArray(item) ? item : [item]); // Flattens the array, if needed
-
-      // Extract only the 'members' property if it exists
-      const userList = users.map(user => user.members || user);
-
-      // Merge all user objects into a single array
-      const mergedUserArray = [].concat(...userList);
-
-      // Removing duplicates from ids array
-      const uniqIds = [...new Set(mergedUserArray)];
-
-      res.status(200).json({ User: uniqIds });
-    });
-  } catch (error) {
-    console.error('Error: ' + error);
-    res.status(500).send('Error processing request');
-  }
-};
-
 const ListUserGroup = async (req, res) => {
   try {
     var users = await db.Meeting.findAll({
@@ -368,6 +327,41 @@ const ListUserGroup = async (req, res) => {
     res.status(200).json(combinedUsers); // Send users as JSON response      
   
 
+  } catch (error) {
+    console.error('Error: ' + error);
+    res.status(500).send('Error processing request');
+  }
+};
+
+const ListTeamGroup = async (req, res) => {
+  const bmId = req.params.id;
+  try {
+    const meetdata = await Meet.findOne({ where: { id: bmId } });
+    const TeamIdID = meetdata.TeamId;
+    
+    mycon.query('SELECT members FROM Teams WHERE id = ?', EntID, async (err, result1) => {
+      if (err) {
+        console.error('Error retrieving data: ' + err.stack);
+        res.status(500).send('Error retrieving data');
+        return;
+      }
+      
+      ids.push(...result1);
+
+      // Flatten the ids array to contain only user objects
+      const users = ids.flatMap(item => Array.isArray(item) ? item : [item]); // Flattens the array, if needed
+
+      // Extract only the 'members' property if it exists
+      const userList = users.map(user => user.members || user);
+
+      // Merge all user objects into a single array
+      const mergedUserArray = [].concat(...userList);
+
+      // Removing duplicates from ids array
+      const uniqIds = [...new Set(mergedUserArray)];
+
+      res.status(200).json({ User: uniqIds });
+    });
   } catch (error) {
     console.error('Error: ' + error);
     res.status(500).send('Error processing request');
