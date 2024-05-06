@@ -172,6 +172,10 @@ const GetTaskbyId = async (req, res) => {
       raw: true
     });
 
+    let {count} = await db.SubTask.findAndCountAll({
+      where: {
+        TaskId: taskId },
+    });
     // Create a map of userIds to corresponding user details for quick lookup
     const userMap = {};
     users.forEach(user => {
@@ -189,6 +193,7 @@ const GetTaskbyId = async (req, res) => {
     const combinedResult = {
       id: task.id,
       decision: task.decision,
+      SubTaskCount : count,
       date: meeting ? meeting.date : null,
       taskCreateby: "", // Initialize taskCreateby as empty string
       meetingnumber: meeting ? meeting.meetingnumber : null,
@@ -225,7 +230,6 @@ const GetTaskbyId = async (req, res) => {
           raw: true
         });
       }
-      console.log(colabs)
       combinedResult.taskCreateby = entity ? entity.name : "";
       combinedResult.collaborators = colabs;
 
