@@ -6,7 +6,6 @@ const Entity = db.Entity
 const { Op } = require('sequelize');
 
 
-
 const CreateMeeting = async (req, res) => {
   try {
     let file = req.file;
@@ -55,7 +54,6 @@ const CreateMeeting = async (req, res) => {
     res.status(500).send("Error creating meeting");
   }
 };
-
 
 const ListMeetings = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
@@ -118,7 +116,6 @@ const ListMeetings = async (req, res) => {
     });
   });
 };
-
 
 const GetMeeting = async (req, res) => {
   try {
@@ -298,7 +295,6 @@ const ListUserGroup = async (req, res) => {
     });
     const extractedIds = users.flatMap(entry => entry.members.map(member => member.id));
     const userId = users.map(item => parseInt(item.UserId))
-    var idToCheck = parseInt(userId);
     const uniqIds = [...new Set(extractedIds)];
     const members = await db.User.findAll({
       attributes: ['id', 'image', 'name','email','EntityId'],
@@ -332,43 +328,55 @@ const ListUserGroup = async (req, res) => {
     res.status(500).send('Error processing request');
   }
 };
-
 const ListTeamGroup = async (req, res) => {
-  const bmId = req.params.id;
   try {
-    const meetdata = await Meet.findOne({ where: { id: bmId } });
-    const TeamIdID = meetdata.TeamId;
-    
-    mycon.query('SELECT members FROM Teams WHERE id = ?', EntID, async (err, result1) => {
-      if (err) {
-        console.error('Error retrieving data: ' + err.stack);
-        res.status(500).send('Error retrieving data');
-        return;
-      }
-      
-      ids.push(...result1);
-
-      // Flatten the ids array to contain only user objects
-      const users = ids.flatMap(item => Array.isArray(item) ? item : [item]); // Flattens the array, if needed
-
-      // Extract only the 'members' property if it exists
-      const userList = users.map(user => user.members || user);
-
-      // Merge all user objects into a single array
-      const mergedUserArray = [].concat(...userList);
-
-      // Removing duplicates from ids array
-      const uniqIds = [...new Set(mergedUserArray)];
-
-      res.status(200).json({ User: uniqIds });
+    let users = await db.Meeting.findAll({
+      attributes: ['members','TeamId'],
+      where: {
+        id: req.params.id
+      },
+      raw: true
     });
+    const extractedIds = users.flatMap(entry => entry.members.map(member => member.id));
+    let TeamId = users.map(item => parseInt(item.TeamId))
+
+    const membersForMeeting = await db.User.findAll({
+      attributes: ['id', 'image', 'name','email','EntityId'],
+      where: {
+        id: { [Op.in]: extractedIds }
+      },
+    });
+    const TeamMemberid = await db.Team.findAll({
+      attributes: ['members'],
+      where: {
+        id: TeamId }
+    });
+    const membersForTeam = await db.User.findAll({
+      attributes: ['id', 'image', 'name','email','EntityId'],
+      where: {
+        id: { [Op.in]: TeamMemberid }
+      },
+    });
+    
+    let combinedUsers = [...membersForTeam, ...membersForMeeting];
+
+    let uniqueUsers = new Map();
+    combinedUsers.forEach(user => {
+      uniqueUsers.set(user.id, user);
+    });
+
+    // Convert map values (unique user objects) back to an array
+    combinedUsers = Array.from(uniqueUsers.values());
+
+
+    res.status(200).json(combinedUsers); // Send users as JSON response      
+  
+
   } catch (error) {
     console.error('Error: ' + error);
     res.status(500).send('Error processing request');
   }
 };
-
-
 
 
 
