@@ -12,7 +12,7 @@ const { json } = require('sequelize');
 const Create_User = async (req, res) => {
     try {
         console.log(req.file, req.body, "multer")
-        const { email, role: roleName } = req.body;
+        const { email, role: roleId } = req.body;
         let { entityname, ...data } = req.body;
         console.log(data, "remove name: entityname")
         const file = req.file;
@@ -29,7 +29,7 @@ const Create_User = async (req, res) => {
         const getEntity = await db.Entity.findOne({ where: { id: entityname } });
         console.log(getEntity, "getEntity")
         // Retrieve role from the database
-        const role = await db.Role.findOne({ where: { name: roleName } });
+        const role = await db.Role.findOne({ where: { id: roleId } });
         if (!role) {
             console.error("Role not found.");
             return res.status(404).send("Role not found");
