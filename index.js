@@ -3,9 +3,9 @@ require('dotenv').config();
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path');
-// const upload = require('./utils/store')
-const { s3Uploadv2 } = require('./utils/wearhouse');  // for s3
-const multer = require('multer');
+const upload = require('./utils/store')
+// const { s3Uploadv2 } = require('./utils/wearhouse');  // for s3
+// const multer = require('multer');
 
 
 require('./models')
@@ -49,35 +49,37 @@ app.use('/task',authVerify, Task_router);
 
 
 
-// load Static file
-// const imagesFolder = path.join(__dirname, 'Public');
-// app.use('/images', express.static(imagesFolder));
+//load Static file
+const imagesFolder = path.join(__dirname, 'Public');
+app.use('/images', express.static(imagesFolder));
 
-// app.post('/upload', upload.single('image'), (req, res) => {
-//   res.status(200).json({
-//     success: 1,
-//     profile_url: `${process.env.IMAGE_URI}/images/${req.file.filename}`
+app.post('/upload', upload.single('image'), (req, res) => {
+  res.status(200).json({
+    success: 1,
+    profile_url: `${process.env.IMAGE_URI}/images/${req.file.filename}`
 
-//   })
-// });
+  })
+});
 
 // S3 bucket
-const storage = multer.memoryStorage();
+//const storage = multer.memoryStorage();
 
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 1000000000, files: 2 },
-});
-app.post("/upload", upload.array("image"), async (req, res) => {
-  try {
-    const results = await s3Uploadv2(req.files);
-    console.log(results);
-    return res.json({ status: "success" });
-  } catch (err) {
-    console.log(err);
-  }
-});
+// const upload = multer({
+//   storage,
+//   limits: { fileSize: 1000000000, files: 2 },
+// });
+
+// chage to image 
+// app.post("/upload", upload.array("image"), async (req, res) => {
+//   try {
+//     const results = await s3Uploadv2(req.files);
+//     console.log(results);
+//     return res.json({ status: "success" });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });
 
 
 
