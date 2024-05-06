@@ -1,13 +1,7 @@
 var db = require('../models/index');
-const Meet = db.Meeting;
 const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
 const { Op } = require('sequelize');
-const Task = require('../models/Task');
-const User = require('../models/User');
-const { cloneDeep } = require('sequelize/lib/utils');
-
-
 
 
 const CreateTask = async (req, res) => {
@@ -91,41 +85,7 @@ async function sendEmail(email, password) {
 
   await transporter.sendMail(mailData);
 }
-const GetTask = async (req, res) => {
-  const bmId = req.params.id;
-  const tasks = await db.Task.findAll({
-    where: { meetingId: bmId },
-    order: [['createdAt', 'DESC']]
-  });
-  const meetingIds = tasks.map(item => parseInt(item.meetingId));
-  const meetings = await db.Meeting.findAll({
-    attributes: ['id', 'date', 'meetingnumber'],
-    where: {
-      id: meetingIds // Filter meetings based on meetingIds array
-    },
-    raw: true // Get raw data instead of Sequelize model instances
-  });
-      const combinedResult = tasks.map(task => {
-      const taskData = task.dataValues; // Extracting dataValues from Sequelize object
-      const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
-      return {
-        ...taskData,
-        id: taskData.id,
-        decision: taskData.decision,
-        date: meetingDetails.date,
-        meetingnumber: meetingDetails.meetingnumber,
-        priority: taskData.priority,
-        members: taskData.members,
-        dueDate: taskData.dueDate,
-        status: taskData.status,
-        file: taskData.file,
-      };
-    });
-
-    res.status(200).json(combinedResult);
-};
 // VVO
-
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
   try {
@@ -260,22 +220,6 @@ const GetTaskbyId = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const UpdateTask = async (req, res) => {
   try {
@@ -678,9 +622,6 @@ const GetSubTaskbyId = async (req, res) => {
   }
 };
 
-module.exports = { GetSubTaskbyId };
-
-
 const GetSublistId = (req, res) => {
   const SubId = req.params.id;
   mycon.query('SELECT * FROM SubTasks WHERE id = ? ORDER BY id DESC', SubId, (err, result) => {
@@ -712,7 +653,7 @@ const GetSubList = async (req, res) => {
         TaskId: req.params.id
       },
       order: [['createdAt', 'DESC']],
-      raw: true // Get raw data instead of Sequelize model instances
+      raw: true 
     });
 
 
@@ -804,7 +745,39 @@ const DeleteTskDoc = async (req, res) =>{
       }
      }
 
-
+     const GetTask = async (req, res) => {
+      const bmId = req.params.id;
+      const tasks = await db.Task.findAll({
+        where: { meetingId: bmId },
+        order: [['createdAt', 'DESC']]
+      });
+      const meetingIds = tasks.map(item => parseInt(item.meetingId));
+      const meetings = await db.Meeting.findAll({
+        attributes: ['id', 'date', 'meetingnumber'],
+        where: {
+          id: meetingIds // Filter meetings based on meetingIds array
+        },
+        raw: true // Get raw data instead of Sequelize model instances
+      });
+          const combinedResult = tasks.map(task => {
+          const taskData = task.dataValues; // Extracting dataValues from Sequelize object
+          const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+          return {
+            ...taskData,
+            id: taskData.id,
+            decision: taskData.decision,
+            date: meetingDetails.date,
+            meetingnumber: meetingDetails.meetingnumber,
+            priority: taskData.priority,
+            members: taskData.members,
+            dueDate: taskData.dueDate,
+            status: taskData.status,
+            file: taskData.file,
+          };
+        });
+    
+        res.status(200).json(combinedResult);
+    };
 
 
 module.exports = {
