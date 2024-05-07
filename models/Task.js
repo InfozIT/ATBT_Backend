@@ -24,7 +24,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     status: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
+      defaultValue: "To-Do",
+
     },
     collaborators: {
       type: DataTypes.JSON,
