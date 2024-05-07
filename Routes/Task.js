@@ -11,7 +11,6 @@ router.get('/list/:id', hasPermission("task", "canRead"),task.GetTask)
 router.patch('/update/:id', hasPermission("task", "canUpdate"), upload.single('image'),task.UpdateTask)
 router.delete('/delete/:id', hasPermission("task", "canDelete"), task.DeleteTask)
 router.get('/listbyid/:id', hasPermission("task", "canRead"),task.GetTaskbyId)
-router.get('/listAll', hasPermission("meeting", "canRead"), task.GetAllTask)
 
 // sub task
 
