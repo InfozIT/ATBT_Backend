@@ -746,11 +746,27 @@ const DeleteTskDoc = async (req, res) =>{
      }
   
 const GetTask = async (req, res) => {
-      const bmId = req.params.id;
+  let Query = req.query;
+  const userId = Query?.userId ?? null;
+  var bmId = Query?.meetingId ?? null;
+       
+    // Fetch all tasks related to the specified meetingId
+    if(userId){
+      let userMeetId = await db.Meeting.findAll({
+        where: {
+          UserId: userId
+        },
+        raw: true
+      });
+      bmId = userMeetId.map(item => parseInt(item.id));
+    }
+    
       try {
         // Fetch all tasks related to the specified meetingId
         const tasks = await db.Task.findAll({
-          where: { meetingId: bmId },
+          where: {
+            meetingId: { [Op.in]: bmId }
+          },
           order: [['createdAt', 'DESC']]
         });
     
