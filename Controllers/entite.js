@@ -342,7 +342,7 @@ const ListEntityUsers = (req, res) => {
     }
 
     if (result.length === 0) {
-      res.status(404).send('Entity data not found');
+      res.status(404).json([]);
       return;
     }
 

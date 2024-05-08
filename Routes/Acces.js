@@ -34,7 +34,7 @@ router.post('/all', authVerify, (req, res) => {
         });
 
 });
-
+ 
 // Endpoint to grant access to entity-level data
 
 router.post('/entity', authVerify, async (req, res) => {
