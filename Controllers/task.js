@@ -745,85 +745,176 @@ const DeleteTskDoc = async (req, res) =>{
       }
      }
   
+// const GetTask = async (req, res) => {
+//   let Query = req.query;
+//   const userId = Query?.userId ?? null;
+//   var bmId = Query?.meetingId ?? null;
+       
+//     // Fetch all tasks related to the specified meetingId
+//     if(userId){
+//       let userMeetId = await db.Meeting.findAll({
+//         where: {
+//           UserId: userId
+//         },
+//         raw: true
+//       });
+//       bmId = userMeetId.map(item => parseInt(item.id));
+//     }
+//       try {
+//         // Fetch all tasks related to the specified meetingId
+
+//         const tasks = await db.Task.findAll({
+//           where: { meetingId: bmId },
+//           order: [['createdAt', 'DESC']]
+//         });
+//         // Extract meetingIds from tasks to query related meetings
+//         const meetingIds = tasks.map(item => parseInt(item.meetingId));
+    
+//         // Fetch meetings based on meetingIds
+//         const meetings = await db.Meeting.findAll({
+//           attributes: ['id', 'date', 'meetingnumber'],
+//           where: {
+//             id: meetingIds
+//           },
+//           raw: true
+//         });
+    
+//         // Fetch TaskIds to query subtasks
+//         const taskIds = tasks.map(item => parseInt(item.id));
+    
+//         // Count subtasks for each TaskId
+//         const subTaskCounts = {}; // Will hold TaskId => subtask count mapping
+//         const subTaskResults = await db.SubTask.findAll({
+//           attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
+//           where: {
+//             TaskId: { [Op.in]: taskIds }
+//           },
+//           group: ['TaskId']
+//         });
+    
+//         // Populate subtask counts in subTaskCounts object
+//         subTaskResults.forEach(result => {
+//           subTaskCounts[result.TaskId] = result.dataValues.subtaskCount;
+//         });
+    
+//         // Combine task details with meeting and subtask information
+//         const combinedResult = tasks.map(task => {
+//           const taskData = task.dataValues;
+//           const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+//           const subtaskCount = subTaskCounts[taskData.id] || 0; // Get subtask count or default to 0
+    
+//           return {
+//             ...taskData,
+//             id: taskData.id,
+//             decision: taskData.decision,
+//             date: meetingDetails.date,
+//             meetingnumber: meetingDetails.meetingnumber,
+//             priority: taskData.priority,
+//             members: taskData.members,
+//             dueDate: taskData.dueDate,
+//             status: taskData.status,
+//             file: taskData.file,
+//             subtaskCount: subtaskCount // Include subtask count in the result
+//           };
+//         });
+    
+//         res.status(200).json(combinedResult);
+//       } catch (error) {
+//         console.error('Error fetching tasks:', error);
+//         res.status(500).json({ error: 'Failed to fetch tasks' });
+//       }
+//     };
+
+
 const GetTask = async (req, res) => {
   let Query = req.query;
   const userId = Query?.userId ?? null;
-  var bmId = Query?.meetingId ?? null;
-       
-    // Fetch all tasks related to the specified meetingId
-    if(userId){
+  const meetingId = Query?.meetingId ?? null;
+  const status = Query?.status ?? null; // Fetch status from query parameters
+
+  try {
+    // Fetch all tasks related to the specified meetingId and userId if provided
+    let whereClause = {};
+    if (meetingId) {
+      whereClause.meetingId = parseInt(meetingId);
+    }
+    if (userId) {
       let userMeetId = await db.Meeting.findAll({
         where: {
           UserId: userId
         },
         raw: true
       });
-      bmId = userMeetId.map(item => parseInt(item.id));
+      const userMeetingIds = userMeetId.map(item => parseInt(item.id));
+      whereClause.meetingId = { [Op.in]: userMeetingIds };
     }
-      try {
-        // Fetch all tasks related to the specified meetingId
+    if (status) {
+      whereClause.status = status; // Apply status filter if provided
+    }
 
-        const tasks = await db.Task.findAll({
-          where: { meetingId: bmId },
-          order: [['createdAt', 'DESC']]
-        });
-        // Extract meetingIds from tasks to query related meetings
-        const meetingIds = tasks.map(item => parseInt(item.meetingId));
-    
-        // Fetch meetings based on meetingIds
-        const meetings = await db.Meeting.findAll({
-          attributes: ['id', 'date', 'meetingnumber'],
-          where: {
-            id: meetingIds
-          },
-          raw: true
-        });
-    
-        // Fetch TaskIds to query subtasks
-        const taskIds = tasks.map(item => parseInt(item.id));
-    
-        // Count subtasks for each TaskId
-        const subTaskCounts = {}; // Will hold TaskId => subtask count mapping
-        const subTaskResults = await db.SubTask.findAll({
-          attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
-          where: {
-            TaskId: { [Op.in]: taskIds }
-          },
-          group: ['TaskId']
-        });
-    
-        // Populate subtask counts in subTaskCounts object
-        subTaskResults.forEach(result => {
-          subTaskCounts[result.TaskId] = result.dataValues.subtaskCount;
-        });
-    
-        // Combine task details with meeting and subtask information
-        const combinedResult = tasks.map(task => {
-          const taskData = task.dataValues;
-          const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
-          const subtaskCount = subTaskCounts[taskData.id] || 0; // Get subtask count or default to 0
-    
-          return {
-            ...taskData,
-            id: taskData.id,
-            decision: taskData.decision,
-            date: meetingDetails.date,
-            meetingnumber: meetingDetails.meetingnumber,
-            priority: taskData.priority,
-            members: taskData.members,
-            dueDate: taskData.dueDate,
-            status: taskData.status,
-            file: taskData.file,
-            subtaskCount: subtaskCount // Include subtask count in the result
-          };
-        });
-    
-        res.status(200).json(combinedResult);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-        res.status(500).json({ error: 'Failed to fetch tasks' });
-      }
-    };
+    const tasks = await db.Task.findAll({
+      where: whereClause,
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Extract meetingIds from tasks to query related meetings
+    const meetingIds = tasks.map(item => parseInt(item.meetingId));
+
+    // Fetch meetings based on meetingIds
+    const meetings = await db.Meeting.findAll({
+      attributes: ['id', 'date', 'meetingnumber'],
+      where: {
+        id: meetingIds
+      },
+      raw: true
+    });
+
+    // Fetch TaskIds to query subtasks
+    const taskIds = tasks.map(item => parseInt(item.id));
+
+    // Count subtasks for each TaskId
+    const subTaskCounts = {};
+    const subTaskResults = await db.SubTask.findAll({
+      attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
+      where: {
+        TaskId: { [Op.in]: taskIds }
+      },
+      group: ['TaskId']
+    });
+
+    // Populate subtask counts in subTaskCounts object
+    subTaskResults.forEach(result => {
+      subTaskCounts[result.TaskId] = result.dataValues.subtaskCount;
+    });
+
+    // Combine task details with meeting and subtask information
+    const combinedResult = tasks.map(task => {
+      const taskData = task.dataValues;
+      const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+      const subtaskCount = subTaskCounts[taskData.id] || 0;
+
+      return {
+        ...taskData,
+        id: taskData.id,
+        decision: taskData.decision,
+        date: meetingDetails.date,
+        meetingnumber: meetingDetails.meetingnumber,
+        priority: taskData.priority,
+        members: taskData.members,
+        dueDate: taskData.dueDate,
+        status: taskData.status,
+        file: taskData.file,
+        subtaskCount: subtaskCount
+      };
+    });
+
+    res.status(200).json(combinedResult);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch tasks' });
+  }
+};
+
 module.exports = {
   CreateTask,
   GetTask,
