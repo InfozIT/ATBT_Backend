@@ -333,7 +333,7 @@ const Delete_Entite = async (req, res) => {
 
 const ListEntityUsers = (req, res) => {
   const entityId = req.params.id;
-  mycon.query('SELECT * FROM Users WHERE EntityId = ?', entityId, (err, result) => {
+  mycon.query('SELECT * FROM Users WHERE entityname = ?', entityId, (err, result) => {
     if (err) {
       console.error('Error retrieving data: ' + err.stack);
       res.status(500).send('Error retrieving data');
