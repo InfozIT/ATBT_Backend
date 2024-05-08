@@ -342,7 +342,7 @@ const ListEntityUsers = (req, res) => {
     }
 
     if (result.length === 0) {
-      res.status(404).json([]);
+      res.status(200).json([]);
       return;
     }
 
