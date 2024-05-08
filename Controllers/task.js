@@ -760,16 +760,13 @@ const GetTask = async (req, res) => {
       });
       bmId = userMeetId.map(item => parseInt(item.id));
     }
-    
       try {
         // Fetch all tasks related to the specified meetingId
+
         const tasks = await db.Task.findAll({
-          where: {
-            meetingId: { [Op.in]: bmId }
-          },
+          where: { meetingId: bmId },
           order: [['createdAt', 'DESC']]
         });
-    
         // Extract meetingIds from tasks to query related meetings
         const meetingIds = tasks.map(item => parseInt(item.meetingId));
     
@@ -827,8 +824,6 @@ const GetTask = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch tasks' });
       }
     };
-    
-
 module.exports = {
   CreateTask,
   GetTask,
