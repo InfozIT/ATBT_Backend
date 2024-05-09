@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path');
 const upload = require('./utils/store')
-// const { s3Uploadv2 } = require('./utils/wearhouse');  // for s3
+const uploadToS3= require('./utils/wearhouse');  // for s3
 // const multer = require('multer');
 
 
@@ -53,13 +53,13 @@ app.use('/task',authVerify, Task_router);
 const imagesFolder = path.join(__dirname, 'Public');
 app.use('/images', express.static(imagesFolder));
 
-app.post('/upload', upload.single('image'), (req, res) => {
-  res.status(200).json({
-    success: 1,
-    profile_url: `${process.env.IMAGE_URI}/images/${req.file.filename}`
+// app.post('/upload', upload.single('image'), (req, res) => {
+//   res.status(200).json({
+//     success: 1,
+//     profile_url: `${process.env.IMAGE_URI}/images/${req.file.filename}`
 
-  })
-});
+//   })
+// });
 
 // S3 bucket
 //const storage = multer.memoryStorage();
@@ -80,6 +80,19 @@ app.post('/upload', upload.single('image'), (req, res) => {
 //     console.log(err);
 //   }
 // });
+
+
+app.post("/upload", upload.single("image"), async (req, res) => {
+  console.log(req.file);
+  if (req.file) {
+    await uploadToS3(req.file.buffer);
+  }
+
+  res.send({
+    msg: "Image uploaded succesfully",
+  });
+});
+
 
 
 

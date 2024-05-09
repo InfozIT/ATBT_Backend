@@ -2,6 +2,7 @@ require('dotenv').config();
 var db = require('../models/index');
 const Entity = db.Entity;
 const mycon = require('../DB/mycon')
+const uploadToS3 = require('../utils/wearhouse')
 
 
 const CreateEntiy = async (req, res) => {
@@ -20,8 +21,9 @@ const CreateEntiy = async (req, res) => {
       return res.status(400).send("entity already exists");
     }
     if (file) {
+      const result = await uploadToS3(req.file.buffer);
       data = {
-        image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        image: `${result.Location}`,
         ...data,
       }
     }
@@ -166,9 +168,9 @@ const UpdateEntity = async (req, res) => {
     let image;
     console.log(data, file, "update data and file")
     if (file) {
-      image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+      const result = await uploadToS3(req.file.buffer);
       data = {
-        image,
+        image: `${result.Location}`,
         ...data
       }
     }
@@ -209,22 +211,22 @@ const ListEntity = async (req, res) => {
   const Data = await db.User.findOne({ where: { id: userId } });
   let EntityId =Data.EntityId
 
-  console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
+  // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
 
   // MySQL query to fetch paginated entities
   let sql;
 
   if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-    console.log("hello _ 1")
+    // console.log("hello _ 1")
       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
   } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-    console.log("hello _ 2")
+    // console.log("hello _ 2")
       let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
       console.log(entityIds, typeof (entityIds), "entityIds")
       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
     } 
     else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-      console.log("hello _ 3", accessdata.selected_users)
+      // console.log("hello _ 3", accessdata.selected_users)
       //get array of user entity ids
       // userEntityIds = [56]
       const users = await db.User.findAll({
@@ -235,12 +237,12 @@ const ListEntity = async (req, res) => {
         raw: true // Get raw data instead of Sequelize model instances
       });
       const entityIds = users.map(user => user.EntityId);
-      console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
+      // console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
       // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
   } 
   else if (!accessdata) {
-    console.log("hello _ 4")
+    // console.log("hello _ 4")
       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
   }
 
@@ -264,23 +266,23 @@ const ListEntity = async (req, res) => {
       // Execute the count query to get the total number of entities
       let sqlCount;
       if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-        console.log("first _ 1")
+        // console.log("first _ 1")
           sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
       } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-        console.log("first _ 2")
+        // console.log("first _ 2")
           let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-          console.log(entityIds, "entityIds")
+          // console.log(entityIds, "entityIds")
           sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
       } 
       else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-        console.log("first _ 3")
+        // console.log("first _ 3")
         //get array of user entity ids
         userEntityIds = [81]
         sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${userEntityIds.join(',')})`;
         // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
     }
        else if (!accessdata) {
-        console.log("first _ 4")
+        // console.log("first _ 4")
           sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
       }
 

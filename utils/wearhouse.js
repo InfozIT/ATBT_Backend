@@ -1,16 +1,33 @@
-const { S3 } = require("aws-sdk");
-const uuid = require("uuid").v4;
+const dotenv = require("dotenv");
+dotenv.config();
+const AWS = require("aws-sdk");
 
-exports.s3Uploadv2 = async (files) => {
-  const s3 = new S3();
 
-  const params = files.map((file) => {
-    return {
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: `uploads/${uuid()}-${file.originalname}`,
-      Body: file.buffer,
-    };
-  });
-
-  return await Promise.all(params.map((param) => s3.upload(param).promise()));
+const awsConfig = {
+  accessKeyId: process.env.AccessKey,
+  secretAccessKey: process.env.SecretKey,
+  region: process.env.region,
 };
+
+const S3 = new AWS.S3(awsConfig);
+
+
+const uploadToS3 = (fileData) => {
+  return new Promise((resolve, reject) => {
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: `${Date.now().toString()}.jpg`,
+      Body: fileData,
+    };
+    S3.upload(params, (err, data) => {
+      if (err) {
+        console.log(err);
+        return reject(err);
+      }
+      console.log(data);
+      return resolve(data);
+    });
+  });
+};
+
+module.exports = uploadToS3;
