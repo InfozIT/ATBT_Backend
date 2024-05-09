@@ -1,0 +1,46 @@
+2024-04-29T13:14:01.467Z [INFO]: # Cloning repository: git@github.com:InfozIT/ATBT_Backend.git
+2024-04-29T13:14:03.897Z [INFO]: 
+2024-04-29T13:14:03.898Z [INFO]: Cloning into 'ATBT_Backend'...
+2024-04-29T13:14:03.898Z [INFO]: # Checking for Git submodules at: /codebuild/output/src685266350/src/ATBT_Backend/.gitmodules
+2024-04-29T13:14:03.905Z [INFO]: # Retrieving environment cache...
+2024-04-29T13:14:03.940Z [WARNING]: ! Unable to write cache: {"code":"ERR_BAD_REQUEST","message":"Request failed with status code 404"})}
+2024-04-29T13:14:03.941Z [INFO]: ---- Setting Up SSM Secrets ----
+2024-04-29T13:14:03.941Z [INFO]: SSM params {"Path":"/amplify/d1k3cwmau7dn02/main/","WithDecryption":true}
+2024-04-29T13:14:03.981Z [WARNING]: !Failed to set up process.env.secrets
+2024-04-29T13:14:04.718Z [INFO]: No live updates for this build run
+2024-04-29T13:14:04.782Z [INFO]: # Retrieving cache...
+2024-04-29T13:14:04.821Z [INFO]: # Retrieved cache
+2024-04-29T13:14:08.392Z [INFO]: ## Starting Backend Build
+                                 ## Checking for associated backend environment...
+                                 ## No backend environment association found, continuing...
+                                 ## Completed Backend Build
+2024-04-29T13:14:08.399Z [INFO]: {"backendDuration": 0}
+                                 ## Starting Frontend Build
+                                 # Starting phase: preBuild
+                                 # Executing command: npm ci --cache .npm --prefer-offline
+2024-04-29T13:14:22.249Z [WARNING]: npm
+2024-04-29T13:14:22.262Z [WARNING]: WARN deprecated mailgun-js@0.22.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2024-04-29T13:14:25.236Z [INFO]: added 296 packages, and audited 297 packages in 9s
+2024-04-29T13:14:25.236Z [INFO]: 22 packages are looking for funding
+                                 run `npm fund` for details
+2024-04-29T13:14:25.243Z [INFO]: 13 vulnerabilities (6 moderate, 5 high, 2 critical)
+                                 To address issues that do not require attention, run:
+                                 npm audit fix
+                                 To address all issues (including breaking changes), run:
+                                 npm audit fix --force
+                                 Run `npm audit` for details.
+2024-04-29T13:14:25.256Z [INFO]: # Completed phase: preBuild
+                                 # Starting phase: build
+                                 # Completed phase: build
+                                 ## Completed Frontend Build
+2024-04-29T13:14:25.264Z [INFO]: ## Build completed successfully
+2024-04-29T13:14:25.265Z [INFO]: # Starting caching...
+2024-04-29T13:14:25.273Z [INFO]: # Creating cache artifact...
+2024-04-29T13:14:25.729Z [INFO]: # Created cache artifact
+2024-04-29T13:14:25.800Z [INFO]: # Uploading cache artifact...
+2024-04-29T13:14:26.151Z [INFO]: # Uploaded cache artifact
+2024-04-29T13:14:26.152Z [INFO]: # Caching completed
+2024-04-29T13:14:26.266Z [ERROR]: !!! CustomerError: Artifact directory doesn't exist: dist
+2024-04-29T13:14:26.267Z [INFO]: # Starting environment caching...
+2024-04-29T13:14:26.267Z [INFO]: # Environment caching completed
+

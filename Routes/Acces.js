@@ -34,7 +34,7 @@ router.post('/all', authVerify, (req, res) => {
         });
 
 });
-
+ 
 // Endpoint to grant access to entity-level data
 
 router.post('/entity', authVerify, async (req, res) => {
@@ -107,8 +107,8 @@ router.post('/selected', authVerify, async(req, res) => {
 
 // Endpoint to revoke access
 
-router.delete('/remove/:id', authVerify, async(req, res) => {
-     
+router.delete('/remove/:id', authVerify, async (req, res) => {
+    {
         try {
           await db.UserAccess.destroy({
             where: { id: req.params.id },
@@ -119,8 +119,8 @@ router.delete('/remove/:id', authVerify, async(req, res) => {
           console.error("Error deleting:", error);
           res.status(500).json({ error: "Internal Server Error" });
         }
-    })
-
+      };
+});
 
 
 // router.put('/update/:id', authVerify, async (req, res) => {
@@ -144,6 +144,8 @@ router.delete('/remove/:id', authVerify, async(req, res) => {
 //     });
 //   });
 
+//
+
 
   router.get('/view', authVerify, async (req, res) => {
     mycon.query('SELECT * FROM UserAccesses', (err, result) => {
@@ -152,15 +154,6 @@ router.delete('/remove/:id', authVerify, async(req, res) => {
         res.status(500).send('Error retrieving data');
         return;
       }
-      
-      // Parsing selectedUsersNames from JSON strings to arrays
-    //   result.forEach(item => {
-    //     if (item.selectedUsersNames || item.entityNames) {
-    //       item.selectedUsersNames = JSON.parse(item.selectedUsersNames);
-    //       item.entityNames = JSON.parse(item.entityNames);
-
-    //     }
-    //   })
       res.status(200).json(result);
     });
   });

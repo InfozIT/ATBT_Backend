@@ -47,7 +47,6 @@ const CreateTeam = async (req, res) => {
   }
 };
 
-
 const UpdateTeam = async (req, res) => {
   try {
     const { id } = req.params;
@@ -155,7 +154,6 @@ const ListTeam = async (req, res) => {
     });
   });
 };
-
 
 const List_Team_Pub = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
