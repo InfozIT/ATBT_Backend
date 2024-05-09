@@ -378,6 +378,19 @@ const ListTeamGroup = async (req, res) => {
   }
 };
 
+const GetById = async (req, res) => {
+  try {
+    const meetings = await Meet.findOne({
+      where: { id: req.params.id },
+      // truncate: true
+    });
+
+    res.status(200).json(meetings);
+  } catch (error) {
+    console.error("Error deleting:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 
 module.exports = {
@@ -388,5 +401,6 @@ module.exports = {
   DeleteMeeting,
   ListEntiyGroup,
   ListTeamGroup,
-  ListUserGroup
+  ListUserGroup,
+  GetById
 };
