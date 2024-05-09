@@ -2,6 +2,7 @@ var db = require('../models/index');
 const Team = db.Team;
 require('dotenv').config();
 var db = require('../models/index');
+const uploadToS3 = require('../utils/wearhouse')
 
 const mycon = require('../DB/mycon')
 
@@ -24,8 +25,10 @@ const CreateTeam = async (req, res) => {
       return res.status(400).send("entity already exists");
     }
     if (file) {
+      const result = await uploadToS3(req.file.buffer);
+
       data = {
-        image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        image: `${result.Location}`,
         ...data,
       }
     }
@@ -54,7 +57,9 @@ const UpdateTeam = async (req, res) => {
     let file = req.file;
     let image;
     if (file) {
-      image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+      const result = await uploadToS3(req.file.buffer);
+
+      image = `${result.Location}`;
       data = {
         image,
         ...data

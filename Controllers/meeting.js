@@ -4,6 +4,8 @@ const mycon = require('../DB/mycon');
 const Team = db.Team
 const Entity = db.Entity
 const { Op } = require('sequelize');
+const uploadToS3 = require('../utils/wearhouse')
+
 
 
 const CreateMeeting = async (req, res) => {
@@ -19,8 +21,9 @@ const CreateMeeting = async (req, res) => {
 
     // Modify data if file is present
     if (file) {
+      const result = await uploadToS3(req.file.buffer);
       data = {
-        image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        image: `${result.Location}`,
         ...data,
       };
     }
@@ -189,11 +192,10 @@ const UpdateMeetings = async (req, res) => {
     const { id } = req.params;
     let data = req.body;
     let file = req.file;
-    let image;
     if (file) {
-      image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+      const result = await uploadToS3(req.file.buffer);
       data = {
-        image,
+        image: `${result.Location}`,
         ...data
       }
     }

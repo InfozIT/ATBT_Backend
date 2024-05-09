@@ -2,6 +2,8 @@ require('dotenv').config();
 var db = require('../models/index');
 const bcrypt = require('bcrypt');
 const User = db.User;
+const uploadToS3 = require('../utils/wearhouse')
+
 const mycon = require('../DB/mycon')
 const transporter = require('../utils/nodemailer')
 const saltRounds = 10;
@@ -36,8 +38,10 @@ const Create_User = async (req, res) => {
         }
 
         if (file) {
+            const result = await uploadToS3(req.file.buffer);
+
             data = {
-                image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+                image: `${result.Location}`,
                 ...data,
             }
         }
@@ -454,7 +458,9 @@ const Update_User = async (req, res) => {
 
         // Check if file is uploaded
         if (file) {
-            image = `${process.env.IMAGE_URI}/images/${req.file.filename}`;
+            const result = await uploadToS3(req.file.buffer);
+
+            image = `${result.Location}`;
             data.image = image;
         }
 

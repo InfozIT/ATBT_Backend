@@ -2,6 +2,8 @@ var db = require('../models/index');
 const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
 const { Op } = require('sequelize');
+const uploadToS3 = require('../utils/wearhouse')
+
 
 
 const CreateTask = async (req, res) => {
@@ -15,8 +17,9 @@ const CreateTask = async (req, res) => {
 
 
     if (file) {
+      const result = await uploadToS3(req.file.buffer);
       data = {
-        file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+        image: `${result.Location}`,
         ...data
       }
     }
@@ -230,9 +233,10 @@ const UpdateTask = async (req, res) => {
     const selectedmember = JSON.stringify(members);
 
     if (file) {
+      const result = await uploadToS3(req.file.buffer);
       updateData = {
+        image: `${result.Location}`,
         members: selectedmember,
-        file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
         ...data,
       }
     }
@@ -393,8 +397,9 @@ const SubTaskAdd = async (req, res) => {
   let Collaborators = req.body
 
   if (file) {
+    const result = await uploadToS3(req.file.buffer);
     data = {
-      image: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+      image: `${result.Location}`,
       ...data,
     }
   }
@@ -412,8 +417,9 @@ try {
   let file = req.file;
 
   if (file) {
+    const result = await uploadToS3(req.file.buffer)
     updateData = {
-      file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+      file: `${result.Location}`,
       ...updateData,
     }
   }
@@ -682,8 +688,10 @@ const CreateTskDoc = async (req, res) => {
   
       // Modify data if file is present
       if (file) {
+        const result = await uploadToS3(req.file.buffer);
+
         data = {
-          file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+          file: `${result.Location}`,
           ...data,
           TaskId: TaskId,
           SubTaskId: SubTaskId
@@ -716,8 +724,9 @@ const patchTskDoc = async (req, res) =>{
       let file = req.file;
 
       if (file) {
+        const result = await uploadToS3(req.file.buffer);
         updateData = {
-          file: `${process.env.IMAGE_URI}/images/${req.file.filename}`,
+          file: `${result.Location}`,
           ...updateData,
         }
       }
