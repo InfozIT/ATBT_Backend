@@ -17,7 +17,7 @@ const CreateTask = async (req, res) => {
 
 
     if (file) {
-      const result = await uploadToS3(req.file.buffer);
+      const result = await uploadToS3(req.file);
       data = {
         image: `${result.Location}`,
         ...data
@@ -233,7 +233,7 @@ const UpdateTask = async (req, res) => {
     const selectedmember = JSON.stringify(members);
 
     if (file) {
-      const result = await uploadToS3(req.file.buffer);
+      const result = await uploadToS3(req.file);
       updateData = {
         image: `${result.Location}`,
         members: selectedmember,
@@ -397,7 +397,7 @@ const SubTaskAdd = async (req, res) => {
   let Collaborators = req.body
 
   if (file) {
-    const result = await uploadToS3(req.file.buffer);
+    const result = await uploadToS3(req.file);
     data = {
       image: `${result.Location}`,
       ...data,
@@ -417,7 +417,7 @@ try {
   let file = req.file;
 
   if (file) {
-    const result = await uploadToS3(req.file.buffer)
+    const result = await uploadToS3(req.file)
     updateData = {
       file: `${result.Location}`,
       ...updateData,
@@ -688,7 +688,7 @@ const CreateTskDoc = async (req, res) => {
   
       // Modify data if file is present
       if (file) {
-        const result = await uploadToS3(req.file.buffer);
+        const result = await uploadToS3(req.file);
 
         data = {
           file: `${result.Location}`,
@@ -724,7 +724,7 @@ const patchTskDoc = async (req, res) =>{
       let file = req.file;
 
       if (file) {
-        const result = await uploadToS3(req.file.buffer);
+        const result = await uploadToS3(req.file);
         updateData = {
           file: `${result.Location}`,
           ...updateData,

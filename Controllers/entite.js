@@ -10,6 +10,7 @@ const CreateEntiy = async (req, res) => {
     let name = req.body.name
     let file = req.file;
     let data = req.body;
+    console.log()
     const membersId = [4, 12]  // In future it will come from frontend
     const members = await db.User.findAll({
       where: {
@@ -21,7 +22,8 @@ const CreateEntiy = async (req, res) => {
       return res.status(400).send("entity already exists");
     }
     if (file) {
-      const result = await uploadToS3(req.file.buffer);
+
+      const result = await uploadToS3(req.file);
       data = {
         image: `${result.Location}`,
         ...data,
@@ -168,7 +170,7 @@ const UpdateEntity = async (req, res) => {
     let image;
     console.log(data, file, "update data and file")
     if (file) {
-      const result = await uploadToS3(req.file.buffer);
+      const result = await uploadToS3(req.file);
       data = {
         image: `${result.Location}`,
         ...data

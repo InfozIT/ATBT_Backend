@@ -38,7 +38,7 @@ const Create_User = async (req, res) => {
         }
 
         if (file) {
-            const result = await uploadToS3(req.file.buffer);
+            const result = await uploadToS3(req.file);
 
             data = {
                 image: `${result.Location}`,
@@ -458,7 +458,7 @@ const Update_User = async (req, res) => {
 
         // Check if file is uploaded
         if (file) {
-            const result = await uploadToS3(req.file.buffer);
+            const result = await uploadToS3(req.file);
 
             image = `${result.Location}`;
             data.image = image;

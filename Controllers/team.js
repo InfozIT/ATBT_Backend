@@ -25,7 +25,7 @@ const CreateTeam = async (req, res) => {
       return res.status(400).send("entity already exists");
     }
     if (file) {
-      const result = await uploadToS3(req.file.buffer);
+      const result = await uploadToS3(req.file);
 
       data = {
         image: `${result.Location}`,
@@ -57,7 +57,7 @@ const UpdateTeam = async (req, res) => {
     let file = req.file;
     let image;
     if (file) {
-      const result = await uploadToS3(req.file.buffer);
+      const result = await uploadToS3(req.file);
 
       image = `${result.Location}`;
       data = {
