@@ -1,6 +1,8 @@
 const dotenv = require("dotenv");
 dotenv.config();
 const AWS = require("aws-sdk");
+const uuid = require("uuid").v4;
+
 
 
 const awsConfig = {
@@ -12,13 +14,35 @@ const awsConfig = {
 const S3 = new AWS.S3(awsConfig);
 
 
+// const uploadToS3 = (fileData) => {
+//   // console.log(fileData.originalname,"file data is here")
+//   return new Promise((resolve, reject) => {
+//     const params = {
+//       Bucket: process.env.AWS_BUCKET_NAME,
+//       Key: `${Date.now().toString()}`,
+//       Body: fileData,
+//     };
+//     S3.upload(params, (err, data) => {
+//       if (err) {
+//         console.log(err);
+//         return reject(err);
+//       }
+//       console.log(data);
+//       return resolve(data);
+//     });
+//   });
+// };
+
+
 const uploadToS3 = (fileData) => {
+  
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: `${Date.now().toString()}.jpg`,
-      Body: fileData,
+      Key: `${uuid()}-${fileData.originalname}`,
+      Body: fileData.buffer,
     };
+
     S3.upload(params, (err, data) => {
       if (err) {
         console.log(err);
@@ -28,6 +52,8 @@ const uploadToS3 = (fileData) => {
       return resolve(data);
     });
   });
+  
 };
+
 
 module.exports = uploadToS3;

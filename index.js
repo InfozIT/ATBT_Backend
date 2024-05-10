@@ -55,9 +55,9 @@ app.use('/images', express.static(imagesFolder));
 
 
 app.post("/upload", upload.single("image"), async (req, res) => {
-  console.log(req.file);
+  // console.log(req.file);
   if (req.file) {
-    await uploadToS3(req.file.buffer);
+    await uploadToS3(req.file);
   }
 
   res.send({
