@@ -855,13 +855,207 @@ const DeleteTskDoc = async (req, res) =>{
 //     res.status(500).json({ error: 'Failed to fetch tasks' });
 //   }
 // };
+// const GetTask = async (req, res) => {
+//   let Query = req.query;
+//   const userId = Query?.userId ?? null;
+//   const meetingId = Query?.meetingId ?? null;
+//   const status = Query?.status ?? null; // Fetch status from query parameters
+
+//   try {
+//     // Fetch all tasks related to the specified meetingId and userId if provided
+//     let whereClause = {};
+//     if (meetingId) {
+//       whereClause.meetingId = parseInt(meetingId);
+//     }
+//     if (userId) {
+//       let userMeetId = await db.Meeting.findAll({
+//         where: {
+//           UserId: userId
+//         },
+//         raw: true
+//       });
+//       const userMeetingIds = userMeetId.map(item => parseInt(item.id));
+//       whereClause.meetingId = { [Op.in]: userMeetingIds };
+//     }
+//     if (status) {
+//       whereClause.status = status; // Apply status filter if provided
+//     }
+
+//     const tasks = await db.Task.findAll({
+//       where: whereClause,
+//       order: [['createdAt', 'DESC']]
+//     });
+
+//     // Extract meetingIds from tasks to query related meetings
+//     const meetingIds = tasks.map(item => parseInt(item.meetingId));
+
+//     // Fetch meetings based on meetingIds
+//     const meetings = await db.Meeting.findAll({
+//       attributes: ['id', 'date', 'meetingnumber'],
+//       where: {
+//         id: meetingIds
+//       },
+//       raw: true
+//     });
+
+//     // Fetch TaskIds to query subtasks
+//     const taskIds = tasks.map(item => parseInt(item.id));
+
+//     // Count subtasks for each TaskId
+//     const subTaskCounts = {};
+//     const subTaskResults = await db.SubTask.findAll({
+//       attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
+//       where: {
+//         TaskId: { [Op.in]: taskIds }
+//       },
+//       group: ['TaskId']
+//     });
+
+//     // Populate subtask counts in subTaskCounts object
+//     subTaskResults.forEach(result => {
+//       subTaskCounts[result.TaskId] = result.dataValues.subtaskCount;
+//     });
+
+//     // Get the current date for due date comparison
+//     const currentDate = new Date();
+
+//     // Combine task details with meeting and subtask information
+//     const combinedResult = [];
+//     for (let task of tasks) {
+//       const taskData = task.dataValues;
+//       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+//       const subtaskCount = subTaskCounts[taskData.id] || 0;
+
+//       if (taskData.dueDate && new Date(taskData.dueDate) < currentDate) {
+//         console.log(taskData.id)
+//         mycon.query('UPDATE Tasks SET newstatus = ? WHERE id = ?',
+//           [ "Over-Due",taskData.id],
+//           (err, result) => {
+//             if (err) {
+//               // Handle error
+//               console.error('Error updating user email:', err);
+//               return;
+//             }
+//             // Handle success
+//             console.log('User email updated successfully:', result);
+//           }
+//         );
+//       }
+//       combinedResult.push({
+//         ...taskData,
+//         id: taskData.id,
+//         decision: taskData.decision,
+//         date: meetingDetails.date,
+//         meetingnumber: meetingDetails.meetingnumber,
+//         priority: taskData.priority,
+//         members: taskData.members,
+//         dueDate: taskData.dueDate,
+//         status: taskData.status,
+//         file: taskData.file,
+//         subtaskCount: subtaskCount
+//       });
+//     }
+
+//     res.status(200).json(combinedResult);
+//   } catch (error) {
+//     console.error('Error fetching tasks:', error);
+//     res.status(500).json({ error: 'Failed to fetch tasks' });
+//   }
+// };
+
+// const GetTask = async (req, res) => {
+//   let Query = req.query;
+//   const userId = Query?.userId ?? null;
+//   const meetingId = Query?.meetingId ?? null;
+//   const status = Query?.status ?? null;
+
+//   try {
+//     // Update overdue tasks before fetching
+//     // await updateOverdueTasks();
+
+//     // Fetch all tasks related to the specified meetingId and userId if provided
+//     let whereClause = {};
+//     if (meetingId) {
+//       whereClause.meetingId = parseInt(meetingId);
+//     }
+//     if (userId) {
+//       let userMeetId = await db.Meeting.findAll({
+//         where: {
+//           UserId: userId
+//         },
+//         raw: true
+//       });
+//       const userMeetingIds = userMeetId.map(item => parseInt(item.id));
+//       whereClause.meetingId = { [Op.in]: userMeetingIds };
+//     }
+//     if (status) {
+//       whereClause.status = status;
+//     }
+
+//     const tasks = await db.Task.findAll({
+//       where: whereClause,
+//       order: [['createdAt', 'DESC']]
+//     });
+
+//     const meetingIds = tasks.map(item => parseInt(item.meetingId));
+//     const meetings = await db.Meeting.findAll({
+//       attributes: ['id', 'date', 'meetingnumber'],
+//       where: {
+//         id: meetingIds
+//       },
+//       raw: true
+//     });
+
+//     const taskIds = tasks.map(item => parseInt(item.id));
+//     const subTaskCounts = {};
+//     const subTaskResults = await db.SubTask.findAll({
+//       attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
+//       where: {
+//         TaskId: { [Op.in]: taskIds }
+//       },
+//       group: ['TaskId']
+//     });
+
+//     subTaskResults.forEach(result => {
+//       subTaskCounts[result.TaskId] = result.dataValues.subtaskCount;
+//     });
+
+//     const combinedResult = [];
+//     for (let task of tasks) {
+//       const taskData = task.dataValues;
+//       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
+//       const subtaskCount = subTaskCounts[taskData.id] || 0;
+
+//       combinedResult.push({
+//         ...taskData,
+//         id: taskData.id,
+//         decision: taskData.decision,
+//         date: meetingDetails.date,
+//         meetingnumber: meetingDetails.meetingnumber,
+//         priority: taskData.priority,
+//         members: taskData.members,
+//         dueDate: taskData.dueDate,
+//         status: taskData.status,
+//         file: taskData.file,
+//         subtaskCount: subtaskCount
+//       });
+//     }
+
+//     res.status(200).json(combinedResult);
+//   } catch (error) {
+//     console.error('Error fetching tasks:', error);
+//     res.status(500).json({ error: 'Failed to fetch tasks' });
+//   }
+// };
+
 const GetTask = async (req, res) => {
   let Query = req.query;
   const userId = Query?.userId ?? null;
   const meetingId = Query?.meetingId ?? null;
-  const status = Query?.status ?? null; // Fetch status from query parameters
+  const status = Query?.status ?? null;
 
   try {
+
     // Fetch all tasks related to the specified meetingId and userId if provided
     let whereClause = {};
     if (meetingId) {
@@ -878,7 +1072,11 @@ const GetTask = async (req, res) => {
       whereClause.meetingId = { [Op.in]: userMeetingIds };
     }
     if (status) {
-      whereClause.status = status; // Apply status filter if provided
+      if (status === "Over-Due") {
+        whereClause.newstatus = status; // Apply newstatus filter if status is "Over-Due"
+      } else {
+        whereClause.status = status; // Apply status filter otherwise
+      }
     }
 
     const tasks = await db.Task.findAll({
@@ -886,10 +1084,7 @@ const GetTask = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    // Extract meetingIds from tasks to query related meetings
     const meetingIds = tasks.map(item => parseInt(item.meetingId));
-
-    // Fetch meetings based on meetingIds
     const meetings = await db.Meeting.findAll({
       attributes: ['id', 'date', 'meetingnumber'],
       where: {
@@ -898,10 +1093,7 @@ const GetTask = async (req, res) => {
       raw: true
     });
 
-    // Fetch TaskIds to query subtasks
     const taskIds = tasks.map(item => parseInt(item.id));
-
-    // Count subtasks for each TaskId
     const subTaskCounts = {};
     const subTaskResults = await db.SubTask.findAll({
       attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
@@ -911,25 +1103,16 @@ const GetTask = async (req, res) => {
       group: ['TaskId']
     });
 
-    // Populate subtask counts in subTaskCounts object
     subTaskResults.forEach(result => {
       subTaskCounts[result.TaskId] = result.dataValues.subtaskCount;
     });
 
-    // Get the current date for due date comparison
-    const currentDate = new Date();
-
-    // Combine task details with meeting and subtask information
     const combinedResult = [];
     for (let task of tasks) {
       const taskData = task.dataValues;
       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
       const subtaskCount = subTaskCounts[taskData.id] || 0;
 
-      if (taskData.dueDate && new Date(taskData.dueDate) < currentDate) {
-        console.log(taskData.id)
-        await db.Task.update({ newstatus: "Over-Due" }, { where: { id: taskData.id } });
-      }
       combinedResult.push({
         ...taskData,
         id: taskData.id,
@@ -940,6 +1123,7 @@ const GetTask = async (req, res) => {
         members: taskData.members,
         dueDate: taskData.dueDate,
         status: taskData.status,
+        newstatus: taskData.newstatus, // Include newstatus in the result
         file: taskData.file,
         subtaskCount: subtaskCount
       });
@@ -951,6 +1135,11 @@ const GetTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
+
+
+
+
+
 
 
 
