@@ -914,9 +914,7 @@ const GetTask = async (req, res) => {
       const subtaskCount = subTaskCounts[taskData.id] || 0;
 
       // Check if the due date is past the current date and set status to "Over-Due" if so
-    const taskStatus = taskData.dueDate ? (new Date(taskData.dueDate) > currentDate ? 'Over-Due' : taskData.status) : taskData.status;
-
-
+      
       return {
         ...taskData,
         id: taskData.id,
