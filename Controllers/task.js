@@ -755,6 +755,7 @@ const DeleteTskDoc = async (req, res) =>{
      }
 
 
+
 // const GetTask = async (req, res) => {
 //   let Query = req.query;
 //   const userId = Query?.userId ?? null;
@@ -816,11 +817,21 @@ const DeleteTskDoc = async (req, res) =>{
 //       subTaskCounts[result.TaskId] = result.dataValues.subtaskCount;
 //     });
 
+//     // Get the current date for due date comparison
+//     const currentDate = new Date();
+
 //     // Combine task details with meeting and subtask information
 //     const combinedResult = tasks.map(task => {
 //       const taskData = task.dataValues;
 //       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
 //       const subtaskCount = subTaskCounts[taskData.id] || 0;
+
+//       // Check if the due date is past the current date and set newstatus to "Over-Due" if so
+//       let newstatus = taskData.newstatus;
+//       if (taskData.dueDate && new Date(taskData.dueDate) < currentDate) {
+//         newstatus = "Over-Due";
+        
+//       }
 
 //       return {
 //         ...taskData,
@@ -832,6 +843,7 @@ const DeleteTskDoc = async (req, res) =>{
 //         members: taskData.members,
 //         dueDate: taskData.dueDate,
 //         status: taskData.status,
+//         newstatus: newstatus, // Include the newstatus field in the response
 //         file: taskData.file,
 //         subtaskCount: subtaskCount
 //       };
@@ -908,14 +920,17 @@ const GetTask = async (req, res) => {
     const currentDate = new Date();
 
     // Combine task details with meeting and subtask information
-    const combinedResult = tasks.map(task => {
+    const combinedResult = [];
+    for (let task of tasks) {
       const taskData = task.dataValues;
       const meetingDetails = meetings.find(m => m.id === parseInt(task.meetingId));
       const subtaskCount = subTaskCounts[taskData.id] || 0;
 
-      // Check if the due date is past the current date and set status to "Over-Due" if so
-
-      return {
+      if (taskData.dueDate && new Date(taskData.dueDate) < currentDate) {
+        console.log(taskData.id)
+        await db.Task.update({ newstatus: "Over-Due" }, { where: { id: taskData.id } });
+      }
+      combinedResult.push({
         ...taskData,
         id: taskData.id,
         decision: taskData.decision,
@@ -927,8 +942,8 @@ const GetTask = async (req, res) => {
         status: taskData.status,
         file: taskData.file,
         subtaskCount: subtaskCount
-      };
-    });
+      });
+    }
 
     res.status(200).json(combinedResult);
   } catch (error) {
@@ -936,6 +951,8 @@ const GetTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
+
+
 
 
 module.exports = {
