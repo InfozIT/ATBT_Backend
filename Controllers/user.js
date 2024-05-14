@@ -66,7 +66,7 @@ const Create_User = async (req, res) => {
                     await createdUser.setEntity(getEntity);
                 }
                 await sendEmail(email, password);
-                res.status(201).send(`${result.insertId},${createdUser.image}`);
+                res.status(201).send(`${result.insertId}`);
             } catch (emailError) {
                 console.error("Error sending email:", emailError);
                 res.status(500).send("Error sending email to user");
