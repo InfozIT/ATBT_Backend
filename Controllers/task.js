@@ -870,7 +870,7 @@ const GetTask = async (req, res) => {
       tasks = tasks.filter(task => {
         if (status === "Over-Due") {
           return task.dueDate && task.dueDate < currentDate;
-        } else if (status === "To-Do" || status === "In-Progress" || status === "Completed") {
+        } else if (status === "To-Do" || status === "In-progress" || status === "Completed") {
           return task.status === status;
         }
         return true;
