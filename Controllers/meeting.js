@@ -304,60 +304,6 @@ const DeleteMeeting = async (req, res) => {
   }
 };
 
-const ListEntiyGroup = async (req, res) => { 
-  const bmId = req.params.id;
-  
-  try {
-    // Find the meeting details by ID
-    const meetData = await Meet.findOne({ where: { id: bmId } });
-    if (!meetData) {
-      return res.status(404).json({ error: 'Meeting not found' });
-    }
-    
-    const entityId = meetData.EntityId;
-
-    // Find all meeting members' IDs
-    const meetingMembers = await db.Meeting.findOne({
-      attributes: ['members'],
-      where: { id: bmId },
-      raw: true
-    });
-
-    if (!meetingMembers || !meetingMembers.members) {
-      return res.status(404).json({ error: 'No members found for the meeting' });
-    }
-
-    const extractedIds = meetingMembers.members.map(member => member.id);
-
-    // Fetch user details based on extracted IDs
-    const users = await db.User.findAll({
-      attributes: ['id', 'image', 'name', 'email', 'EntityId'],
-      where: { id: { [Op.in]: extractedIds } }
-    });
-
-    // Include the meeting data user if it's not already in the users list
-    var meetingData = await db.User.findAll({
-      attributes: ['id', 'image', 'name', 'email', 'EntityId'],
-      where: { EntityId: entityId }
-    });
-    
-    let combinedUsers = [...meetingData,...users]
-   
-    let uniqueUsers = new Map();
-    combinedUsers.forEach(user => {
-      uniqueUsers.set(user.id, user);
-    });
-
-    // Convert map values (unique user objects) back to an array
-    combinedUsers = Array.from(uniqueUsers.values());
-
-
-    res.status(200).json(combinedUsers); // Send users as JSON response  
-  } catch (error) {
-    console.error('Error: ' + error);
-    res.status(500).send('Error processing request');
-  }
-};
 
 const ListUserGroup = async (req, res) => {
   try {
@@ -466,6 +412,64 @@ const GetById = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+
+const ListEntiyGroup = async (req, res) => { 
+  const bmId = req.params.id;
+  console.log(bmId, "I am from params ")
+  
+  try {
+    // Find the meeting details by ID
+    const meetData = await Meet.findOne({ where: { id: bmId } });
+    if (!meetData) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+    
+    const entityId = meetData.EntityId;
+
+    // Find all meeting members' IDs
+    const meetingMembers = await db.Meeting.findOne({
+      attributes: ['members'],
+      where: { id: bmId },
+      raw: true
+    });
+
+    if (!meetingMembers || !meetingMembers.members) {
+      return res.status(404).json({ error: 'No members found for the meeting' });
+    }
+
+    const extractedIds = meetingMembers.members.map(member => member.id);
+
+    // Fetch user details based on extracted IDs
+    const users = await db.User.findAll({
+      attributes: ['id', 'image', 'name', 'email', 'EntityId'],
+      where: { id: { [Op.in]: extractedIds } }
+    });
+
+    // Include the meeting data user if it's not already in the users list
+    var meetingData = await db.User.findAll({
+      attributes: ['id', 'image', 'name', 'email', 'EntityId'],
+      where: { entityname: entityId }
+    });
+    
+    let combinedUsers = [...meetingData,...users]
+   
+    let uniqueUsers = new Map();
+    combinedUsers.forEach(user => {
+      uniqueUsers.set(user.id, user);
+    });
+
+    // Convert map values (unique user objects) back to an array
+    combinedUsers = Array.from(uniqueUsers.values());
+
+
+    res.status(200).json(combinedUsers); // Send users as JSON response  
+  } catch (error) {
+    console.error('Error: ' + error);
+    res.status(500).send('Error processing request');
+  }
+};
+
 
 
 module.exports = {
