@@ -317,7 +317,7 @@ const GetMeeting = async (req, res) => {
     for (let meeting of Meetings) {
       const [totalTaskCount, overDueCount, completedCount, inProgressCount, toDoCount] = await Promise.all([
         db.Task.count({ where: { meetingId: meeting.id } }),
-        db.Task.count({ where: { meetingId: meeting.id, status: 'Overdue' } }),
+        db.Task.count({ where: { meetingId: meeting.id, stat: 'Over-Due' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'Completed' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'In-Progress' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'To-Do' } })
