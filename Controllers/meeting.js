@@ -182,6 +182,7 @@ const ListMeetings = async (req, res) => {
     });
   });
 };
+
 const GetMeeting = async (req, res) => {
 
   try {
