@@ -868,8 +868,8 @@ const GetTask = async (req, res) => {
     if (status) {
       const currentDate = new Date().toISOString().slice(0, 10);
       tasks = tasks.filter(task => {
-        if (status === "Over-Due") {
-          return task.dueDate && task.dueDate < currentDate;
+        if (status === "Over-Due" ) {
+          return task.dueDate && task.dueDate < currentDate && task.status !== "Completed";
         } else if (status === "To-Do" || status === "In-Progress" || status === "Completed") {
           return task.status === status;
         }
@@ -920,6 +920,8 @@ const GetTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
+
+
 
 
 
