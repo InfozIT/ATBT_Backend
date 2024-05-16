@@ -860,6 +860,8 @@ const DeleteTskDoc = async (req, res) =>{
 //   }
 // };
 
+
+// with entity
 const GetTask = async (req, res) => {
   const { userId, meetingId, status, entityId } = req.query;
 
