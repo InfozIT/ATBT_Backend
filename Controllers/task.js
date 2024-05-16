@@ -859,14 +859,21 @@ const DeleteTskDoc = async (req, res) =>{
 //     res.status(500).json({ error: 'Failed to fetch tasks' });
 //   }
 // };
+
 const GetTask = async (req, res) => {
-  const { userId, meetingId, status } = req.query;
+  const { userId, meetingId, status, entityId } = req.query;
 
   try {
     let whereClause = {};
 
-    if (meetingId) {
-      whereClause.meetingId = parseInt(meetingId);
+    if (entityId) {
+      let userEntities = await db.Meeting.findAll({
+        where: { EntityId: entityId },
+        raw: true,
+        attributes: ['id']
+      });
+      const userEntityIds = userEntities.map(item => item.id);
+      whereClause.meetingId = { [Op.in]: userEntityIds };
     }
 
     if (userId) {
@@ -876,7 +883,15 @@ const GetTask = async (req, res) => {
         attributes: ['id']
       });
       const userMeetingIds = userMeetings.map(item => item.id);
-      whereClause.meetingId = { [Op.in]: userMeetingIds };
+      whereClause.meetingId = whereClause.meetingId
+        ? { [Op.and]: [whereClause.meetingId, { [Op.in]: userMeetingIds }] }
+        : { [Op.in]: userMeetingIds };
+    }
+
+    if (meetingId) {
+      whereClause.meetingId = whereClause.meetingId
+        ? { [Op.and]: [whereClause.meetingId, { [Op.eq]: meetingId }] }
+        : meetingId;
     }
 
     let tasks = await db.Task.findAll({
@@ -895,15 +910,14 @@ const GetTask = async (req, res) => {
       });
     }
 
-    // Update overdue tasks to status 'Doe'
+    // Update overdue tasks to status 'Over-Due'
     await Promise.all(tasks.map(async task => {
       if (task.dueDate && task.dueDate < currentDate && task.status !== "Completed") {
-          await db.Task.update({ stat: "Over-Due" }, {
-            where: { id: task.id }
+        await db.Task.update({ status: "Over-Due" }, {
+          where: { id: task.id }
         });
       }
     }));
-    
 
     const meetingIds = tasks.map(task => task.meetingId);
     const meetings = await db.Meeting.findAll({
@@ -943,6 +957,7 @@ const GetTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
+
 
 
 
