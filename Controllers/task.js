@@ -913,7 +913,7 @@ const GetTask = async (req, res) => {
     // Update overdue tasks to status 'Over-Due'
     await Promise.all(tasks.map(async task => {
       if (task.dueDate && task.dueDate < currentDate && task.status !== "Completed") {
-        await db.Task.update({ status: "Over-Due" }, {
+        await db.Task.update({ stat: "Over-Due" }, {
           where: { id: task.id }
         });
       }
