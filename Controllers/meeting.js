@@ -499,9 +499,7 @@ const ListEntiyGroup = async (req, res) => {
 const ListMeetings = async (req, res) => {
   const { userId } = req.user;
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
-
   const filters = {};
-
   for (const key in restQueries) {
       filters[key] = restQueries[key];
   }
@@ -512,22 +510,22 @@ const ListMeetings = async (req, res) => {
   const Data = await db.User.findOne({ where: { id: userId } });
   let EntityId =Data.EntityId
 
-  console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
+  // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
 
   // MySQL query to fetch paginated entities
   let sql;
 
   if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-    console.log("hello _ 1")
+    // console.log("hello _ 1")
       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`
   } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-    console.log("hello _ 2")
+    // console.log("hello _ 2")
       let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
       // console.log(entityIds, typeof (entityIds), "entityIds")
       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
     } 
     else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-      console.log("hello _ 3", accessdata.selected_users)
+      // console.log("hello _ 3", accessdata.selected_users)
       //get array of user entity ids
       // userEntityIds = [56]
       const users = await db.User.findAll({
@@ -543,8 +541,7 @@ const ListMeetings = async (req, res) => {
       // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
   } 
   else if (!accessdata) {
-    console.log("hello _ 4")
-      console.log(EntityId,"hello-4")
+    // console.log("hello _ 4")
       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND EntityId = '${EntityId}'`;
   }
 
