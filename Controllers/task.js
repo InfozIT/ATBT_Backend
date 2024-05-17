@@ -863,9 +863,7 @@ const GetTask = async (req, res) => {
     }
 
     const combinedResult = tasks.map(task => {
-      const meetingDetails = meetings.find(m => m.id === task.meetingId);
       const subtaskCount = subTaskCounts[task.id] || 0;
-      const taskCreateby = userMap[task.userId] || { id: "weq" };
       const members = meetingMembersMap[task.meetingId] || [];
 
       // Add self to the members list if self is not null
