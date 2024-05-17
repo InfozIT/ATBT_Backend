@@ -13,7 +13,7 @@ const path = require("path");
 
 let upload = multer({
     limits: {
-        fileSize: 1000000
+        fileSize: 10000000
     }
 })
 
