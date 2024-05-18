@@ -439,59 +439,6 @@ const List_User = async (req, res) => {
 };
 
 
-// const Update_User = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { role: roleId } = req.body;
-//         let data = req.body;
-//         const file = req.file;
-//         let image;
-
-//         // Find role in the database
-//         const role = await db.Role.findOne({ where: {id: roleId } });
-//         if (!role) {
-//             console.error("Role not found.");
-//             return res.status(404).send("Role not found");
-//         } else {
-//             data.RoleId = role.id;
-//         }
-
-//         // Check if file is uploaded
-//         if (file) {
-//             const result = await uploadToS3(req.file);
-
-//             image = `${result.Location}`;
-//             data.image = image;
-//         }
-
-//         // Define the SQL query to update the user
-//         const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
-//         const updateQuery1 = `UPDATE Meetings SET ? WHERE id = ?`;
-
-
-//         // Execute the update query
-//         mycon.query(updateQuery, [data, id], (error, updateResults) => {
-//             if (error) {
-//                 console.error("Error updating User:", error);
-//                 return res.status(500).json({ error: "Internal Server Error" });
-//             }
-//             res.status(201).json(`${id}`);
-//         });
-//         mycon.query( updateQuery1, [data, id], (error, updateResults) => {
-//             if (error) {
-//                 console.error("Error updating User:", error);
-//                 return res.status(500).json({ error: "Internal Server Error" });
-//             }
-//             res.status(201).json(`${id}`);
-//         });
-//     } catch (error) {
-//         console.error("Error updating User:", error);
-//         res.status(500).json({ error: "Internal Server Error" });
-//     }
-// };
-
-
-//try
 const Update_User = async (req, res) => {
     try {
         const { id } = req.params;
@@ -519,63 +466,33 @@ const Update_User = async (req, res) => {
 
         // Define the SQL query to update the user
         const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
-        const updateQuery1 = `UPDATE Meetings SET ? WHERE memberId = ?`;
+        const updateQuery1 = `UPDATE Meetings SET ? WHERE id = ?`;
 
-        // Execute both update queries within a transaction
-        mycon.beginTransaction(async (err) => {
-            if (err) {
-                console.error("Error starting transaction:", err);
+
+        // Execute the update query
+        mycon.query(updateQuery, [data, id], (error, updateResults) => {
+            if (error) {
+                console.error("Error updating User:", error);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
-
-            try {
-                // Execute the update query for Users table
-                await new Promise((resolve, reject) => {
-                    mycon.query(updateQuery, [data, id], (error, updateResults) => {
-                        if (error) {
-                            mycon.rollback(() => {
-                                console.error("Error updating User:", error);
-                                reject(error);
-                            });
-                            return res.status(500).json({ error: "Internal Server Error" });
-                        }
-                        resolve();
-                    });
-                });
-
-                // Execute the update query for Meetings table
-                await new Promise((resolve, reject) => {
-                    mycon.query(updateQuery1, [data, id], (error, updateResults) => {
-                        if (error) {
-                            mycon.rollback(() => {
-                                console.error("Error updating Meeting:", error);
-                                reject(error);
-                            });
-                            return res.status(500).json({ error: "Internal Server Error" });
-                        }
-                        resolve();
-                    });
-                });
-
-                mycon.commit((err) => {
-                    if (err) {
-                        console.error("Error committing transaction:", err);
-                        return res.status(500).json({ error: "Internal Server Error" });
-                    }
-                    res.status(201).json(`${id}`);
-                });
-            } catch (error) {
-                mycon.rollback(() => {
-                    console.error("Error in transaction:", error);
-                    res.status(500).json({ error: "Internal Server Error" });
-                });
+            res.status(201).json(`${id}`);
+        });
+        mycon.query( updateQuery1, [data, id], (error, updateResults) => {
+            if (error) {
+                console.error("Error updating User:", error);
+                return res.status(500).json({ error: "Internal Server Error" });
             }
+            res.status(201).json(`${id}`);
         });
     } catch (error) {
         console.error("Error updating User:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
+
+
 
 
 
