@@ -438,7 +438,6 @@ const List_User = async (req, res) => {
     });
 };
 
-
 const Update_User = async (req, res) => {
     try {
         const { id } = req.params;
@@ -466,18 +465,9 @@ const Update_User = async (req, res) => {
 
         // Define the SQL query to update the user
         const updateQuery = `UPDATE Users SET ? WHERE id = ?`;
-        const updateQuery1 = `UPDATE Meetings SET ? WHERE id = ?`;
-
 
         // Execute the update query
         mycon.query(updateQuery, [data, id], (error, updateResults) => {
-            if (error) {
-                console.error("Error updating User:", error);
-                return res.status(500).json({ error: "Internal Server Error" });
-            }
-            res.status(201).json(`${id}`);
-        });
-        mycon.query( updateQuery1, [data, id], (error, updateResults) => {
             if (error) {
                 console.error("Error updating User:", error);
                 return res.status(500).json({ error: "Internal Server Error" });
@@ -489,11 +479,6 @@ const Update_User = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
-
-
-
 
 
 const Update_Password = async (req, res) => {
