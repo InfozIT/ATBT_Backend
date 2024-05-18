@@ -878,6 +878,7 @@ const GetTask = async (req, res) => {
         priority: task.priority,
         group: members,
         dueDate: task.dueDate,
+        members : task.members,
         status: task.status,
         stat: task.stat,
         collaborators: task.collaborators || [],  // assuming task model has a field collaborators
@@ -897,101 +898,7 @@ const GetTask = async (req, res) => {
   }
 };
 
-
-const ListTaskCount = async(req,res)=>{
-  const { userId } = req.user;
-  const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
-  const filters = {};
-  for (const key in restQueries) {
-      filters[key] = restQueries[key];
-  }
-
-  const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
-  const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
-  const Data = await db.User.findOne({ where: { id: userId } });
-  let EntityId =Data.EntityId
-
-  // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
-
-  // MySQL query to fetch paginated entities
-  let sql;
-
-
-  // Add conditions for additional filter fields
-  for (const [field, value] of Object.entries(filters)) {
-      if (value !== '') {
-          sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-      }
-  }
-
-  // Add LIMIT and OFFSET clauses to the SQL query
-  sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
-
-
-      let sqlCount;
-      if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-        // console.log("first _ 1")
-          sqlCount = `SELECT COUNT(*) as total FROM Tasks`;
-          sqlCount = `SELECT COUNT(*) as completedCount FROM Tasks WHERE status = 'Completed'`;
-          sqlCount = `SELECT COUNT(*) as upcomingCount FROM Tasks WHERE status = 'To-Do'`;
-          sqlCount = `SELECT COUNT(*) as inprogressCount FROM Tasks WHERE status = 'In-Progress'`;
-          sqlCount = `SELECT COUNT(*) as overdueCount FROM Tasks WHERE stat = 'Over-Due'`;
-          
-      } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-        // console.log("first _ 2")
-          let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-          // console.log(entityIds, "entityIds")
-          sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE id IN (${entityIds.join(',')})`;
-      } 
-      else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-        // console.log("first _ 3")
-        //get array of user entity ids
-        userEntityIds = [81]
-        sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE id IN (${userEntityIds.join(',')})`;
-        // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
-    }
-       else if (!accessdata) {
-        // console.log("first _ 4")
-          sqlCount = `SELECT COUNT(*) as total FROM Tasks EntityId = '${EntityId}'`;
-      }
-
-      // Add conditions for additional filter fields
-      for (const [field, value] of Object.entries(filters)) {
-          if (value !== '') {
-              sqlCount += ` AND ${field} LIKE '%${value}%'`;
-          }
-      }
-
-      mycon.query(sqlCount, async (err, countResult) => {
-          if (err) {
-              console.error('Error executing MySQL count query: ' + err.stack);
-              res.status(500).json({ error: 'Internal server error' });
-              return;
-          }
-
-          const totalEntities = countResult[0].total;
-          const totalPages = Math.ceil(totalEntities / pageSize);
-          const TaskOverdue = countResult.overdueCount;
-          console.log(TaskOverdue)
-
-          res.json({
-              // Meetings: countResult,
-              totalPages: parseInt(totalPages),
-              currentPage: parseInt(page),
-              pageSize: parseInt(pageSize),
-              totalTask: parseInt(totalEntities),
-              taskOverdue: TaskOverdue,
- 
-
-              startMeeting: parseInt(offset) + 1, // Correct the start entity index
-              endMeeting: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
-              search
-          });
-      });
-  }
-
-
+const  ListTaskCount= async (req, res) => {}
 
 
 
