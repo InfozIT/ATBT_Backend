@@ -119,7 +119,7 @@ app.get('/', (req, res) => {
           dynamic data sharing user & entity lcbi
           </li>
           <li>
-          checking
+          board meeting done
           </li>
         </ul>
       </body>
