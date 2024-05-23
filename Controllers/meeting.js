@@ -5,7 +5,7 @@ const Team = db.Team
 const Entity = db.Entity
 const { Op } = require('sequelize');
 const uploadToS3 = require('../utils/wearhouse')
-
+const User = db.User;
 
 
 const CreateMeeting = async (req, res) => {
@@ -439,6 +439,69 @@ const GetById = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+// const GetById = async (req, res) => {
+//   try {
+//     // Step 1: Fetch the meeting by its ID
+//     const meeting = await Meet.findOne({
+//       where: { id: req.params.id },
+//     });
+
+//     if (!meeting) {
+//       return res.status(404).json({ error: 'Meeting not found' });
+//     }
+
+//     // Step 2: Extract the user IDs from the members column
+//     // Ensure members is parsed if stored as a JSON string
+//     let members = meeting.members;
+//     if (typeof members === 'string') {
+//       members = JSON.parse(members);
+//     }
+
+//     // Check if members is an array and extract IDs
+//     let memberIds = [];
+//     if (Array.isArray(members)) {
+//       memberIds = members.map(member => member.id);
+//     }
+
+//     console.log("memberIds", members); // Debugging: Check the extracted member IDs
+
+//     if (memberIds.length === 0) {
+//       return res.status(200).json({
+//         ...meeting.toJSON(),
+//         members: [], // No members found, return an empty array
+//       });
+//     }
+
+//     // Step 3: Query the User table to get the details of these users
+//     const users = await User.findAll({
+//       where: {
+//         id: {
+//           [Op.in]: memberIds,
+//         },
+//       },
+//     });
+
+//     // Step 4: Replace the user IDs in the members column with the full user details
+//     const updatedMembers = users.map(user => ({
+//       id: user.id,
+//       name: user.name,
+//       email: user.email,
+//       image: user.image,
+//     }));
+
+//     // Return the updated meeting data with full member details
+//     const updatedMeeting = {
+//       ...meeting.toJSON(),
+//       members: updatedMembers,
+//     };
+
+//     res.status(200).json(updatedMeeting);
+//   } catch (error) {
+//     console.error('Error fetching meeting details:', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// };
 
 const ListEntiyGroup = async (req, res) => { 
   const bmId = req.params.id;

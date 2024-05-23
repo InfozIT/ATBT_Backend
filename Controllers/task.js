@@ -1372,6 +1372,8 @@ const DeleteTskDoc = async (req, res) =>{
 //     res.status(500).json({ error: 'Failed to fetch tasks' });
 //   }
 // };
+
+// working
 const GetTask = async (req, res) => {
   const { userId, meetingId, status, entityId } = req.query;
 
@@ -1452,7 +1454,7 @@ const GetTask = async (req, res) => {
     }, {});
 
     const userResults = await db.User.findAll({
-      attributes: ['id', 'name', 'email', 'image', 'EntityId'],
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
       raw: true
     });
 
@@ -1462,10 +1464,10 @@ const GetTask = async (req, res) => {
     }, {});
 
     const entityUserMap = userResults.reduce((acc, user) => {
-      if (!acc[user.EntityId]) {
-        acc[user.EntityId] = [];
+      if (!acc[user.entityname]) {
+        acc[user.entityname] = [];
       }
-      acc[user.EntityId].push(user);
+      acc[user.entityname].push(user);
       return acc;
     }, {});
 
@@ -1515,7 +1517,7 @@ const GetTask = async (req, res) => {
     let self = null;
     if (userId) {
       self = await db.User.findOne({
-        attributes: ['id', 'image', 'name', 'email', 'EntityId'],
+        attributes: ['id', 'image', 'name', 'email', 'entityname'],
         where: { id: userId },
         raw: true,
       });
@@ -1556,8 +1558,6 @@ const GetTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
-
-
 
 
 
