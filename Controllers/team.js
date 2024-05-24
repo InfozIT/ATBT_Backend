@@ -3,9 +3,9 @@ const Team = db.Team;
 require('dotenv').config();
 var db = require('../models/index');
 const uploadToS3 = require('../utils/wearhouse')
-
+const { QueryTypes } = require('sequelize');
 const mycon = require('../DB/mycon')
-
+const { Op } = require('sequelize');
 
 const CreateTeam = async (req, res) => {
   try {
@@ -252,22 +252,77 @@ const List_Team_Pub = async (req, res) => {
   });
 
 };
-const getTeamDataById = (req, res) => {
-  const entityId = req.params.id;
-  mycon.query('SELECT * FROM Teams WHERE id = ?', entityId, (err, result) => {
-    if (err) {
-      console.error('Error retrieving data: ' + err.stack);
-      res.status(500).send('Error retrieving data');
-      return;
-    }
+// const getTeamDataById = (req, res) => {
+//   const entityId = req.params.id;
+//   mycon.query('SELECT * FROM Teams WHERE id = ?', entityId, (err, result) => {
+//     if (err) {
+//       console.error('Error retrieving data: ' + err.stack);
+//       res.status(500).send('Error retrieving data');
+//       return;
+//     }
 
-    if (result.length === 0) {
-      res.status(404).send('Teams data not found');
-      return;
-    }
+//     if (result.length === 0) {
+//       res.status(404).send('Teams data not found');
+//       return;
+//     }
 
-    res.status(200).json(result[0]);
-  });
-};
+//     res.status(200).json(result[0]);
+//   });
+// };
+
+
+const getTeamDataById = async (req, res) => {
+    try {
+      // Step 1: Fetch the meeting by its ID
+      const teamDetails = await Team.findOne({
+        where: { id: req.params.id },
+      });
+  
+      // Check if meeting exists
+      if (!teamDetails) {
+        return res.status(404).json({ error: 'TeamDetails not found' });
+      }
+  
+      // Step 2: Extract the user IDs from the members column
+      let members = teamDetails.members;
+  
+      const memberIds = Array.isArray(members) ? members : [];
+  
+  
+      // console.log("memberIds:", memberIds); // Log memberIds to verify the IDs
+  
+      // Step 4: If no member IDs found, return the meeting with empty members array
+      if (memberIds.length === 0) {
+        const updatedTeam = {
+          ...teamDetails.toJSON(),
+          members: [],
+        };
+        return res.status(200).json(updatedTeam);
+      }
+  
+      // Step 5: Query the User table to get the details of these users
+      const users = await db.User.findAll({
+        attributes: ['id', 'image', 'name', 'email'],
+        where: {
+          id: {
+            [Op.in]: memberIds,
+          },
+        },
+        logging: console.log, // Enable logging to inspect the query
+      });
+  
+      const updatedTeam = {
+        ...teamDetails.toJSON(),
+        members: users,
+      };
+  
+      res.status(200).json(updatedTeam);
+    } catch (error) {
+      console.error('Error fetching meeting details:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+
+
 
 module.exports = { CreateTeam, getTeamDataById, ListTeam, DeleteTeamById, UpdateTeam, List_Team_Pub };
