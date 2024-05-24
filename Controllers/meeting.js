@@ -561,10 +561,10 @@ const GetById = async (req, res) => {
     }
 
     const allMembers = [
-      ...users,
       ...entityUsers,
       ...(userById ? [userById] : []),
       ...teamUsers,
+      ...users,
     ];
 
     const allMembersUnique = Array.from(
