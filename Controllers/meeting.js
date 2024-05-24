@@ -5,7 +5,7 @@ const Team = db.Team
 const Entity = db.Entity
 const { Op } = require('sequelize');
 const uploadToS3 = require('../utils/wearhouse')
-const User = db.User;
+// const User = db.User;
 
 
 const CreateMeeting = async (req, res) => {
@@ -426,19 +426,19 @@ const ListTeamGroup = async (req, res) => {
   }
 };
 
-const GetById = async (req, res) => {
-  try {
-    const meetings = await Meet.findOne({
-      where: { id: req.params.id },
-      // truncate: true
-    });
+// const GetById = async (req, res) => {
+//   try {
+//     const meetings = await Meet.findOne({
+//       where: { id: req.params.id },
+//       // truncate: true
+//     });
 
-    res.status(200).json(meetings);
-  } catch (error) {
-    console.error("Error deleting:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
+//     res.status(200).json(meetings);
+//   } catch (error) {
+//     console.error("Error deleting:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
 
 // const GetById = async (req, res) => {
 //   try {
@@ -447,53 +447,46 @@ const GetById = async (req, res) => {
 //       where: { id: req.params.id },
 //     });
 
+//     // Check if meeting exists
 //     if (!meeting) {
 //       return res.status(404).json({ error: 'Meeting not found' });
 //     }
 
 //     // Step 2: Extract the user IDs from the members column
-//     // Ensure members is parsed if stored as a JSON string
 //     let members = meeting.members;
-//     if (typeof members === 'string') {
-//       members = JSON.parse(members);
-//     }
 
-//     // Check if members is an array and extract IDs
-//     let memberIds = [];
-//     if (Array.isArray(members)) {
-//       memberIds = members.map(member => member.id);
-//     }
+//     // console.log("members", members); // Log members object to inspect its structure
 
-//     console.log("memberIds", members); // Debugging: Check the extracted member IDs
+//     // Step 3: Check if members is an array and extract IDs
+//     // const memberIds = Array.isArray(members) ? members : [];
+//     const memberIds = Array.isArray(members) ? members : [];
 
+
+//     // console.log("memberIds:", memberIds); // Log memberIds to verify the IDs
+
+//     // Step 4: If no member IDs found, return the meeting with empty members array
 //     if (memberIds.length === 0) {
-//       return res.status(200).json({
+//       const updatedMeeting = {
 //         ...meeting.toJSON(),
-//         members: [], // No members found, return an empty array
-//       });
+//         members: [],
+//       };
+//       return res.status(200).json(updatedMeeting);
 //     }
 
-//     // Step 3: Query the User table to get the details of these users
-//     const users = await User.findAll({
+//     // Step 5: Query the User table to get the details of these users
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'image', 'name', 'email', 'EntityId'],
 //       where: {
 //         id: {
 //           [Op.in]: memberIds,
 //         },
 //       },
+//       logging: console.log, // Enable logging to inspect the query
 //     });
 
-//     // Step 4: Replace the user IDs in the members column with the full user details
-//     const updatedMembers = users.map(user => ({
-//       id: user.id,
-//       name: user.name,
-//       email: user.email,
-//       image: user.image,
-//     }));
-
-//     // Return the updated meeting data with full member details
 //     const updatedMeeting = {
 //       ...meeting.toJSON(),
-//       members: updatedMembers,
+//       members: users,
 //     };
 
 //     res.status(200).json(updatedMeeting);
@@ -502,6 +495,95 @@ const GetById = async (req, res) => {
 //     res.status(500).json({ error: 'Internal Server Error' });
 //   }
 // };
+
+const GetById = async (req, res) => {
+  try {
+    // Step 1: Fetch the meeting by its ID
+    const meeting = await Meet.findOne({
+      where: { id: req.params.id },
+    });
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+  
+    let members = meeting.members;
+    const memberIds = Array.isArray(members) ? members : [];
+
+    let users = [];
+    if (memberIds.length > 0) {
+      users = await db.User.findAll({
+        attributes: ['id', 'image', 'name', 'email', 'entityname'],
+        where: {
+          id: {
+            [Op.in]: memberIds,
+          },
+        },
+      });
+    }
+
+    let entityUsers = [];
+    if (meeting.EntityId) {
+      entityUsers = await db.User.findAll({
+        attributes: ['id', 'image', 'name', 'email', 'entityname'],
+        where: {
+          entityname: meeting.EntityId,
+        },
+      });
+    }
+
+    let userById = null;
+    if (meeting.UserId) {
+      userById = await db.User.findOne({
+        attributes: ['id', 'image', 'name', 'email', 'entityname'],
+        where: {
+          id: meeting.UserId,
+        },
+      });
+    }
+
+    let teamUsers = [];
+    if (meeting.TeamId) {
+      const team = await db.Team.findOne({
+        where: { id: meeting.TeamId },
+      });
+
+      if (team && Array.isArray(team.members)) {
+        teamUsers = await db.User.findAll({
+          attributes: ['id', 'image', 'name', 'email', 'entityname'],
+          where: {
+            id: {
+              [Op.in]: team.members,
+            },
+          },
+        });
+      }
+    }
+
+    const allMembers = [
+      ...users,
+      ...entityUsers,
+      ...(userById ? [userById] : []),
+      ...teamUsers,
+    ];
+
+    const allMembersUnique = Array.from(
+      new Set(allMembers.map((user) => user.id))
+    ).map((id) => allMembers.find((user) => user.id === id));
+
+    const updatedMeeting = {
+      ...meeting.toJSON(),
+      members: users,
+      allMembers: allMembersUnique,
+    };
+
+    res.status(200).json(updatedMeeting);
+  } catch (error) {
+    console.error('Error fetching meeting details:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 
 const ListEntiyGroup = async (req, res) => { 
   const bmId = req.params.id;
