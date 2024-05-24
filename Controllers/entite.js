@@ -196,221 +196,130 @@ const UpdateEntity = async (req, res) => {
 
 
 
-// const ListEntity = async (req, res) => {
-//   const { userId } = req.user;
-
-//   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
-
-//   const filters = {};
-
-//   for (const key in restQueries) {
-//       filters[key] = restQueries[key];
-//   }
-
-//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
-//   const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
-//   const Data = await db.User.findOne({ where: { id: userId } });
-//   let EntityId =Data.EntityId
-
-//   // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
-
-//   // MySQL query to fetch paginated entities
-//   let sql;
-
-//   if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-//     // console.log("hello _ 1")
-//       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
-//   } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-//     // console.log("hello _ 2")
-//       let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-//       console.log(entityIds, typeof (entityIds), "entityIds")
-//       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//     } 
-//     else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-//       // console.log("hello _ 3", accessdata.selected_users)
-//       //get array of user entity ids
-//       // userEntityIds = [56]
-//       const users = await db.User.findAll({
-//         attributes: ['EntityId'], // Only fetch the entityId column
-//         where: {
-//           id: [...JSON.parse(accessdata.selected_users)] // Filter users based on userIds array
-//         },
-//         raw: true // Get raw data instead of Sequelize model instances
-//       });
-//       const entityIds = users.map(user => user.EntityId);
-//       // console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
-//       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//       // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
-//   } 
-//   else if (!accessdata) {
-//     // console.log("hello _ 4")
-//       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
-//   }
-
-//   // Add conditions for additional filter fields
-//   for (const [field, value] of Object.entries(filters)) {
-//       if (value !== '') {
-//           sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-//       }
-//   }
-
-//   // Add LIMIT and OFFSET clauses to the SQL query
-//   sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
-
-//   mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
-//       if (err) {
-//           console.error('Error executing MySQL query: ' + err.stack);
-//           res.status(500).json({ error: 'Internal server error' });
-//           return;
-//       }
-
-//       // Execute the count query to get the total number of entities
-//       let sqlCount;
-//       if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-//         // console.log("first _ 1")
-//           sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
-//       } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-//         // console.log("first _ 2")
-//           let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-//           // console.log(entityIds, "entityIds")
-//           sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//       } 
-//       else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-//         // console.log("first _ 3")
-//         //get array of user entity ids
-//         userEntityIds = [81]
-//         sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${userEntityIds.join(',')})`;
-//         // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
-//     }
-//        else if (!accessdata) {
-//         // console.log("first _ 4")
-//           sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
-//       }
-
-//       // Add conditions for additional filter fields
-//       for (const [field, value] of Object.entries(filters)) {
-//           if (value !== '') {
-//               sqlCount += ` AND ${field} LIKE '%${value}%'`;
-//           }
-//       }
-
-//       mycon.query(sqlCount, async (err, countResult) => {
-//           if (err) {
-//               console.error('Error executing MySQL count query: ' + err.stack);
-//               res.status(500).json({ error: 'Internal server error' });
-//               return;
-//           }
-
-//           const totalEntities = countResult[0].total;
-//           const totalPages = Math.ceil(totalEntities / pageSize);
-
-//           res.json({
-//               Entities: result,
-//               totalPages: parseInt(totalPages),
-//               currentPage: parseInt(page),
-//               pageSize: parseInt(pageSize),
-//               totalEntities: parseInt(totalEntities),
-//               startEntity: parseInt(offset) + 1, // Correct the start entity index
-//               endEntity: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
-//               search
-//           });
-//       });
-//   });
-// };
-
 const ListEntity = async (req, res) => {
   const { userId } = req.user;
+
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
 
   const filters = {};
+
   for (const key in restQueries) {
-    filters[key] = restQueries[key];
+      filters[key] = restQueries[key];
   }
 
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-  try {
-    const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
-    const userData = await db.User.findOne({ where: { id: userId } });
-    const userEntityId = userData.EntityId;
+  const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+  const Data = await db.User.findOne({ where: { id: userId } });
+  let EntityId =Data.EntityId
 
-    let sql = `SELECT * FROM Entities WHERE (name LIKE ?)`;
-    let countSql = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE ?)`;
-    const replacements = [`%${search}%`];
+  // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
 
-    // Handle access data and adjust queries accordingly
-    if (accessdata) {
-      if (accessdata.selected_users) {
-        const selectedUsers = JSON.parse(accessdata.selected_users);
-        const users = await db.User.findAll({
-          attributes: ['EntityId'],
-          where: { id: selectedUsers },
-          raw: true
-        });
-        const entityIds = users.map(user => user.EntityId).concat(userEntityId);
-        sql += ` AND id IN (${entityIds.join(',')})`;
-        countSql += ` AND id IN (${entityIds.join(',')})`;
-      } else if (accessdata.entity_id) {
-        const entityIds = JSON.parse(accessdata.entity_id).concat(userEntityId);
-        sql += ` AND id IN (${entityIds.join(',')})`;
-        countSql += ` AND id IN (${entityIds.join(',')})`;
-      } else {
-        sql += ` AND id = ${userEntityId}`;
-        countSql += ` AND id = ${userEntityId}`;
-      }
-    } else {
-      sql += ` AND id = ${userEntityId}`;
-      countSql += ` AND id = ${userEntityId}`;
-    }
+  // MySQL query to fetch paginated entities
+  let sql;
 
-    // Add conditions for additional filter fields
-    for (const [field, value] of Object.entries(filters)) {
-      if (value !== '') {
-        sql += ` AND ${field} LIKE ?`;
-        countSql += ` AND ${field} LIKE ?`;
-        replacements.push(`%${value}%`);
-      }
-    }
-
-    // Add ORDER BY, LIMIT, and OFFSET
-    sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
-    replacements.push(parseInt(pageSize), offset);
-
-    // Execute the paginated query
-    mycon.query(sql, replacements, (err, result) => {
-      if (err) {
-        console.error('Error executing MySQL query: ' + err.stack);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-
-      // Execute the count query
-      mycon.query(countSql, replacements.slice(0, -2), (err, countResult) => {
-        if (err) {
-          console.error('Error executing MySQL count query: ' + err.stack);
-          return res.status(500).json({ error: 'Internal server error' });
-        }
-
-        const totalEntities = countResult[0].total;
-        const totalPages = Math.ceil(totalEntities / pageSize);
-
-        res.json({
-          Entities: result,
-          totalPages: parseInt(totalPages),
-          currentPage: parseInt(page),
-          pageSize: parseInt(pageSize),
-          totalEntities: parseInt(totalEntities),
-          startEntity: parseInt(offset) + 1,
-          endEntity: Math.min(parseInt(offset) + parseInt(pageSize), totalEntities),
-          search
-        });
+  if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+    // console.log("hello _ 1")
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
+  } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+    // console.log("hello _ 2")
+      let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
+      console.log(entityIds, typeof (entityIds), "entityIds")
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
+    } 
+    else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
+      // console.log("hello _ 3", accessdata.selected_users)
+      //get array of user entity ids
+      // userEntityIds = [56]
+      const users = await db.User.findAll({
+        attributes: ['EntityId'], // Only fetch the entityId column
+        where: {
+          id: [...JSON.parse(accessdata.selected_users)] // Filter users based on userIds array
+        },
+        raw: true // Get raw data instead of Sequelize model instances
       });
-    });
-  } catch (err) {
-    console.error('Error in ListEntity function: ' + err.stack);
-    res.status(500).json({ error: 'Internal server error' });
+      const entityIds = users.map(user => user.EntityId);
+      // console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
+      // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
+  } 
+  else if (!accessdata) {
+    // console.log("hello _ 4")
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
   }
+
+  // Add conditions for additional filter fields
+  for (const [field, value] of Object.entries(filters)) {
+      if (value !== '') {
+          sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+      }
+  }
+
+  // Add LIMIT and OFFSET clauses to the SQL query
+  sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+
+  mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
+      if (err) {
+          console.error('Error executing MySQL query: ' + err.stack);
+          res.status(500).json({ error: 'Internal server error' });
+          return;
+      }
+
+      // Execute the count query to get the total number of entities
+      let sqlCount;
+      if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+        // console.log("first _ 1")
+          sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
+      } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+        // console.log("first _ 2")
+          let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
+          // console.log(entityIds, "entityIds")
+          sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
+      } 
+      else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
+        // console.log("first _ 3")
+        //get array of user entity ids
+        userEntityIds = [81]
+        sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${userEntityIds.join(',')})`;
+        // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
+    }
+       else if (!accessdata) {
+        // console.log("first _ 4")
+          sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
+      }
+
+      // Add conditions for additional filter fields
+      for (const [field, value] of Object.entries(filters)) {
+          if (value !== '') {
+              sqlCount += ` AND ${field} LIKE '%${value}%'`;
+          }
+      }
+
+      mycon.query(sqlCount, async (err, countResult) => {
+          if (err) {
+              console.error('Error executing MySQL count query: ' + err.stack);
+              res.status(500).json({ error: 'Internal server error' });
+              return;
+          }
+
+          const totalEntities = countResult[0].total;
+          const totalPages = Math.ceil(totalEntities / pageSize);
+
+          res.json({
+              Entities: result,
+              totalPages: parseInt(totalPages),
+              currentPage: parseInt(page),
+              pageSize: parseInt(pageSize),
+              totalEntities: parseInt(totalEntities),
+              startEntity: parseInt(offset) + 1, // Correct the start entity index
+              endEntity: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
+              search
+          });
+      });
+  });
 };
+
+
 
 
 
