@@ -89,37 +89,710 @@ async function sendEmail(email, password) {
   await transporter.sendMail(mailData);
 }
 // VVO
+// const GetTaskbyId = async (req, res) => {
+//   const taskId = req.params.id;
+//   try {
+//     // Fetch the task details
+//     const tasks = await db.Task.findAll({
+//       where: { id: taskId },
+//     });
+
+//     if (!tasks || tasks.length === 0) {
+//       return res.status(404).json({ error: 'Task not found' });
+//     }
+
+//     const task = tasks[0];
+
+//     // Extracting meetingId from task
+//     const meetingId = parseInt(task.meetingId);
+
+//     // Fetch the meeting details
+//     const meeting = await db.Meeting.findOne({
+//       attributes: ['id', 'date', 'meetingnumber'],
+//       where: {
+//         id: meetingId
+//       },
+//       raw: true
+//     });
+
+//     // Fetch task comments for the given task
+//     const taskComments = await db.SubTaskDoc.findAll({
+//       where: {
+//         TaskId: taskId
+//       },
+//       raw: true
+//     });
+
+//     // Extract unique userIds from comments
+//     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+
+//     // Fetch user details based on userIds
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'image', 'name'],
+//       where: {
+//         id: { [Op.in]: userIds }
+//       },
+//       raw: true
+//     });
+
+//     let {count} = await db.SubTask.findAndCountAll({
+//       where: {
+//         TaskId: taskId },
+//     });
+//     // Create a map of userIds to corresponding user details for quick lookup
+//     const userMap = {};
+//     users.forEach(user => {
+//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
+//     });
+
+//     // Prepare the comments array with senderName and senderImage
+//     const commentsWithUserInfo = taskComments.map(comment => ({
+//       ...comment,
+//       senderName: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderName : null,
+//       senderImage: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderImage : null
+//     }));
+
+//     // Prepare the response data
+//     const combinedResult = {
+//       id: task.id,
+//       decision: task.decision,
+//       SubTaskCount : count,
+//       date: meeting ? meeting.date : null,
+//       taskCreateby: "", // Initialize taskCreateby as empty string
+//       meetingnumber: meeting ? meeting.meetingnumber : null,
+//       priority: task.priority || null, // Use task priority or null if undefined
+//       members: task.members,
+//       collaborators: "",
+//       dueDate: task.dueDate,
+//       status: task.status,
+//       createdAt: task.createdAt,
+//       updatedAt: task.updatedAt,
+//       file: task.file || null, // Use task file or null if undefined
+//       comments: commentsWithUserInfo || [] // Use comments array or empty array if undefined
+//     };
+
+//     // Fetch task creator entity name
+//     const taskCreator = task.taskCreateby;
+//     if (taskCreator && taskCreator.name === "users") {
+//       const userEntity = await db.User.findOne({ 
+//         attributes: ['EntityId'],
+//         where: { id: taskCreator.id }
+//       });
+//       if (userEntity) {
+//         const EntID = userEntity.EntityId;
+//         const entity = await db.Entity.findOne({ 
+//           attributes: ['name'],
+//           where: { id: EntID }
+//         });
+//       if(task.collaborators){
+//          var colabs = await db.User.findAll({
+//           attributes: ['id', 'name','image','email','EntityId'],
+//           where: {
+//             id: { [Op.in]: task.collaborators }
+//           },
+//           raw: true
+//         });
+//       }
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = colabs;
+
+//       }
+//     }
+//     else if (taskCreator && taskCreator.name === "entity"){
+//       const entity = await db.Entity.findOne({ 
+//         attributes: ['name'],
+//         where: { id: taskCreator.id }
+//       });
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = task ? task.collaborators : "";
+
+//     }
+//     else if (taskCreator && taskCreator.name === "team"){
+//       const entity = await db.Team.findOne({ 
+//         attributes: ['name'],
+//         where: { id: taskCreator.id }
+//       });
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = task ? task.collaborators : "";
+
+//     }
+
+//     res.status(200).json([combinedResult]); // Wrap result in an array to match the specified format
+//   } catch (error) {
+//     console.error('Error fetching task details:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+// const GetTaskbyId = async (req, res) => {
+//   const taskId = req.params.id;
+//   try {
+//     // Fetch the task details
+//     const task = await db.Task.findOne({
+//       where: { id: taskId },
+//     });
+
+//     if (!task) {
+//       return res.status(404).json({ error: 'Task not found' });
+//     }
+
+//     // Extracting meetingId from task
+//     const meetingId = parseInt(task.meetingId);
+
+//     // Fetch the meeting details
+//     const meeting = await db.Meeting.findOne({
+//       attributes: ['members'],
+//       where: { id: meetingId },
+//       raw: true
+//     });
+
+//     if (!meeting) {
+//       return res.status(404).json({ error: 'Meeting not found' });
+//     }
+
+//     // Extract member IDs from the meeting
+//     const memberIds = meeting.members;
+
+//     // Fetch user details for the members
+//     const groupMembers = await db.User.findAll({
+//       attributes: ['id', 'name', 'email', 'image', 'EntityId'],
+//       where: { id: { [Op.in]: memberIds } },
+//       raw: true
+//     });
+
+//     // Fetch task comments for the given task
+//     const taskComments = await db.SubTaskDoc.findAll({
+//       where: { TaskId: taskId },
+//       raw: true
+//     });
+
+//     // Extract unique userIds from comments
+//     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+
+//     // Fetch user details based on userIds
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'name', 'image'],
+//       where: { id: { [Op.in]: userIds } },
+//       raw: true
+//     });
+
+//     let { count } = await db.SubTask.findAndCountAll({
+//       where: { TaskId: taskId },
+//     });
+
+//     // Create a map of userIds to corresponding user details for quick lookup
+//     const userMap = {};
+//     users.forEach(user => {
+//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
+//     });
+
+//     // Prepare the comments array with senderName and senderImage
+//     const commentsWithUserInfo = taskComments.map(comment => ({
+//       ...comment,
+//       senderName: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderName : null,
+//       senderImage: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderImage : null
+//     }));
+
+//     // Prepare the response data
+//     const combinedResult = {
+//       id: task.id,
+//       decision: task.decision,
+//       SubTaskCount: count,
+//       date: meeting ? meeting.date : null,
+//       taskCreateby: "", // Initialize taskCreateby as empty string
+//       meetingnumber: meeting ? meeting.meetingnumber : null,
+//       priority: task.priority || null, // Use task priority or null if undefined
+//       members: task.members,
+//       collaborators: "",
+//       dueDate: task.dueDate,
+//       status: task.status,
+//       createdAt: task.createdAt,
+//       updatedAt: task.updatedAt,
+//       file: task.file || null, // Use task file or null if undefined
+//       comments: commentsWithUserInfo || [], // Use comments array or empty array if undefined
+//       group: groupMembers // Include group field with all members associated with the task's meeting
+//     };
+
+//     // Fetch task creator entity name
+//     const taskCreator = task.taskCreateby;
+//     if (taskCreator && taskCreator.name === "users") {
+//       const userEntity = await db.User.findOne({
+//         attributes: ['EntityId'],
+//         where: { id: taskCreator.id }
+//       });
+//       if (userEntity) {
+//         const EntID = userEntity.EntityId;
+//         const entity = await db.Entity.findOne({
+//           attributes: ['name'],
+//           where: { id: EntID }
+//         });
+//         if (task.collaborators) {
+//           var colabs = await db.User.findAll({
+//             attributes: ['id', 'name', 'image', 'email', 'EntityId'],
+//             where: {
+//               id: { [Op.in]: task.collaborators }
+//             },
+//             raw: true
+//           });
+//         }
+//         combinedResult.taskCreateby = entity ? entity.name : "";
+//         combinedResult.collaborators = colabs;
+
+//       }
+//     } else if (taskCreator && taskCreator.name === "entity") {
+//       const entity = await db.Entity.findOne({
+//         attributes: ['name'],
+//         where: { id: taskCreator.id }
+//       });
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = task ? task.collaborators : "";
+
+//     } else if (taskCreator && taskCreator.name === "team") {
+//       const entity = await db.Team.findOne({
+//         attributes: ['name'],
+//         where: { id: taskCreator.id }
+//       });
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = task ? task.collaborators : "";
+
+//     }
+
+//     // Send the response
+//     res.status(200).json([combinedResult]); // Wrap result in an array to match the specified format
+//   } catch (error) {
+//     console.error('Error fetching task details:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+// working with entity user and members
+// const GetTaskbyId = async (req, res) => {
+//   const taskId = req.params.id;
+//   try {
+//     // Fetch the task details
+//     const task = await db.Task.findOne({
+//       where: { id: taskId },
+//     });
+
+//     if (!task) {
+//       return res.status(404).json({ error: 'Task not found' });
+//     }
+
+//     // Extracting meetingId from task
+//     const meetingId = parseInt(task.meetingId);
+
+//     // Fetch the meeting details
+//     const meeting = await db.Meeting.findOne({
+//       attributes: ['members', 'UserId', 'EntityId'], // Include EntityId in the attributes
+//       where: { id: meetingId },
+//       raw: true
+//     });
+
+//     if (!meeting) {
+//       return res.status(404).json({ error: 'Meeting not found' });
+//     }
+
+//     // Extract member IDs from the meeting
+//     const memberIds = meeting.members;
+
+//     // Fetch user details for the members
+//     const groupMembers = await db.User.findAll({
+//       attributes: ['id', 'name', 'email', 'image', 'EntityId'],
+//       where: { id: { [Op.in]: memberIds } },
+//       raw: true
+//     });
+
+//     // Fetch additional users based on EntityId from the meeting
+//     const additionalUsers = await db.User.findAll({
+//       attributes: ['id', 'name', 'email', 'image', 'EntityId'],
+//       where: { entityname: meeting.EntityId }, // Fetch users based on EntityId from meeting
+//       raw: true
+//     });
+
+//     // Add additional users to the groupMembers array if found
+//     if (additionalUsers.length > 0) {
+//       groupMembers.push(...additionalUsers);
+//     }
+
+//     // Fetch task comments for the given task
+//     const taskComments = await db.SubTaskDoc.findAll({
+//       where: { TaskId: taskId },
+//       raw: true
+//     });
+
+//     // Extract unique userIds from comments
+//     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+
+//     // Fetch user details based on userIds
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'name', 'image'],
+//       where: { id: { [Op.in]: userIds } },
+//       raw: true
+//     });
+
+//     let { count } = await db.SubTask.findAndCountAll({
+//       where: { TaskId: taskId },
+//     });
+
+//     // Create a map of userIds to corresponding user details for quick lookup
+//     const userMap = {};
+//     users.forEach(user => {
+//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
+//     });
+
+//     // Prepare the comments array with senderName and senderImage
+//     const commentsWithUserInfo = taskComments.map(comment => ({
+//       ...comment,
+//       senderName: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderName : null,
+//       senderImage: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderImage : null
+//     }));
+
+//     // Prepare the response data
+//     const combinedResult = {
+//       id: task.id,
+//       decision: task.decision,
+//       SubTaskCount: count,
+//       date: meeting ? meeting.date : null,
+//       taskCreateby: "", // Initialize taskCreateby as empty string
+//       meetingnumber: meeting ? meeting.meetingnumber : null,
+//       priority: task.priority || null, // Use task priority or null if undefined
+//       members: task.members,
+//       collaborators: "",
+//       dueDate: task.dueDate,
+//       status: task.status,
+//       createdAt: task.createdAt,
+//       updatedAt: task.updatedAt,
+//       file: task.file || null, // Use task file or null if undefined
+//       comments: commentsWithUserInfo || [], // Use comments array or empty array if undefined
+//       group: groupMembers // Include group field with all members associated with the task's meeting, including additional users based on EntityId
+//     };
+
+//     // Fetch task creator entity name
+//     const taskCreator = task.taskCreateby;
+//     if (taskCreator && taskCreator.name === "users") {
+//       const userEntity = await db.User.findOne({
+//         attributes: ['EntityId'],
+//         where: { id: taskCreator.id }
+//       });
+//       if (userEntity) {
+//         const EntID = userEntity.EntityId;
+//         const entity = await db.Entity.findOne({
+//           attributes: ['name'],
+//           where: { id: EntID }
+//         });
+//         if (task.collaborators) {
+//           var colabs = await db.User.findAll({
+//             attributes: ['id', 'name', 'image', 'email', 'EntityId'],
+//             where: {
+//               id: { [Op.in]: task.collaborators }
+//             },
+//             raw: true
+//           });
+//         }
+//         combinedResult.taskCreateby = entity ? entity.name : "";
+//         combinedResult.collaborators = colabs;
+
+//       }
+//     } else if (taskCreator && taskCreator.name === "entity") {
+//       const entity = await db.Entity.findOne({
+//         attributes: ['name'],
+//         where: { id: taskCreator.id }
+//       });
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = task ? task.collaborators : "";
+
+//     } else if (taskCreator && taskCreator.name === "team") {
+//       const entity = await db.Team.findOne({
+//         attributes: ['name'],
+//         where: { id: taskCreator.id }
+//       });
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = task ? task.collaborators : "";
+
+//     }
+
+//     // Send the response
+//     res.status(200).json([combinedResult]); // Wrap result in an array to match the specified format
+//   } catch (error) {
+//     console.error('Error fetching task details:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
+
+
+// working
+// const GetTaskbyId = async (req, res) => {
+//   const taskId = req.params.id;
+//   try {
+//     // Fetch the task details
+//     const task = await db.Task.findOne({
+//       where: { id: taskId },
+//     });
+
+//     if (!task) {
+//       return res.status(404).json({ error: 'Task not found' });
+//     }
+
+//     // Extracting meetingId from task
+//     const meetingId = parseInt(task.meetingId);
+
+//     // Fetch the meeting details
+//     const meeting = await db.Meeting.findOne({
+//       attributes: ['members', 'UserId', 'EntityId', 'TeamId'], // Include TeamId in the attributes
+//       where: { id: meetingId },
+//       raw: true
+//     });
+
+//     if (!meeting) {
+//       return res.status(404).json({ error: 'Meeting not found' });
+//     }
+
+//     // Extract member IDs from the meeting
+//     const memberIds = meeting.members;
+
+//     // Fetch user details for the members
+//     const groupMembers = await db.User.findAll({
+//       attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//       where: { id: { [Op.in]: memberIds } },
+//       raw: true
+//     });
+
+//     // Fetch additional users based on EntityId from the meeting
+//     const additionalUsers = await db.User.findAll({
+//       attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//       where: { entityname: meeting.EntityId }, // Fetch users based on EntityId from meeting
+//       raw: true
+//     });
+
+//     // Add additional users to the groupMembers array if found
+//     if (additionalUsers.length > 0) {
+//       groupMembers.push(...additionalUsers);
+//     }
+
+//     // Fetch additional users based on TeamId from the meeting
+//     if (meeting.TeamId) {
+//       const teamMembers = await db.Team.findOne({
+//         attributes: ['id','members'],
+//         where: { id: meeting.TeamId }, // Fetch team based on TeamId from meeting
+//         raw: true
+//       });
+
+//       // Extract member IDs from the team
+//       const teamMemberIds = teamMembers.members;
+
+//       // Fetch user details for the team members
+//       const teamUserDetails = await db.User.findAll({
+//         attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//         where: { id: { [Op.in]: teamMemberIds } },
+//         raw: true
+//       });
+
+//       // Add team members to the groupMembers array if found
+//       if (teamUserDetails.length > 0) {
+//         groupMembers.push(...teamUserDetails);
+//       }
+//     }
+
+//     // Fetch task comments for the given task
+//     const taskComments = await db.SubTaskDoc.findAll({
+//       where: { TaskId: taskId },
+//       raw: true
+//     });
+
+//     // Extract unique userIds from comments
+//     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
+
+//     // Fetch user details based on userIds
+//     const users = await db.User.findAll({
+//       attributes: ['id', 'name', 'image'],
+//       where: { id: { [Op.in]: userIds } },
+//       raw: true
+//     });
+
+//     let { count } = await db.SubTask.findAndCountAll({
+//       where: { TaskId: taskId },
+//     });
+
+//     // Create a map of userIds to corresponding user details for quick lookup
+//     const userMap = {};
+//     users.forEach(user => {
+//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
+//     });
+
+//     // Prepare the comments array with senderName and senderImage
+//     const commentsWithUserInfo = taskComments.map(comment => ({
+//       ...comment,
+//       senderName: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderName : null,
+//       senderImage: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderImage : null
+//     }));
+
+//     // Prepare the response data
+//     const combinedResult = {
+//       id: task.id,
+//       decision: task.decision,
+//       SubTaskCount: count,
+//       date: meeting ? meeting.date : null,
+//       taskCreateby: "", // Initialize taskCreateby as empty string
+//       meetingnumber: meeting ? meeting.meetingnumber : null,
+//       priority: task.priority || null, // Use task priority or null if undefined
+//       members: task.members,
+//       collaborators: "",
+//       dueDate: task.dueDate,
+//       status: task.status,
+//       createdAt: task.createdAt,
+//       updatedAt: task.updatedAt,
+//       file: task.file || null, // Use task file or null if undefined
+//       comments: commentsWithUserInfo || [], // Use comments array or empty array if undefined
+//       group: groupMembers // Include group field with all members associated with the task's meeting, including additional users based on EntityId and team members
+//     };
+
+//     // Fetch task creator entity name
+//     const taskCreator = task.taskCreateby;
+//     if (taskCreator && taskCreator.name === "users") {
+//       const userEntity = await db.User.findOne({
+//         attributes: ['entityname'],
+//         where: { id: taskCreator.id }
+//       });
+//       if (userEntity) {
+//         const EntID = userEntity.entityname;
+//         const entity = await db.Entity.findOne({
+//           attributes: ['name'],
+//           where: { id: EntID }
+//         });
+//         if (task.collaborators) {
+//           var colabs = await db.User.findAll({
+//             attributes: ['id', 'name', 'image', 'email', 'entityname'],
+//             where: {
+//               id: { [Op.in]: task.collaborators }
+//             },
+//             raw: true
+//           });
+//         }
+//         combinedResult.taskCreateby = entity ? entity.name : "";
+//         combinedResult.collaborators = colabs;
+
+//       }
+//     } else if (taskCreator && taskCreator.name === "entity") {
+//       const entity = await db.Entity.findOne({
+//         attributes: ['name'],
+//         where: { id: taskCreator.id }
+//       });
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = task ? task.collaborators : "";
+
+//     } else if (taskCreator && taskCreator.name === "team") {
+//       const entity = await db.Team.findOne({
+//         attributes: ['name'],
+//         where: { id: taskCreator.id }
+//       });
+//       combinedResult.taskCreateby = entity ? entity.name : "";
+//       combinedResult.collaborators = task ? task.collaborators : "";
+
+//     }
+
+//     // Send the response
+//     res.status(200).json([combinedResult]); // Wrap result in an array to match the specified format
+//   } catch (error) {
+//     console.error('Error fetching task details:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
   try {
     // Fetch the task details
-    const tasks = await db.Task.findAll({
+    const task = await db.Task.findOne({
       where: { id: taskId },
     });
 
-    if (!tasks || tasks.length === 0) {
+    if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
-
-    const task = tasks[0];
 
     // Extracting meetingId from task
     const meetingId = parseInt(task.meetingId);
 
     // Fetch the meeting details
     const meeting = await db.Meeting.findOne({
-      attributes: ['id', 'date', 'meetingnumber'],
-      where: {
-        id: meetingId
-      },
+      attributes: ['members', 'UserId', 'EntityId', 'TeamId'], // Include TeamId in the attributes
+      where: { id: meetingId },
       raw: true
     });
 
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+    // Extract member IDs from the meeting
+    const memberIds = meeting.members;
+
+    // Fetch user details for the members
+    let groupMembers = await db.User.findAll({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { id: { [Op.in]: memberIds } },
+      raw: true
+    });
+
+    
+
+    // Fetch additional users based on EntityId from the meeting
+    const additionalUsers = await db.User.findAll({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { entityname: meeting.EntityId }, // Fetch users based on EntityId from meeting
+      raw: true
+    });
+
+    // Add additional users to the groupMembers array if found
+    if (additionalUsers.length > 0) {
+      groupMembers.push(...additionalUsers);
+    }
+
+    // Fetch additional users based on TeamId from the meeting
+    if (meeting.TeamId) {
+      const teamMembers = await db.Team.findOne({
+        attributes: ['id', 'members'],
+        where: { id: meeting.TeamId }, // Fetch team based on TeamId from meeting
+        raw: true
+      });
+
+      // Extract member IDs from the team
+      const teamMemberIds = teamMembers.members;
+
+      // Fetch user details for the team members
+      const teamUserDetails = await db.User.findAll({
+        attributes: ['id', 'name', 'email', 'image', 'entityname'],
+        where: { id: { [Op.in]: teamMemberIds } },
+        raw: true
+      });
+
+      // Add team members to the groupMembers array if found
+      if (teamUserDetails.length > 0) {
+        groupMembers.push(...teamUserDetails);
+      }
+    }
+
+    // Filter out users with entityname: null
+    groupMembers = groupMembers.filter(member => member.entityname !== null);
+
+    // Fetch user details for the user with the UserId from the meeting table
+    const meetingUser = await db.User.findOne({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { id: meeting.UserId },
+      raw: true
+    });
+
+    // Add the meetingUser to the groupMembers array if not already included and entityname is not null
+    if (meetingUser && meetingUser.entityname !== null && !groupMembers.some(member => member.id === meetingUser.id)) {
+      groupMembers.push(meetingUser);
+    }
+
     // Fetch task comments for the given task
     const taskComments = await db.SubTaskDoc.findAll({
-      where: {
-        TaskId: taskId
-      },
+      where: { TaskId: taskId },
       raw: true
     });
 
@@ -128,17 +801,15 @@ const GetTaskbyId = async (req, res) => {
 
     // Fetch user details based on userIds
     const users = await db.User.findAll({
-      attributes: ['id', 'image', 'name'],
-      where: {
-        id: { [Op.in]: userIds }
-      },
+      attributes: ['id', 'name', 'image'],
+      where: { id: { [Op.in]: userIds } },
       raw: true
     });
 
-    let {count} = await db.SubTask.findAndCountAll({
-      where: {
-        TaskId: taskId },
+    let { count } = await db.SubTask.findAndCountAll({
+      where: { TaskId: taskId },
     });
+
     // Create a map of userIds to corresponding user details for quick lookup
     const userMap = {};
     users.forEach(user => {
@@ -156,7 +827,7 @@ const GetTaskbyId = async (req, res) => {
     const combinedResult = {
       id: task.id,
       decision: task.decision,
-      SubTaskCount : count,
+      SubTaskCount: count,
       date: meeting ? meeting.date : null,
       taskCreateby: "", // Initialize taskCreateby as empty string
       meetingnumber: meeting ? meeting.meetingnumber : null,
@@ -168,38 +839,46 @@ const GetTaskbyId = async (req, res) => {
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
       file: task.file || null, // Use task file or null if undefined
-      comments: commentsWithUserInfo || [] // Use comments array or empty array if undefined
+      comments: commentsWithUserInfo || [], // Use comments array or empty array if undefined
+      group: groupMembers // Include group field with all members associated with the task's meeting, including additional users based on EntityId and team members
     };
 
     // Fetch task creator entity name
     const taskCreator = task.taskCreateby;
     if (taskCreator && taskCreator.name === "users") {
-      const userEntity = await db.User.findOne({ 
-        attributes: ['EntityId'],
+      const userEntity = await db.User.findOne({
+        attributes: ['entityname'],
         where: { id: taskCreator.id }
       });
       if (userEntity) {
-        const EntID = userEntity.EntityId;
-        const entity = await db.Entity.findOne({ 
+        const EntID = userEntity.entityname;
+        const entity = await db.Entity.findOne({
           attributes: ['name'],
           where: { id: EntID }
         });
-      if(task.collaborators){
-         var colabs = await db.User.findAll({
-          attributes: ['id', 'name','image','email','EntityId'],
-          where: {
-            id: { [Op.in]: task.collaborators }
-          },
-          raw: true
-        });
-      }
-      combinedResult.taskCreateby = entity ? entity.name : "";
-      combinedResult.collaborators = colabs;
+        if (task.collaborators) {
+          var colabs = await db.User.findAll({
+            attributes: ['id', 'name', 'image', 'email', 'entityname'],
+            where: {
+              id: { [Op.in]: task.collaborators }
+            },
+            raw: true
+          });
+        }
+        combinedResult.taskCreateby = entity ? entity.name : "";
+        combinedResult.collaborators = colabs;
 
       }
-    }
-    else if (taskCreator && taskCreator.name === "entity"){
-      const entity = await db.Entity.findOne({ 
+    } else if (taskCreator && taskCreator.name === "entity") {
+      const entity = await db.Entity.findOne({
+        attributes: ['name'],
+        where: { id: taskCreator.id }
+      });
+      combinedResult.taskCreateby = entity ? entity.name : "";
+      combinedResult.collaborators = task ? task.collaborators : "";
+
+    } else if (taskCreator && taskCreator.name === "team") {
+      const entity = await db.Team.findOne({
         attributes: ['name'],
         where: { id: taskCreator.id }
       });
@@ -207,22 +886,19 @@ const GetTaskbyId = async (req, res) => {
       combinedResult.collaborators = task ? task.collaborators : "";
 
     }
-    else if (taskCreator && taskCreator.name === "team"){
-      const entity = await db.Team.findOne({ 
-        attributes: ['name'],
-        where: { id: taskCreator.id }
-      });
-      combinedResult.taskCreateby = entity ? entity.name : "";
-      combinedResult.collaborators = task ? task.collaborators : "";
 
-    }
-
+    // Send the response
     res.status(200).json([combinedResult]); // Wrap result in an array to match the specified format
   } catch (error) {
     console.error('Error fetching task details:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
+
+
+
 
 const UpdateTask = async (req, res) => {
   try {
