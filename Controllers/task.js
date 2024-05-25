@@ -2251,6 +2251,225 @@ const DeleteTskDoc = async (req, res) =>{
 //   }
 // };
 
+
+// working code
+// const GetTask = async (req, res) => {
+//   const { userId, meetingId, status, entityId, teamId } = req.query;
+
+//   try {
+//     let whereClause = {};
+
+//     if (entityId) {
+//       let userEntities = await db.Meeting.findAll({
+//         where: { EntityId: entityId },
+//         raw: true,
+//         attributes: ['id']
+//       });
+//       const userEntityIds = userEntities.map(item => item.id);
+//       whereClause.meetingId = { [Op.in]: userEntityIds };
+//     }
+
+//     if (userId) {
+//       const userMeetings = await db.Meeting.findAll({
+//         where: { UserId: userId },
+//         raw: true,
+//         attributes: ['id']
+//       });
+//       const userMeetingIds = userMeetings.map(item => item.id);
+//       whereClause.meetingId = whereClause.meetingId
+//         ? { [Op.and]: [whereClause.meetingId, { [Op.in]: userMeetingIds }] }
+//         : { [Op.in]: userMeetingIds };
+//     }
+
+//     if (meetingId) {
+//       whereClause.meetingId = whereClause.meetingId
+//         ? { [Op.and]: [whereClause.meetingId, { [Op.eq]: meetingId }] }
+//         : meetingId;
+//     }
+
+//     let tasks = await db.Task.findAll({
+//       where: whereClause,
+//       order: [['createdAt', 'DESC']]
+//     });
+
+//     const currentDate = new Date().toISOString().slice(0, 10);
+
+//     if (status) {
+//       tasks = tasks.filter(task => {
+//         if (status === "Over-Due") {
+//           return task.dueDate && task.dueDate < currentDate && task.status !== "Completed";
+//         }
+//         return task.status === status;
+//       });
+//     }
+
+//     // Update overdue tasks to status 'Over-Due'
+//     await Promise.all(tasks.map(async task => {
+//       if (task.dueDate && task.dueDate < currentDate && task.status !== "Completed") {
+//         await db.Task.update({ stat: "Over-Due" }, {
+//           where: { id: task.id }
+//         });
+//       }
+//     }));
+
+//     const meetingIds = tasks.map(task => task.meetingId);
+//     const meetings = await db.Meeting.findAll({
+//       attributes: ['id', 'date', 'meetingnumber', 'members', 'UserId', 'EntityId', 'TeamId'],
+//       where: { id: { [Op.in]: meetingIds } },
+//       raw: true
+//     });
+
+//     const taskIds = tasks.map(task => task.id);
+//     const subTaskResults = await db.SubTask.findAll({
+//       attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
+//       where: { TaskId: { [Op.in]: taskIds } },
+//       group: ['TaskId'],
+//       raw: true
+//     });
+
+//     const subTaskCounts = subTaskResults.reduce((acc, result) => {
+//       acc[result.TaskId] = result.subtaskCount;
+//       return acc;
+//     }, {});
+
+//     const userResults = await db.User.findAll({
+//       attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//       raw: true
+//     });
+
+//     const userMap = userResults.reduce((acc, user) => {
+//       acc[user.id] = user;
+//       return acc;
+//     }, {});
+
+//     const entityUserMap = userResults.reduce((acc, user) => {
+//       if (!acc[user.entityname]) {
+//         acc[user.entityname] = [];
+//       }
+//       acc[user.entityname].push(user);
+//       return acc;
+//     }, {});
+
+//     // Fetch teams and map them by id
+//     const teamIds = [...new Set(meetings.map(meeting => meeting.TeamId))];
+//     if (teamId) teamIds.push(teamId);  // Include the teamId from query
+
+//     const teams = await db.Team.findAll({
+//       where: { id: { [Op.in]: teamIds } },
+//       raw: true
+//     });
+
+//     const teamMap = teams.reduce((acc, team) => {
+//       acc[team.id] = team;
+//       return acc;
+//     }, {});
+
+//     // Fetch user details for team members from the teamId in the query
+//     if (teamId && teamMap[teamId] && teamMap[teamId].members) {
+//       const teamMembers = teamMap[teamId].members;
+//       const teamMemberIds = Array.isArray(teamMembers) ? teamMembers : [];
+
+//       const additionalUsers = await db.User.findAll({
+//         where: { id: { [Op.in]: teamMemberIds } },
+//         attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//         raw: true
+//       });
+
+//       additionalUsers.forEach(user => {
+//         if (!userMap[user.id]) {
+//           userMap[user.id] = user;
+//         }
+//       });
+//     }
+
+//     // Create a map of meetingId to members
+//     const meetingMembersMap = meetings.reduce((acc, meeting) => {
+//       let members = meeting.members || [];
+//       let memberDetails = [];
+
+//       if (meeting.UserId && userMap[meeting.UserId]) {
+//         memberDetails.push(userMap[meeting.UserId]); // Add the user from UserId to the members array
+//       }
+//       if (meeting.EntityId && entityUserMap[meeting.EntityId]) {
+//         memberDetails.push(...entityUserMap[meeting.EntityId]); // Add users with the same EntityId to the members array
+//       }
+//       if (meeting.TeamId && teamMap[meeting.TeamId] && teamMap[meeting.TeamId].members) {
+//         let teamMembers = teamMap[meeting.TeamId].members;
+//         if (Array.isArray(teamMembers) && teamMembers.length > 0 && typeof teamMembers[0] === 'number') {
+//           memberDetails.push(...teamMembers.map(id => userMap[id]).filter(user => user));
+//         } else {
+//           memberDetails.push(...teamMembers);
+//         }
+//       }
+
+//       // Add meeting members last
+//       if (Array.isArray(members) && members.length > 0 && typeof members[0] === 'number') {
+//         memberDetails.push(...members.map(id => userMap[id]).filter(user => user));
+//       } else {
+//         memberDetails.push(...members); // if members are already in the detailed format
+//       }
+
+//       acc[meeting.id] = memberDetails;
+//       return acc;
+//     }, {});
+
+//     // Fetch user details if userId is provided
+//     let self = null;
+//     if (userId) {
+//       self = await db.User.findOne({
+//         attributes: ['id', 'image', 'name', 'email', 'entityname'],
+//         where: { id: userId },
+//         raw: true,
+//       });
+//     }
+
+//     const combinedResult = tasks.map(task => {
+//       const subtaskCount = subTaskCounts[task.id] || 0;
+//       const members = meetingMembersMap[task.meetingId] || [];
+
+//       const uniqueMemberIds = new Set();
+//       const uniqueMembers = [];
+
+//       if (self && !uniqueMemberIds.has(self.id)) {
+//         uniqueMemberIds.add(self.id);
+//         uniqueMembers.push(self);  // Ensure self is added first
+//       }
+
+//       members.forEach(member => {
+//         if (!uniqueMemberIds.has(member.id)) {
+//           uniqueMemberIds.add(member.id);
+//           uniqueMembers.push(member);
+//         }
+//       });
+
+//       return {
+//         id: task.id,
+//         decision: task.decision,
+//         meetingId: task.meetingId,
+//         priority: task.priority,
+//         group: uniqueMembers,
+//         dueDate: task.dueDate,
+//         members: task.members,
+//         status: task.status,
+//         stat: task.stat,
+//         collaborators: task.collaborators || [],  // assuming task model has a field collaborators
+//         taskCreateby: task.taskCreateby,
+//         file: task.file,
+//         createdAt: task.createdAt,
+//         updatedAt: task.updatedAt,
+//         subtaskCount: subtaskCount
+//       };
+//     });
+
+//     // Respond with combined result
+//     res.status(200).json(combinedResult);
+//   } catch (error) {
+//     console.error('Error fetching tasks:', error);
+//     res.status(500).json({ error: 'Failed to fetch tasks' });
+//   }
+// };
+
+
 const GetTask = async (req, res) => {
   const { userId, meetingId, status, entityId, teamId } = req.query;
 
@@ -2283,6 +2502,18 @@ const GetTask = async (req, res) => {
       whereClause.meetingId = whereClause.meetingId
         ? { [Op.and]: [whereClause.meetingId, { [Op.eq]: meetingId }] }
         : meetingId;
+    }
+
+    if (teamId) {
+      const teamMeetings = await db.Meeting.findAll({
+        where: { TeamId: teamId },
+        raw: true,
+        attributes: ['id']
+      });
+      const teamMeetingIds = teamMeetings.map(item => item.id);
+      whereClause.meetingId = whereClause.meetingId
+        ? { [Op.and]: [whereClause.meetingId, { [Op.in]: teamMeetingIds }] }
+        : { [Op.in]: teamMeetingIds };
     }
 
     let tasks = await db.Task.findAll({
@@ -2466,8 +2697,6 @@ const GetTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
-
-
 
 
 
