@@ -211,7 +211,7 @@ const ListEntity = async (req, res) => {
 
   const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
   const Data = await db.User.findOne({ where: { id: userId } });
-  let EntityId =Data.EntityId
+  let EntityId = Data.EntityId
 
   // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
 
@@ -318,6 +318,103 @@ const ListEntity = async (req, res) => {
       });
   });
 };
+
+// const ListEntity = async (req, res) => {
+//   const { userId } = req.user;
+//   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+
+//   const filters = {};
+//   for (const key in restQueries) {
+//     filters[key] = restQueries[key];
+//   }
+
+//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+//   try {
+//     const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+//     const userData = await db.User.findOne({ where: { id: userId } });
+//     const userEntityId = userData.EntityId;
+
+//     let sql = `SELECT * FROM Entities WHERE (name LIKE ?)`;
+//     let countSql = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE ?)`;
+//     const replacements = [`%${search}%`];
+
+//     // Handle access data and adjust queries accordingly
+//     if (accessdata) {
+//       if (accessdata.selected_users) {
+//         const selectedUsers = JSON.parse(accessdata.selected_users);
+//         const users = await db.User.findAll({
+//           attributes: ['EntityId'],
+//           where: { id: selectedUsers },
+//           raw: true
+//         });
+//         const entityIds = users.map(user => user.EntityId).concat(userEntityId);
+//         sql += ` AND id IN (${entityIds.join(',')})`;
+//         countSql += ` AND id IN (${entityIds.join(',')})`;
+//       } else if (accessdata.entity_id) {
+//         const entityIds = JSON.parse(accessdata.entity_id).concat(userEntityId);
+//         sql += ` AND id IN (${entityIds.join(',')})`;
+//         countSql += ` AND id IN (${entityIds.join(',')})`;
+//       } else {
+//         sql += ` AND id = ${userEntityId}`;
+//         countSql += ` AND id = ${userEntityId}`;
+//       }
+//     } else {
+//       sql += ` AND id = ${userEntityId}`;
+//       countSql += ` AND id = ${userEntityId}`;
+//     }
+
+//     // Add conditions for additional filter fields
+//     for (const [field, value] of Object.entries(filters)) {
+//       if (value !== '') {
+//         sql += ` AND ${field} LIKE ?`;
+//         countSql += ` AND ${field} LIKE ?`;
+//         replacements.push(`%${value}%`);
+//       }
+//     }
+
+//     // Add ORDER BY, LIMIT, and OFFSET
+//     sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+//     replacements.push(parseInt(pageSize), offset);
+
+//     // Execute the paginated query
+//     mycon.query(sql, replacements, (err, result) => {
+//       if (err) {
+//         console.error('Error executing MySQL query: ' + err.stack);
+//         return res.status(500).json({ error: 'Internal server error' });
+//       }
+
+//       // Execute the count query
+//       mycon.query(countSql, replacements.slice(0, -2), (err, countResult) => {
+//         if (err) {
+//           console.error('Error executing MySQL count query: ' + err.stack);
+//           return res.status(500).json({ error: 'Internal server error' });
+//         }
+
+//         const totalEntities = countResult[0].total;
+//         const totalPages = Math.ceil(totalEntities / pageSize);
+
+//         res.json({
+//           Entities: result,
+//           totalPages: parseInt(totalPages),
+//           currentPage: parseInt(page),
+//           pageSize: parseInt(pageSize),
+//           totalEntities: parseInt(totalEntities),
+//           startEntity: parseInt(offset) + 1,
+//           endEntity: Math.min(parseInt(offset) + parseInt(pageSize), totalEntities),
+//           search
+//         });
+//       });
+//     });
+//   } catch (err) {
+//     console.error('Error in ListEntity function: ' + err.stack);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
+
+
 
 
 

@@ -1527,17 +1527,33 @@ const GetTask = async (req, res) => {
       const subtaskCount = subTaskCounts[task.id] || 0;
       const members = meetingMembersMap[task.meetingId] || [];
 
-      // Add self to the members list if self is not null
-      if (self) {
-        members.push(self);
+      const uniqueMemberIds = new Set();
+
+      const uniqueMembers = [];
+
+      if (self && !uniqueMemberIds.has(self.id)) {
+        uniqueMemberIds.add(self.id);
+        uniqueMembers.push(self);  // Ensure self is added first
       }
+
+      
+      members.forEach(member => {
+        if (!uniqueMemberIds.has(member.id)) {
+          uniqueMemberIds.add(member.id);
+          uniqueMembers.push(member);
+        }
+      });
+      // Add self to the members list if self is not null
+      // if (self) {
+      //   members.push(self);
+      // }
 
       return {
         id: task.id,
         decision: task.decision,
         meetingId: task.meetingId,
         priority: task.priority,
-        group: members,
+        group: uniqueMembers,
         dueDate: task.dueDate,
         members: task.members,
         status: task.status,
