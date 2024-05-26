@@ -1547,7 +1547,7 @@ const GetSubList = async (req, res) => {
     // Attach groupMembers to each SubTask
     rows = rows.map(row => ({
       ...row,
-      group,
+      groupMembers,
       meetingnumber: meeting ? meeting.meetingnumber : null,
     }));
 
