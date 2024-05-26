@@ -2466,7 +2466,8 @@ const GetTask = async (req, res) => {
         file: task.file,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
-        subtaskCount: subtaskCount
+        subtaskCount: subtaskCount,
+        createdby: task.createdby
       };
     });
 
@@ -2483,9 +2484,129 @@ const GetTask = async (req, res) => {
 
 
 
-const  ListTaskCount= async (req, res) => {
-  //count code where bala
-}
+// const  ListTaskCount= async (req, res) => {
+//   //count code where bala
+// }
+
+
+const ListTaskCount = async (req, res) => {
+  try {
+    // Define the possible statuses
+    const statuses = ["To-Do", "In-Progress", "Over-Due", "Completed"];
+
+    // Initialize an object to hold the counts
+    const taskCounts = {
+      allTasksCount: 0,
+      toDoCount: 0,
+      inProgressCount: 0,
+      overdueCount: 0,
+      completedCount: 0
+    };
+
+    // Count all tasks
+    taskCounts.allTasksCount = await db.Task.count();
+
+    // Count tasks by status
+    for (const status of statuses) {
+      const count = await db.Task.count({
+        where: { status }
+      });
+
+      switch (status) {
+        case "To-Do":
+          taskCounts.toDoCount = count;
+          break;
+        case "In-Progress":
+          taskCounts.inProgressCount = count;
+          break;
+        case "Over-Due":
+          taskCounts.overdueCount = count;
+          break;
+        case "Completed":
+          taskCounts.completedCount = count;
+          break;
+      }
+    }
+
+    // Send the response
+    res.json(taskCounts);
+  } catch (error) {
+    console.error('Error fetching task counts:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// const ListTaskCount = async (req, res) => {
+//   try {
+//     // Get statuses from the request body
+//     const { statuses } = req.body;
+
+//     if (!Array.isArray(statuses) || statuses.length === 0) {
+//       return res.status(400).json({ error: 'Invalid or missing statuses' });
+//     }
+
+//     // Initialize an object to hold the counts and tasks
+//     const taskCounts = {
+//       allTasksCount: 0,
+//       toDoCount: 0,
+//       inProgressCount: 0,
+//       overdueCount: 0,
+//       completedCount: 0
+//     };
+
+//     const taskDetails = {
+//       toDoTasks: [],
+//       inProgressTasks: [],
+//       overdueTasks: [],
+//       completedTasks: []
+//     };
+
+//     // Count all tasks
+//     taskCounts.allTasksCount = await db.Task.count();
+
+//     // Query tasks by status
+//     for (const status of statuses) {
+//       const tasks = await db.Task.findAll({
+//         where: { status },
+//         raw: true
+//       });
+
+//       const count = tasks.length;
+
+//       switch (status) {
+//         case "To-Do":
+//           taskCounts.toDoCount = count;
+//           taskDetails.toDoTasks = tasks;
+//           break;
+//         case "In-Progress":
+//           taskCounts.inProgressCount = count;
+//           taskDetails.inProgressTasks = tasks;
+//           break;
+//         case "Over-Due":
+//           taskCounts.overdueCount = count;
+//           taskDetails.overdueTasks = tasks;
+//           break;
+//         case "Completed":
+//           taskCounts.completedCount = count;
+//           taskDetails.completedTasks = tasks;
+//           break;
+//       }
+//     }
+
+//     // Send the response
+//     res.json({
+//       taskCounts,
+//       taskDetails
+//     });
+//   } catch (error) {
+//     console.error('Error fetching task counts:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
+
+
 
 
 

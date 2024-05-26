@@ -10,7 +10,7 @@ router.get('/list', hasPermission("task", "canRead"),task.GetTask)
 router.patch('/update/:id', hasPermission("task", "canUpdate"), upload.single('image'),task.UpdateTask)
 router.delete('/delete/:id', hasPermission("task", "canDelete"), task.DeleteTask)
 router.get('/listbyid/:id', hasPermission("task", "canRead"),task.GetTaskbyId)
-router.post('/list', hasPermission("task", "canRead"), task.ListTaskCount)
+router.get('/taskcount', hasPermission("task", "canRead"), task.ListTaskCount)
 
 // sub task
 router.post('/subtaskAdd/:id', hasPermission("task", "canCreate"), upload.single('image'), task.SubTaskAdd)

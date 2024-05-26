@@ -42,7 +42,11 @@ module.exports = (sequelize, DataTypes) => {
     file: {
       type: DataTypes.STRING,
       allowNull: true
-    }
+    },
+    createdby: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
   }, {
     // Other model options go here
   });
