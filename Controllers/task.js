@@ -1408,9 +1408,42 @@ const GetSublistId = (req, res) => {
   });
 };
 
+// const GetSubList = async (req, res) => {
+//   const { search = '', page = 1, pageSize = 5, ...restQueries } = req.query;
+//   const filters = {};
+
+//   for (const key in restQueries) {
+//     filters[key] = restQueries[key];
+//   }
+//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
+//     var { count, rows } = await db.SubTask.findAndCountAll({
+//       where: {
+//         TaskId: req.params.id
+//       },
+//       order: [['createdAt', 'DESC']],
+//       raw: true 
+//     });
+
+
+//     const totalEntities = count;
+//     const totalPages = Math.ceil(totalEntities / pageSize);
+//     res.json({
+//       Task: rows,
+//       totalPages: parseInt(totalPages),
+//       currentPage: parseInt(page),
+//       pageSize: parseInt(pageSize),
+//       totalTask: parseInt(totalEntities),
+//       startTask: parseInt(offset) + 1, // Correct the start entity index
+//       endTask: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
+//       search
+//     });
+//   }
+
 const GetSubList = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, ...restQueries } = req.query;
   const filters = {};
+
+  const taskId = req.params.id;
 
   for (const key in restQueries) {
     filters[key] = restQueries[key];
@@ -1418,11 +1451,105 @@ const GetSubList = async (req, res) => {
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
     var { count, rows } = await db.SubTask.findAndCountAll({
       where: {
-        TaskId: req.params.id
+        TaskId: taskId
       },
       order: [['createdAt', 'DESC']],
       raw: true 
     });
+
+    // new
+    // Fetch the task details
+    const task = await db.Task.findOne({
+      where: { id: taskId },
+    });
+
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    // Extracting meetingId from task
+    const meetingId = parseInt(task.meetingId);
+
+    // Fetch the meeting details
+    const meeting = await db.Meeting.findOne({
+      attributes: ['members', 'UserId', 'EntityId', 'TeamId', 'meetingnumber'], // Include TeamId in the attributes
+      where: { id: meetingId },
+      raw: true
+    });
+
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+    // Extract member IDs from the meeting
+    const memberIds = meeting.members;
+
+    // Fetch user details for the members
+    let groupMembers = await db.User.findAll({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { id: { [Op.in]: memberIds } },
+      raw: true
+    });
+
+    
+
+    // Fetch additional users based on EntityId from the meeting
+    const additionalUsers = await db.User.findAll({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { entityname: meeting.EntityId }, // Fetch users based on EntityId from meeting
+      raw: true
+    });
+
+    // Add additional users to the groupMembers array if found
+    if (additionalUsers.length > 0) {
+      groupMembers.push(...additionalUsers);
+    }
+
+    // Fetch additional users based on TeamId from the meeting
+    if (meeting.TeamId) {
+      const teamMembers = await db.Team.findOne({
+        attributes: ['id', 'members'],
+        where: { id: meeting.TeamId }, // Fetch team based on TeamId from meeting
+        raw: true
+      });
+
+      // Extract member IDs from the team
+      const teamMemberIds = teamMembers.members;
+
+      // Fetch user details for the team members
+      const teamUserDetails = await db.User.findAll({
+        attributes: ['id', 'name', 'email', 'image', 'entityname'],
+        where: { id: { [Op.in]: teamMemberIds } },
+        raw: true
+      });
+
+      // Add team members to the groupMembers array if found
+      if (teamUserDetails.length > 0) {
+        groupMembers.push(...teamUserDetails);
+      }
+    }
+
+    // Filter out users with entityname: null
+    groupMembers = groupMembers.filter(member => member.entityname !== null);
+
+    // Fetch user details for the user with the UserId from the meeting table
+    const meetingUser = await db.User.findOne({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { id: meeting.UserId },
+      raw: true
+    });
+
+    // Add the meetingUser to the groupMembers array if not already included and entityname is not null
+    if (meetingUser && meetingUser.entityname !== null && !groupMembers.some(member => member.id === meetingUser.id)) {
+      groupMembers.push(meetingUser);
+    }
+
+    // Attach groupMembers to each SubTask
+    rows = rows.map(row => ({
+      ...row,
+      groupMembers,
+      meetingnumber: meeting ? meeting.meetingnumber : null,
+    }));
 
 
     const totalEntities = count;
