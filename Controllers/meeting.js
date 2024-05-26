@@ -9,55 +9,7 @@ const uploadToS3 = require('../utils/wearhouse')
 
 
 
-// const CreateMeeting = async (req, res) => {
-//   try {
-//     let file = req.file;
-//     let data = req.body;
-//     let Query = req.query;
 
-//     // Extracting entityId and teamId from query parameters
-//     const entityId = Query?.entity ?? null;
-//     const teamId = Query?.team ?? null;
-//     const userId = Query?.user ?? null;
-
-//     // Modify data if file is present
-//     if (file) {
-//       const result = await uploadToS3(req.file);
-//       data = {
-//         image: `${result.Location}`,
-//         ...data,
-//       };
-//     }
-
-//     // Inserting data into the Meetings table
-//     const insertQuery = 'INSERT INTO Meetings SET ?';
-//     const result = await new Promise((resolve, reject) => {
-//       mycon.query(insertQuery, data, (err, result) => {
-//         if (err) reject(err);
-//         resolve(result);
-//       });
-//     });
-//     const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
-//     if (createdMeeting) {
-//       if (entityId) {
-//         const entity = await Entity.findOne({ where: { id: entityId } });
-//         await createdMeeting.setEntity(entity);
-//       } else if (userId) {
-//         const user = await db.User.findOne({ where: { id: userId } });
-//         await createdMeeting.setUser(user);
-//       }
-//       else if (teamId) {
-//         const team = await Team.findOne({ where: { id: teamId } });
-//         await createdMeeting.setTeam(team);
-//       }
-//     }
-
-//     res.status(201).send(`${result.insertId}`);
-//   } catch (error) {
-//     console.error("Error creating Meeting:", error);
-//     res.status(500).send("Error creating meeting");
-//   }
-// };
 
 const CreateMeeting = async (req, res) => {
   try {
@@ -107,8 +59,6 @@ const CreateMeeting = async (req, res) => {
 
 
 const GetMeeting = async (req, res) => {
-  console.log(req.query.user, "I am from Quarry");
-
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
@@ -117,6 +67,10 @@ const GetMeeting = async (req, res) => {
     const entityId = req.query.entity;
     const teamId = req.query.team;
     const userId = req.query.user;
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+
+
     const options = {
       offset: (page - 1) * pageSize,
       limit: pageSize,
@@ -138,6 +92,15 @@ const GetMeeting = async (req, res) => {
           options.where,
           { [Op.or]: [meetingNumberSearch, { description: { [Op.like]: `%${searchQuery}%` } }] }
         ]
+      };
+    }
+
+    // Filter by start date and end date if provided
+    if (startDate && endDate) {
+      console.log(startDate,"dgeegeg",endDate)
+
+      options.where.date = {
+        [Op.between]: [startDate, endDate],
       };
     }
 
@@ -192,6 +155,10 @@ const GetMeeting = async (req, res) => {
     console.error("Error fetching Meetings:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
+};
+
+module.exports = {
+  GetMeeting,
 };
 
 
