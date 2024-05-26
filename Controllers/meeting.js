@@ -8,6 +8,7 @@ const uploadToS3 = require('../utils/wearhouse')
 // const User = db.User;
 
 
+
 // const CreateMeeting = async (req, res) => {
 //   try {
 //     let file = req.file;
@@ -27,11 +28,15 @@ const uploadToS3 = require('../utils/wearhouse')
 //         ...data,
 //       };
 //     }
-//     // Inserting data into the Meetings table
-//     const meetings = await db.Meeting.create(data);
-//         res.status(200).send(meetings.id);
 
-//     console.log(Id, "ertyhybvfccty6ujy5tr")
+//     // Inserting data into the Meetings table
+//     const insertQuery = 'INSERT INTO Meetings SET ?';
+//     const result = await new Promise((resolve, reject) => {
+//       mycon.query(insertQuery, data, (err, result) => {
+//         if (err) reject(err);
+//         resolve(result);
+//       });
+//     });
 //     const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
 //     if (createdMeeting) {
 //       if (entityId) {
@@ -53,6 +58,7 @@ const uploadToS3 = require('../utils/wearhouse')
 //     res.status(500).send("Error creating meeting");
 //   }
 // };
+
 const CreateMeeting = async (req, res) => {
   try {
     let file = req.file;
@@ -72,16 +78,12 @@ const CreateMeeting = async (req, res) => {
         ...data,
       };
     }
-
     // Inserting data into the Meetings table
-    const insertQuery = 'INSERT INTO Meetings SET ?';
-    const result = await new Promise((resolve, reject) => {
-      mycon.query(insertQuery, data, (err, result) => {
-        if (err) reject(err);
-        resolve(result);
-      });
-    });
-    const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
+    let meetings = await db.Meeting.create(data);
+        res.status(200).send(meetings);
+
+    let insertId= meetings.dataValues.id;
+    const createdMeeting = await db.Meeting.findOne({ where: { id:insertId } });
     if (createdMeeting) {
       if (entityId) {
         const entity = await Entity.findOne({ where: { id: entityId } });
@@ -102,6 +104,7 @@ const CreateMeeting = async (req, res) => {
     res.status(500).send("Error creating meeting");
   }
 };
+
 
 const GetMeeting = async (req, res) => {
   console.log(req.query.user, "I am from Quarry");
