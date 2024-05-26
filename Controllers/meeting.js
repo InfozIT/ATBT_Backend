@@ -29,13 +29,9 @@ const CreateMeeting = async (req, res) => {
     }
 
     // Inserting data into the Meetings table
-    const insertQuery = 'INSERT INTO Meetings SET ?';
-    const result = await new Promise((resolve, reject) => {
-      mycon.query(insertQuery, data, (err, result) => {
-        if (err) reject(err);
-        resolve(result);
-      });
-    });
+    const meetings = await db.Meeting.create(data);
+    res.status(200).send(meetings);
+
     const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
     if (createdMeeting) {
       if (entityId) {
