@@ -1255,6 +1255,87 @@ const GetSubTaskbyId = async (req, res) => {
     // Fetch additional Task details associated with the SubTask (assuming TaskId exists)
     const task = await db.Task.findByPk(subTask.TaskId);
 
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    const meetingId = parseInt(task.meetingId);
+
+
+    // Fetch the meeting details
+    const meeting = await db.Meeting.findOne({
+      attributes: ['members', 'UserId', 'EntityId', 'TeamId', 'meetingnumber'], // Include TeamId in the attributes
+      where: { id: meetingId },
+      raw: true
+    });
+
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+    // Extract member IDs from the meeting
+    const memberIds = meeting.members;
+
+    // Fetch user details for the members
+    let groupMembers = await db.User.findAll({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { id: { [Op.in]: memberIds } },
+      raw: true
+    });
+
+    
+
+    // Fetch additional users based on EntityId from the meeting
+    const additionalUsers = await db.User.findAll({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { entityname: meeting.EntityId }, // Fetch users based on EntityId from meeting
+      raw: true
+    });
+
+    // Add additional users to the groupMembers array if found
+    if (additionalUsers.length > 0) {
+      groupMembers.push(...additionalUsers);
+    }
+
+    // Fetch additional users based on TeamId from the meeting
+    if (meeting.TeamId) {
+      const teamMembers = await db.Team.findOne({
+        attributes: ['id', 'members'],
+        where: { id: meeting.TeamId }, // Fetch team based on TeamId from meeting
+        raw: true
+      });
+
+      // Extract member IDs from the team
+      const teamMemberIds = teamMembers.members;
+
+      // Fetch user details for the team members
+      const teamUserDetails = await db.User.findAll({
+        attributes: ['id', 'name', 'email', 'image', 'entityname'],
+        where: { id: { [Op.in]: teamMemberIds } },
+        raw: true
+      });
+
+      // Add team members to the groupMembers array if found
+      if (teamUserDetails.length > 0) {
+        groupMembers.push(...teamUserDetails);
+      }
+    }
+
+    // Filter out users with entityname: null
+    groupMembers = groupMembers.filter(member => member.entityname !== null);
+
+    // Fetch user details for the user with the UserId from the meeting table
+    const meetingUser = await db.User.findOne({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { id: meeting.UserId },
+      raw: true
+    });
+
+    // Add the meetingUser to the groupMembers array if not already included and entityname is not null
+    if (meetingUser && meetingUser.entityname !== null && !groupMembers.some(member => member.id === meetingUser.id)) {
+      groupMembers.push(meetingUser);
+    }
+
     // Extract user IDs from comments
     const userIds = [...new Set(taskComments.map(item => parseInt(item.senderId)))];
 
@@ -1275,8 +1356,10 @@ const GetSubTaskbyId = async (req, res) => {
     const response = {
       id: subTask.id,
       decision: subTask.decision,
+      group: groupMembers, // Include group field with all members associated with the task's meeting, including additional users based on EntityId and team members
       date: subTask.date,
       meetingnumber: subTask.meetingnumber,
+      meetingnumber: meeting ? meeting.meetingnumber : null,
       priority: subTask.priority,
       members: subTask.members,
       dueDate: subTask.dueDate,
