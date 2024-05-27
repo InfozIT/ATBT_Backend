@@ -32,9 +32,9 @@ const CreateMeeting = async (req, res) => {
     }
     // Inserting data into the Meetings table
     let meetings = await db.Meeting.create(data);
-        res.status(200).send(meetings);
-
     let insertId= meetings.dataValues.id;
+    console.log(insertId)
+    res.status(201).json(meetings.dataValues.id);
     const createdMeeting = await db.Meeting.findOne({ where: { id:insertId } });
     if (createdMeeting) {
       if (entityId) {
