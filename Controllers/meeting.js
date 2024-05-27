@@ -8,9 +8,6 @@ const uploadToS3 = require('../utils/wearhouse')
 // const User = db.User;
 
 
-
-
-
 const CreateMeeting = async (req, res) => {
   try {
     let file = req.file;
@@ -24,17 +21,22 @@ const CreateMeeting = async (req, res) => {
 
     // Modify data if file is present
     if (file) {
-      const result = await uploadToS3(req.file);
+      const result = await uploadToS3(req.file.buffer);
       data = {
         image: `${result.Location}`,
         ...data,
       };
     }
+
     // Inserting data into the Meetings table
-    let meetings = await db.Meeting.create(data);
-    let insertId= meetings.dataValues.id;
-    // res.status(201).json(meetings.dataValues.id);
-    const createdMeeting = await db.Meeting.findOne({ where: { id:insertId } });
+    const insertQuery = 'INSERT INTO Meetings SET ?';
+    const result = await new Promise((resolve, reject) => {
+      mycon.query(insertQuery, data, (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      });
+    });
+    const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
     if (createdMeeting) {
       if (entityId) {
         const entity = await Entity.findOne({ where: { id: entityId } });
@@ -49,12 +51,58 @@ const CreateMeeting = async (req, res) => {
       }
     }
 
-    res.status(201).send(`${meetings.dataValues.id}`);
+    res.status(201).send(`${result.insertId}`);
   } catch (error) {
     console.error("Error creating Meeting:", error);
     res.status(500).send("Error creating meeting");
   }
 };
+
+
+// const CreateMeeting = async (req, res) => {
+//   try {
+//     let file = req.file;
+//     let data = req.body;
+//     let Query = req.query;
+
+//     // Extracting entityId and teamId from query parameters
+//     const entityId = Query?.entity ?? null;
+//     const teamId = Query?.team ?? null;
+//     const userId = Query?.user ?? null;
+
+//     // Modify data if file is present
+//     if (file) {
+//       const result = await uploadToS3(req.file);
+//       data = {
+//         image: `${result.Location}`,
+//         ...data,
+//       };
+//     }
+//     // Inserting data into the Meetings table
+//     let meetings = await db.Meeting.create(data);
+//     let insertId= meetings.dataValues.id;
+//     // res.status(201).json(meetings.dataValues.id);
+//     const createdMeeting = await db.Meeting.findOne({ where: { id:insertId } });
+//     if (createdMeeting) {
+//       if (entityId) {
+//         const entity = await Entity.findOne({ where: { id: entityId } });
+//         await createdMeeting.setEntity(entity);
+//       } else if (userId) {
+//         const user = await db.User.findOne({ where: { id: userId } });
+//         await createdMeeting.setUser(user);
+//       }
+//       else if (teamId) {
+//         const team = await Team.findOne({ where: { id: teamId } });
+//         await createdMeeting.setTeam(team);
+//       }
+//     }
+
+//     res.status(201).send(`${meetings.dataValues.id}`);
+//   } catch (error) {
+//     console.error("Error creating Meeting:", error);
+//     res.status(500).send("Error creating meeting");
+//   }
+// };
 
 
 const GetMeeting = async (req, res) => {
