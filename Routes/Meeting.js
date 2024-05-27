@@ -6,9 +6,9 @@ const hasPermission = require('../middlewares/rolePermission');
 
 // list group
 
-router.get('/groupEntity/:id',Meeting.ListEntiyGroup)
-router.get('/groupTeam/:id',Meeting.ListTeamGroup)
-router.get('/groupUser/:id',Meeting.ListUserGroup)
+// router.get('/groupEntity/:id',Meeting.ListEntiyGroup)
+// router.get('/groupTeam/:id',Meeting.ListTeamGroup)
+// router.get('/groupUser/:id',Meeting.ListUserGroup)
 
 
 router.post('/add', hasPermission("entity", "canCreate"), upload.single('image'), Meeting.CreateMeeting)
