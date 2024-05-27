@@ -34,7 +34,7 @@ const CreateMeeting = async (req, res) => {
     let meetings = await db.Meeting.create(data);
     let insertId= meetings.dataValues.id;
     console.log(insertId)
-    res.status(201).json(`"${meetings.dataValues.id}"`);
+    res.status(201).json(meetings.dataValues.id);
     const createdMeeting = await db.Meeting.findOne({ where: { id:insertId } });
     if (createdMeeting) {
       if (entityId) {
@@ -50,7 +50,7 @@ const CreateMeeting = async (req, res) => {
       }
     }
 
-    res.status(201).send(`${result.insertId}`);
+    res.status(201).send(`${meetings.dataValues.id}`);
   } catch (error) {
     console.error("Error creating Meeting:", error);
     res.status(500).send("Error creating meeting");
