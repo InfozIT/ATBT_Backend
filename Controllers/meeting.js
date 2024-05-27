@@ -460,7 +460,10 @@ const GetById = async (req, res) => {
 // };
 
 const ListMeetings = async (req, res) => {
+  console.log("working on this ", )
   const { userId } = req.user;
+  console.log("working on this ", userId)
+
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
   const filters = {};
   for (const key in restQueries) {
@@ -505,7 +508,7 @@ const ListMeetings = async (req, res) => {
   } 
   else if (!accessdata) {
     // console.log("hello _ 4")
-      sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND EntityId = '${EntityId}'`;
+      sql = `SELECT * FROM Meetings WHERE UserId = '${userId}'`;
   }
 
   // Add conditions for additional filter fields
@@ -546,7 +549,7 @@ const ListMeetings = async (req, res) => {
     }
        else if (!accessdata) {
         // console.log("first _ 4")
-          sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND EntityId = '${EntityId}'`;
+          sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE UserId = '${userId}'`;
       }
 
       // Add conditions for additional filter fields
