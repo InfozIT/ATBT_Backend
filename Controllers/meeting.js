@@ -563,133 +563,10 @@ const GetById = async (req, res) => {
 //   }
 // };
 
-// const ListMeetings = async (req, res) => {
-//   const { userId } = req.user;
-//   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
-//   const filters = {};
-//   for (const key in restQueries) {
-//       filters[key] = restQueries[key];
-//   }
-
-//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
-//   const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
-//   const Data = await db.User.findOne({ where: { id: userId } });
-//   let EntityId =Data.EntityId
-
-//   // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
-
-//   // MySQL query to fetch paginated entities
-//   let sql;
-
-//   if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-//     // console.log("hello _ 1")
-//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`
-//   } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-//     // console.log("hello _ 2")
-//       let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-//       // console.log(entityIds, typeof (entityIds), "entityIds")
-//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//     } 
-//     else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-//       // console.log("hello _ 3", accessdata.selected_users)
-//       //get array of user entity ids
-//       // userEntityIds = [56]
-//       const users = await db.User.findAll({
-//         attributes: ['EntityId'], // Only fetch the entityId column
-//         where: {
-//           id: [...JSON.parse(accessdata.selected_users)] // Filter users based on userIds array
-//         },
-//         raw: true // Get raw data instead of Sequelize model instances
-//       });
-//       const entityIds = users.map(user => user.EntityId);
-//       // console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
-//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//       // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
-//   } 
-//   else if (!accessdata) {
-//     // console.log("hello _ 4")
-//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND EntityId = '${EntityId}'`;
-//   }
-
-//   // Add conditions for additional filter fields
-//   for (const [field, value] of Object.entries(filters)) {
-//       if (value !== '') {
-//           sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-//       }
-//   }
-
-//   // Add LIMIT and OFFSET clauses to the SQL query
-//   sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
-
-//   mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
-//       if (err) {
-//           console.error('Error executing MySQL query: ' + err.stack);
-//           res.status(500).json({ error: 'Internal server error' });
-//           return;
-//       }
-//       console.log(result,"dwffqf")
-
-//       // Execute the count query to get the total number of entities
-//       let sqlCount;
-//       if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-//         // console.log("first _ 1")
-//           sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
-//       } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-//         // console.log("first _ 2")
-//           let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-//           // console.log(entityIds, "entityIds")
-//           sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//       } 
-//       else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-//         // console.log("first _ 3")
-//         //get array of user entity ids
-//         userEntityIds = [81]
-//         sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${userEntityIds.join(',')})`;
-//         // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
-//     }
-//        else if (!accessdata) {
-//         // console.log("first _ 4")
-//           sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND EntityId = '${EntityId}'`;
-//       }
-
-//       // Add conditions for additional filter fields
-//       for (const [field, value] of Object.entries(filters)) {
-//           if (value !== '') {
-//               sqlCount += ` AND ${field} LIKE '%${value}%'`;
-//           }
-//       }
-
-//       mycon.query(sqlCount, async (err, countResult) => {
-//           if (err) {
-//               console.error('Error executing MySQL count query: ' + err.stack);
-//               res.status(500).json({ error: 'Internal server error' });
-//               return;
-//           }
-
-//           const totalEntities = countResult[0].total;
-//           const totalPages = Math.ceil(totalEntities / pageSize);
-
-//           res.json({
-//               Meetings: result,
-//               totalPages: parseInt(totalPages),
-//               currentPage: parseInt(page),
-//               pageSize: parseInt(pageSize),
-//               totalMeeting: parseInt(totalEntities),
-//               startMeeting: parseInt(offset) + 1, // Correct the start entity index
-//               endMeeting: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
-//               search
-//           });
-//       });
-//   });
-// };
 const ListMeetings = async (req, res) => {
   const { userId } = req.user;
-
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
-
   const filters = {};
-
   for (const key in restQueries) {
       filters[key] = restQueries[key];
   }
@@ -698,7 +575,7 @@ const ListMeetings = async (req, res) => {
 
   const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
   const Data = await db.User.findOne({ where: { id: userId } });
-  let EntityId = Data.EntityId
+  let EntityId =Data.EntityId
 
   // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
 
@@ -711,7 +588,7 @@ const ListMeetings = async (req, res) => {
   } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
     // console.log("hello _ 2")
       let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-      console.log(entityIds, typeof (entityIds), "entityIds")
+      // console.log(entityIds, typeof (entityIds), "entityIds")
       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
     } 
     else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
@@ -732,7 +609,7 @@ const ListMeetings = async (req, res) => {
   } 
   else if (!accessdata) {
     // console.log("hello _ 4")
-      sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id = '${EntityId}'`;
+      sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND EntityId = '${EntityId}'`;
   }
 
   // Add conditions for additional filter fields
@@ -751,6 +628,7 @@ const ListMeetings = async (req, res) => {
           res.status(500).json({ error: 'Internal server error' });
           return;
       }
+      console.log(result,"dwffqf")
 
       // Execute the count query to get the total number of entities
       let sqlCount;
@@ -772,7 +650,7 @@ const ListMeetings = async (req, res) => {
     }
        else if (!accessdata) {
         // console.log("first _ 4")
-          sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id = '${EntityId}'`;
+          sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND EntityId = '${EntityId}'`;
       }
 
       // Add conditions for additional filter fields
@@ -793,18 +671,116 @@ const ListMeetings = async (req, res) => {
           const totalPages = Math.ceil(totalEntities / pageSize);
 
           res.json({
-              Entities: result,
+              Meetings: result,
               totalPages: parseInt(totalPages),
               currentPage: parseInt(page),
               pageSize: parseInt(pageSize),
               totalMeeting: parseInt(totalEntities),
               startMeeting: parseInt(offset) + 1, // Correct the start entity index
-              endEntity: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
+              endMeeting: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
               search
           });
       });
   });
 };
+// const ListMeetings = async (req, res) => {
+//   try {
+//     const { userId } = req.user;
+//     const { search = '', page = 1, pageSize = 10, sortBy = 'id DESC', UserId, ...restQueries } = req.query;
+
+//     const filters = {};
+//     for (const key in restQueries) {
+//       filters[key] = restQueries[key];
+//     }
+
+//     const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+//     const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+//     const Data = await db.User.findOne({ where: { id: userId } });
+//     let EntityId = Data.EntityId;
+
+//     let sql;
+//     let sqlCount;
+
+//     if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%' OR description LIKE '%${search}%')`;
+//       sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%' OR description LIKE '%${search}%')`;
+//     } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+//       let entityIds = [...JSON.parse(accessdata.entity_id), EntityId];
+//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%' OR description LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+//       sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%' OR description LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+//     } else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
+//       const users = await db.User.findAll({
+//         attributes: ['EntityId'],
+//         where: {
+//           id: [...JSON.parse(accessdata.selected_users)]
+//         },
+//         raw: true
+//       });
+//       const entityIds = users.map(user => user.EntityId);
+//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%' OR description LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+//       sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%' OR description LIKE '%${search}%') AND EntityId IN (${entityIds.join(',')})`;
+//     } else if (!accessdata) {
+//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%' OR description LIKE '%${search}%') AND EntityId = '${EntityId}'`;
+//       sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%' OR description LIKE '%${search}%') AND EntityId = '${EntityId}'`;
+//     }
+
+//     // Add conditions for additional filter fields
+//     for (const [field, value] of Object.entries(filters)) {
+//       if (value !== '') {
+//         sql += ` AND ${field} LIKE '%${value}%'`;
+//         sqlCount += ` AND ${field} LIKE '%${value}%'`;
+//       }
+//     }
+
+//     // Filter by UserId
+//     if (UserId) {
+//       sql += ` AND UserId = ${parseInt(UserId)}`;
+//       sqlCount += ` AND UserId = ${parseInt(UserId)}`;
+//     }
+
+//     // Add LIMIT and OFFSET clauses to the SQL query
+//     sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+
+//     // Execute the main query
+//     mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
+//       if (err) {
+//         console.error('Error executing MySQL query: ' + err.stack);
+//         res.status(500).json({ error: 'Internal server error' });
+//         return;
+//       }
+
+//       // Execute the count query
+//       mycon.query(sqlCount, (err, countResult) => {
+//         if (err) {
+//           console.error('Error executing MySQL count query: ' + err.stack);
+//           res.status(500).json({ error: 'Internal server error' });
+//           return;
+//         }
+
+//         const totalEntities = countResult[0].total;
+//         const totalPages = Math.ceil(totalEntities / pageSize);
+
+//         res.json({
+//           Meetings: result,
+//           totalPages: parseInt(totalPages),
+//           currentPage: parseInt(page),
+//           pageSize: parseInt(pageSize),
+//           totalMeetings: parseInt(totalEntities),
+//           startMeeting: parseInt(offset) + 1,
+//           endMeeting: Math.min(parseInt(offset) + parseInt(pageSize), totalEntities),
+//           search
+//         });
+//       });
+//     });
+//   } catch (error) {
+//     console.error('Error: ', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
+
 
 module.exports = {
   CreateMeeting,
