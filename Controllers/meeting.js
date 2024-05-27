@@ -21,7 +21,7 @@ const CreateMeeting = async (req, res) => {
 
     // Modify data if file is present
     if (file) {
-      const result = await uploadToS3(req.file.buffer);
+      const result = await uploadToS3(req.file);
       data = {
         image: `${result.Location}`,
         ...data,
