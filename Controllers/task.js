@@ -2511,12 +2511,13 @@ const GetTask = async (req, res) => {
 
 const ListTaskCount = async (req, res) => {
   try {
+    
 
     let whereClause = {};
    
     
      // Use authorized tasks from req.tasks
-    if (req.tasks) {
+    if (req.tasks || req.tasks.length === 0) {
       const taskIds = req.tasks.map(task => task.id);
       console.log("Authorized Task IDs:", taskIds);
       whereClause.id = { [Op.in]: taskIds };
