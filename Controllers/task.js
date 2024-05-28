@@ -1,7 +1,7 @@
 var db = require('../models/index');
 const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
-const { Op, where } = require('sequelize');
+const { Op, where, Sequelize } = require('sequelize');
 const uploadToS3 = require('../utils/wearhouse')
 
 
@@ -2509,83 +2509,22 @@ const GetTask = async (req, res) => {
 // }
 
 
-// const ListTaskCount = async (req, res) => {
-//   try {
-    
-
-//     let whereClause = {};
-   
-    
-//      // Use authorized tasks from req.tasks
-//     if (req.tasks || req.tasks.length === 0) {
-//       const taskIds = req.tasks.map(task => task.id);
-//       console.log("Authorized Task IDs:", taskIds);
-//       whereClause.id = { [Op.in]: taskIds };
-//     } else {
-//       console.log("No authorized tasks found in req.tasks");
-//       return res.status(403).json({ error: 'Unauthorized access to tasks' });
-//     }
-
-//     // Define the possible statuses
-//     const statuses = ["To-Do", "In-Progress", "Over-Due", "Completed"];
-
-//     // Initialize an object to hold the counts
-//     const taskCounts = {
-//       allTasksCount: 0,
-//       toDoCount: 0,
-//       inProgressCount: 0,
-//       overdueCount: 0,
-//       completedCount: 0
-//     };
-
-//     // Count all tasks
-//     taskCounts.allTasksCount = await db.Task.count({
-//       where: whereClause
-//     });
-
-    
-
-//     // Count tasks by status
-//     for (const status of statuses) {
-//       const count = await db.Task.count({
-//         where: { 
-//           ...whereClause,
-//           status }
-//       });
-
-//       switch (status) {
-//         case "To-Do":
-//           taskCounts.toDoCount = count;
-//           break;
-//         case "In-Progress":
-//           taskCounts.inProgressCount = count;
-//           break;
-//         case "Over-Due":
-//           taskCounts.overdueCount = count;
-//           break;
-//         case "Completed":
-//           taskCounts.completedCount = count;
-//           break;
-//       }
-//     }
-
-//     // Send the response
-//     res.json(taskCounts);
-//   } catch (error) {
-//     console.error('Error fetching task counts:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
 const ListTaskCount = async (req, res) => {
   try {
-    if (!req.tasks || req.tasks.length === 0) {
+    
+
+    let whereClause = {};
+   
+    
+     // Use authorized tasks from req.tasks
+    if (req.tasks || req.tasks.length === 0) {
+      const taskIds = req.tasks.map(task => task.id);
+      console.log("Authorized Task IDs:", taskIds);
+      whereClause.id = { [Op.in]: taskIds };
+    } else {
       console.log("No authorized tasks found in req.tasks");
       return res.status(403).json({ error: 'Unauthorized access to tasks' });
     }
-
-    const taskIds = req.tasks.map(task => task.id);
-    console.log("Authorized Task IDs:", taskIds);
 
     // Define the possible statuses
     const statuses = ["To-Do", "In-Progress", "Over-Due", "Completed"];
@@ -2599,20 +2538,20 @@ const ListTaskCount = async (req, res) => {
       completedCount: 0
     };
 
-    // Count all tasks and group by status
-    const tasksByStatus = await db.Task.findAll({
-      where: { id: { [Op.in]: taskIds } },
-      attributes: ['status', [db.Sequelize.fn('COUNT', db.Sequelize.col('status')), 'count']],
-      group: ['status']
+    // Count all tasks
+    taskCounts.allTasksCount = await db.Task.count({
+      where: whereClause
     });
 
-    // Total count of all tasks
-    taskCounts.allTasksCount = taskIds.length;
+    
 
-    // Set the counts based on the results
-    tasksByStatus.forEach(task => {
-      const status = task.status;
-      const count = task.dataValues.count;
+    // Count tasks by status
+    for (const status of statuses) {
+      const count = await db.Task.count({
+        where: { 
+          ...whereClause,
+          status }
+      });
 
       switch (status) {
         case "To-Do":
@@ -2628,7 +2567,7 @@ const ListTaskCount = async (req, res) => {
           taskCounts.completedCount = count;
           break;
       }
-    });
+    }
 
     // Send the response
     res.json(taskCounts);
@@ -2637,6 +2576,67 @@ const ListTaskCount = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// const ListTaskCount = async (req, res) => {
+//   try {
+//     if (!req.tasks || req.tasks.length === 0) {
+//       console.log("No authorized tasks found in req.tasks");
+//       return res.status(403).json({ error: 'Unauthorized access to tasks' });
+//     }
+
+//     const taskIds = req.tasks.map(task => task.id);
+//     console.log("Authorized Task IDs:", taskIds);
+
+//     // Define the possible statuses
+//     const statuses = ["To-Do", "In-Progress", "Over-Due", "Completed"];
+
+//     // Initialize an object to hold the counts
+//     const taskCounts = {
+//       allTasksCount: 0,
+//       toDoCount: 0,
+//       inProgressCount: 0,
+//       overdueCount: 0,
+//       completedCount: 0
+//     };
+
+//     // Count all tasks and group by status
+//     const tasksByStatus = await db.Task.findAll({
+//       where: { id: { [Op.in]: taskIds } },
+//       attributes: ['status', [db.Sequelize.fn('COUNT', db.Sequelize.col('status')), 'count']],
+//       group: ['status']
+//     });
+
+//     // Total count of all tasks
+//     taskCounts.allTasksCount = taskIds.length;
+
+//     // Set the counts based on the results
+//     tasksByStatus.forEach(task => {
+//       const status = task.status;
+//       const count = task.dataValues.count;
+
+//       switch (status) {
+//         case "To-Do":
+//           taskCounts.toDoCount = count;
+//           break;
+//         case "In-Progress":
+//           taskCounts.inProgressCount = count;
+//           break;
+//         case "Over-Due":
+//           taskCounts.overdueCount = count;
+//           break;
+//         case "Completed":
+//           taskCounts.completedCount = count;
+//           break;
+//       }
+//     });
+
+//     // Send the response
+//     res.json(taskCounts);
+//   } catch (error) {
+//     console.error('Error fetching task counts:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
 
 
 // const ListTaskCount = async (req, res) => {
@@ -2706,13 +2706,6 @@ const ListTaskCount = async (req, res) => {
 //     res.status(500).json({ error: 'Internal server error' });
 //   }
 // };
-
-
-
-
-
-
-
 
 
 
