@@ -411,7 +411,7 @@ const UpdateMeetings = async (req, res) => {
         await transporter.sendMail(mailData);
 
         // Send a response indicating success
-        res.status(200).send(`${id}`);
+        res.status(201).send(`${id}`);
       } catch (dbError) {
         console.error("Error fetching meeting or users:", dbError);
         return res.status(500).json({ error: "Internal Server Error" });
