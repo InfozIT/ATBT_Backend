@@ -237,98 +237,192 @@ await transporter.sendMail(mailData);
 
 
 
+// const UpdateMeetings = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     let data = req.body;
+//     let file = req.file;
+//     if (file) {
+//       const result = await uploadToS3(req.file);
+//       data = {
+//         image: `${result.Location}`,
+//         ...data
+//       }
+//     }
+
+//     // Define the SQL query to update the user
+//     const updateQuery = `UPDATE Meetings SET ? WHERE id = ?`;
+
+//     // Execute the update query
+//     mycon.query(updateQuery, [data, id], (error, updateResults) => {
+//       if (error) {
+//         console.error("Error updating User:", error);
+//         return res.status(500).json({ error: "Internal Server Error" });
+//       }
+//       res.status(201).send(`${id}`);
+//     });
+//   } catch (error) {
+//     console.error("Error updating User:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+  
+
+//   const member = await db.Meeting.findOne({ where: id  });
+//   Meetmember = (member.dataValues.members)
+//   userid = (member.dataValues.UserId)
+//   createdby = (member.dataValues.createdBy)
+
+
+//   let num = Number(userId);
+//   Meetmember.push(num)
+//   let email = await db.User.findAll({
+//    attributes: ['email'],
+//    where: { id: { [Op.in]: Meetmember } },
+//    raw: true
+//  });
+
+// let emails = email.map(entry => entry.email);
+// const mailData = {
+//  from: 'nirajkr00024@gmail.com',
+//  to: emails,
+//  subject: 'Board meeting updated',
+//  html: `
+//      <style>
+//          /* Add CSS styles here */
+//          .container {
+//              max-width: 600px;
+//              margin: 0 auto;
+//              padding: 20px;
+//              font-family: Arial, sans-serif;
+//              background-color: #f9f9f9;
+//          }
+//          .banner {
+//              margin-bottom: 20px;
+//          }
+//          .button {
+//              display: inline-block;
+//              padding: 10px 20px;
+//              background-color: #007bff;
+//              color: #fff;
+//              text-decoration: none;
+//              border-radius: 5px;
+//          }
+//          .button:hover {
+//              background-color: #0056b3;
+//          }
+//          p {
+//              margin-bottom: 15px;
+//          }
+//      </style>
+//      <div class="container">
+//          <p>Hi there,</p>
+//          <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+//          <p>We received a request to reset the password for your account.</p>
+//          <p>If this was you, please click the button below to reset your password:</p>
+//          <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+//          <p>If you didn't request this password reset, you can safely ignore this email.</p>
+//          <p>Thank you,</p>
+//          <p>Infoz IT Team</p>
+//      </div>
+//  `,
+// };
+
+// await transporter.sendMail(mailData);
+// };
+
 const UpdateMeetings = async (req, res) => {
   try {
     const { id } = req.params;
     let data = req.body;
     let file = req.file;
+
+    // If a file is uploaded, process it
     if (file) {
-      const result = await uploadToS3(req.file);
-      data = {
-        image: `${result.Location}`,
-        ...data
+      try {
+        const result = await uploadToS3(file);
+        data = {
+          image: result.Location,
+          ...data
+        };
+      } catch (fileError) {
+        console.error("Error uploading file to S3:", fileError);
+        return res.status(500).json({ error: "File upload error" });
       }
     }
 
-    // Define the SQL query to update the user
+    // Define the SQL query to update the meeting
     const updateQuery = `UPDATE Meetings SET ? WHERE id = ?`;
 
     // Execute the update query
-    mycon.query(updateQuery, [data, id], (error, updateResults) => {
+    mycon.query(updateQuery, [data, id], async (error, updateResults) => {
       if (error) {
-        console.error("Error updating User:", error);
+        console.error("Error updating Meeting:", error);
         return res.status(500).json({ error: "Internal Server Error" });
       }
-      res.status(201).send(`${id}`);
+
+      // Find the updated meeting and related users
+      try {
+        const member = await db.Meeting.findOne({ where: { id } });
+        if (!member) {
+          return res.status(404).json({ error: "Meeting not found" });
+        }
+
+        let meetMembers = member.dataValues.members;
+        const userId = member.dataValues.UserId;
+        const createdBy = member.dataValues.createdBy;
+
+        // Convert userId to a number and add to meetMembers
+        const num = Number(userId);
+        if (!meetMembers.includes(num)) {
+          meetMembers.push(num);
+        }
+
+        // Fetch emails of the members
+        const emailResults = await db.User.findAll({
+          attributes: ['email'],
+          where: { id: { [Op.in]: meetMembers } },
+          raw: true
+        });
+
+        const emails = emailResults.map(entry => entry.email);
+        const mailData = {
+          from: 'nirajkr00024@gmail.com',
+          to: emails,
+          subject: 'Board meeting updated',
+          html: `
+            <style>
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9; }
+              .banner { margin-bottom: 20px; }
+              .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
+              .button:hover { background-color: #0056b3; }
+              p { margin-bottom: 15px; }
+            </style>
+            <div class="container">
+              <p>Hi there,</p>
+              <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+              <p>The board meeting has been updated. Please check the details on the platform.</p>
+              <p>If you have any questions, please contact us.</p>
+              <p>Thank you,</p>
+              <p>Infoz IT Team</p>
+            </div>
+          `,
+        };
+
+        await transporter.sendMail(mailData);
+
+        // Send a response indicating success
+        res.status(200).send(`${id}`);
+      } catch (dbError) {
+        console.error("Error fetching meeting or users:", dbError);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
     });
   } catch (error) {
-    console.error("Error updating User:", error);
+    console.error("Unexpected error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-  
-
-  const member = await db.Meeting.findOne({ where: id  });
-  Meetmember = (member.dataValues.members)
-  userid = (member.dataValues.UserId)
-  createdby = (member.dataValues.createdBy)
-
-
-  let num = Number(userId);
-  Meetmember.push(num)
-  let email = await db.User.findAll({
-   attributes: ['email'],
-   where: { id: { [Op.in]: Meetmember } },
-   raw: true
- });
-
-let emails = email.map(entry => entry.email);
-const mailData = {
- from: 'nirajkr00024@gmail.com',
- to: emails,
- subject: 'Board meeting updated',
- html: `
-     <style>
-         /* Add CSS styles here */
-         .container {
-             max-width: 600px;
-             margin: 0 auto;
-             padding: 20px;
-             font-family: Arial, sans-serif;
-             background-color: #f9f9f9;
-         }
-         .banner {
-             margin-bottom: 20px;
-         }
-         .button {
-             display: inline-block;
-             padding: 10px 20px;
-             background-color: #007bff;
-             color: #fff;
-             text-decoration: none;
-             border-radius: 5px;
-         }
-         .button:hover {
-             background-color: #0056b3;
-         }
-         p {
-             margin-bottom: 15px;
-         }
-     </style>
-     <div class="container">
-         <p>Hi there,</p>
-         <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-         <p>We received a request to reset the password for your account.</p>
-         <p>If this was you, please click the button below to reset your password:</p>
-         <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
-         <p>If you didn't request this password reset, you can safely ignore this email.</p>
-         <p>Thank you,</p>
-         <p>Infoz IT Team</p>
-     </div>
- `,
 };
 
-await transporter.sendMail(mailData);
-};
 
 const DeleteMeeting = async (req, res) => {
   try {
