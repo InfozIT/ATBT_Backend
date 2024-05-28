@@ -1074,7 +1074,7 @@ const GetMeeting = async (req, res) => {
     const searchQuery = req.query.search || '';
     const entityId = req.query.entity;
     const teamId = req.query.team;
-    // const userId = req.query.user;
+    const userIdd = req.query.user;
     const userId = req.user.userId;
     console.log("userId", userId)
     const options = {
@@ -1110,14 +1110,13 @@ const GetMeeting = async (req, res) => {
       options.where.TeamId = teamId;
     }
     
-    
-    options.where.UserId = userId;
-    
+    if(userIdd){
+    options.where.UserId = userIdd;
+  }
     const memebers = db.sequelize.where(
       db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('members'), JSON.stringify(userId)),
       true
     );
-    
     options.where = {
       memebers
     };
