@@ -99,8 +99,15 @@ const CreateMeeting = async (req, res) => {
     }
    const member = await db.Meeting.findOne({ where: { id:insertId } });
    Meetmember = (member.dataValues.members)
+   createdby = (member.dataValues.createdBy)
+  
+   Meetmember.push(createdby)
    let num = Number(userId);
    Meetmember.push(num)
+
+  console.log(Meetmember)
+
+
    let email = await db.User.findAll({
     attributes: ['email'],
     where: { id: { [Op.in]: Meetmember } },
@@ -108,52 +115,54 @@ const CreateMeeting = async (req, res) => {
   });
 
 let emails = email.map(entry => entry.email);
-const mailData = {
-  from: 'nirajkr00024@gmail.com',
-  to: emails,
-  subject: 'Board meeting Created',
-  html: `
-      <style>
-          /* Add CSS styles here */
-          .container {
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-              font-family: Arial, sans-serif;
-              background-color: #f9f9f9;
-          }
-          .banner {
-              margin-bottom: 20px;
-          }
-          .button {
-              display: inline-block;
-              padding: 10px 20px;
-              background-color: #007bff;
-              color: #fff;
-              text-decoration: none;
-              border-radius: 5px;
-          }
-          .button:hover {
-              background-color: #0056b3;
-          }
-          p {
-              margin-bottom: 15px;
-          }
-      </style>
-      <div class="container">
-          <p>Hi there,</p>
-          <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-          <p>We received a request to reset the password for your account.</p>
-          <p>If this was you, please click the button below to reset your password:</p>
-          <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
-          <p>If you didn't request this password reset, you can safely ignore this email.</p>
-          <p>Thank you,</p>
-          <p>Infoz IT Team</p>
-      </div>
-  `,
-};
 
-await transporter.sendMail(mailData);
+
+// const mailData = {
+//   from: 'nirajkr00024@gmail.com',
+//   to: emails,
+//   subject: 'Board meeting Created',
+//   html: `
+//       <style>
+//           /* Add CSS styles here */
+//           .container {
+//               max-width: 600px;
+//               margin: 0 auto;
+//               padding: 20px;
+//               font-family: Arial, sans-serif;
+//               background-color: #f9f9f9;
+//           }
+//           .banner {
+//               margin-bottom: 20px;
+//           }
+//           .button {
+//               display: inline-block;
+//               padding: 10px 20px;
+//               background-color: #007bff;
+//               color: #fff;
+//               text-decoration: none;
+//               border-radius: 5px;
+//           }
+//           .button:hover {
+//               background-color: #0056b3;
+//           }
+//           p {
+//               margin-bottom: 15px;
+//           }
+//       </style>
+//       <div class="container">
+//           <p>Hi there,</p>
+//           <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+//           <p>We received a request to reset the password for your account.</p>
+//           <p>If this was you, please click the button below to reset your password:</p>
+//           <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+//           <p>If you didn't request this password reset, you can safely ignore this email.</p>
+//           <p>Thank you,</p>
+//           <p>Infoz IT Team</p>
+//       </div>
+//   `,
+// };
+
+// await transporter.sendMail(mailData);
 
 
     res.status(201).send(`${meetings.dataValues.id}`);
@@ -197,6 +206,10 @@ const UpdateMeetings = async (req, res) => {
 
   const member = await db.Meeting.findOne({ where: id  });
   Meetmember = (member.dataValues.members)
+  userid = (member.dataValues.UserId)
+  createdby = (member.dataValues.createdBy)
+
+
   let num = Number(userId);
   Meetmember.push(num)
   let email = await db.User.findAll({
@@ -707,54 +720,142 @@ const ListMeetings = async (req, res) => {
 };
 
 
+//revarted
+// const GetMeeting = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page, 10) || 1;
+//     const pageSize = parseInt(req.query.pageSize, 10) || 10;
+//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+//     const searchQuery = req.query.search || '';
+//     const startDate = req.query.startDate;
+//     const endDate = req.query.endDate;
+
+//     // Initialize the options object
+//     const options = {
+//       offset: (page - 1) * pageSize,
+//       limit: pageSize,
+//       order: [[sortBy]],
+//       where: {}
+//     };
+
+//     // Add search filters
+//     if (searchQuery) {
+//       options.where[Op.or] = [
+//         { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+//         { description: { [Op.like]: `%${searchQuery}%` } }
+//       ];
+//     }
+
+//     // Add date range filters
+//     if (startDate && endDate) {
+//       options.where.date = {
+//         [Op.between]: [new Date(startDate), new Date(endDate)]
+//       };
+//     }
+
+//     // Add other filters dynamically from the query parameters
+//     const filterFields = ['entityId', 'teamId', 'userId'];
+//     filterFields.forEach(field => {
+//       if (req.query[field]) {
+//         const dbField = field.charAt(0).toUpperCase() + field.slice(1); // Assuming model fields are EntityId, TeamId, UserId
+//         options.where[dbField] = req.query[field];
+//       }
+//     });
+
+//     // Extract additional dynamic filters if any
+//     Object.keys(req.query).forEach(key => {
+//       if (!['page', 'pageSize', 'sortBy', 'search', 'startDate', 'endDate', ...filterFields].includes(key)) {
+//         options.where[key] = req.query[key];
+//       }
+//     });
+
+//     const { count, rows: Meetings } = await db.Meeting.findAndCountAll(options);
+
+//     // Calculate the range of meetings being displayed
+//     const startMeeting = (page - 1) * pageSize + 1;
+//     const endMeeting = Math.min(page * pageSize, count);
+
+//     const totalPages = Math.ceil(count / pageSize);
+
+//     // Get task counts for each meeting
+//     for (let meeting of Meetings) {
+//       const [totalTaskCount, overDueCount, completedCount, inProgressCount, toDoCount] = await Promise.all([
+//         db.Task.count({ where: { meetingId: meeting.id } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'Over-Due' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'Completed' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'In-Progress' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'To-Do' } })
+//       ]);
+
+//       meeting.setDataValue('taskCounts', {
+//         totalTaskCount,
+//         overDueCount,
+//         completedCount,
+//         inProgressCount,
+//         toDoCount
+//       });
+//     }
+
+//     res.status(200).json({
+//       Meetings: Meetings,
+//       totalMeetings: count,
+//       totalPages: totalPages,
+//       currentPage: page,
+//       pageSize: pageSize,
+//       startMeeting: startMeeting,
+//       endMeeting: endMeeting,
+//       search: searchQuery
+//     });
+//   } catch (error) {
+//     console.error("Error fetching Meetings:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
 
 const GetMeeting = async (req, res) => {
+  console.log(req.query.user, "I am from Quarry");
+
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
     const searchQuery = req.query.search || '';
-    const startDate = req.query.startDate;
-    const endDate = req.query.endDate;
-
-    // Initialize the options object
+    const entityId = req.query.entity;
+    const teamId = req.query.team;
+    const userId = req.query.user;
     const options = {
       offset: (page - 1) * pageSize,
       limit: pageSize,
-      order: [[sortBy]],
-      where: {}
+      order: sortBy === 'meetingnumber' ? [['meetingnumber']] : sortBy === 'description' ? [['description']] : [[sortBy]],
+      where: {
+        [Op.or]: [
+          { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+          { description: { [Op.like]: `%${searchQuery}%` } },
+          // Add more conditions based on your model's attributes
+        ],
+      },
     };
 
-    // Add search filters
+    // Modify the search condition based on meetingnumber
     if (searchQuery) {
-      options.where[Op.or] = [
-        { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
-        { description: { [Op.like]: `%${searchQuery}%` } }
-      ];
-    }
-
-    // Add date range filters
-    if (startDate && endDate) {
-      options.where.date = {
-        [Op.between]: [new Date(startDate), new Date(endDate)]
+      const meetingNumberSearch = { meetingnumber: { [Op.like]: `%${searchQuery}%` } };
+      options.where = {
+        [Op.and]: [
+          options.where,
+          { [Op.or]: [meetingNumberSearch, { description: { [Op.like]: `%${searchQuery}%` } }] }
+        ]
       };
     }
 
-    // Add other filters dynamically from the query parameters
-    const filterFields = ['entityId', 'teamId', 'userId'];
-    filterFields.forEach(field => {
-      if (req.query[field]) {
-        const dbField = field.charAt(0).toUpperCase() + field.slice(1); // Assuming model fields are EntityId, TeamId, UserId
-        options.where[dbField] = req.query[field];
-      }
-    });
-
-    // Extract additional dynamic filters if any
-    Object.keys(req.query).forEach(key => {
-      if (!['page', 'pageSize', 'sortBy', 'search', 'startDate', 'endDate', ...filterFields].includes(key)) {
-        options.where[key] = req.query[key];
-      }
-    });
+    if (entityId) {
+      options.where.EntityId = entityId;
+    }
+    if (teamId) {
+      options.where.TeamId = teamId;
+    }
+    if (userId) {
+      options.where.UserId = userId;
+    }
 
     const { count, rows: Meetings } = await db.Meeting.findAndCountAll(options);
 
@@ -768,7 +869,7 @@ const GetMeeting = async (req, res) => {
     for (let meeting of Meetings) {
       const [totalTaskCount, overDueCount, completedCount, inProgressCount, toDoCount] = await Promise.all([
         db.Task.count({ where: { meetingId: meeting.id } }),
-        db.Task.count({ where: { meetingId: meeting.id, status: 'Over-Due' } }),
+        db.Task.count({ where: { meetingId: meeting.id, stat: 'Over-Due' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'Completed' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'In-Progress' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'To-Do' } })
