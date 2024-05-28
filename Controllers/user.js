@@ -94,53 +94,88 @@ async function sendEmail(email, password) {
         to: email,
         subject: 'Welcome to ATBT! Your Account has been Created',
         html: `
-            <style>
-                /* Add CSS styles here */
-                .container {
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                    font-family: Arial, sans-serif;
-                    background-color: #f9f9f9;
-                }
-                .logo {
-                    max-width: 100px;
-                    margin-bottom: 20px;
-                }
-                .button {
-                    display: inline-block;
-                    padding: 10px 20px;
-                    background-color: #007bff;
-                    color: #fff;
-                    text-decoration: none;
-                    border-radius: 5px;
-                }
-                .button:hover {
-                    background-color: #0056b3;
-                }
-                p {
-                    margin-bottom: 15px;
-                }
-            </style>
+        <style>
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 24px 0;
+            font-family: "Poppins", sans-serif;
+            background-color: rgb(231 229 228);
+            border-radius: 1%;
+          }
+          .banner {
+            margin-bottom: 10px;
+            width: 90px;
+            height: 8vh;
+            margin-right: 20px;
+          }
+       
+          .header {
+            display: flex;
+            align-items: center;
+       
+            padding-top: 10px;
+          }
+       
+          p {
+            margin-bottom: 15px;
+          }
+          .container-main {
+            max-width: 650px;
+            margin: 0 auto;
+       
+            font-family: "serif", sans-serif;
+            background-color: #fafafa;
+            border-radius: 1%;
+          }
+          .content {
+            padding: 25px;
+          }
+          .footer {
+            background-color: rgb(249 115 22);
+            padding: 0.5em;
+            text-align: center;
+          }
+          </style>
             <div class="container">
-                <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Your Company Logo" class="logo" />
-                <p>Hi there,</p>
-                <p>Welcome to ATBT! Your account has been successfully created.</p>
-                <p>Here are your account details:</p>
-                <ul style="list-style: none;">
-                    <li><strong>Email:</strong> ${email}</li>
-                    <li><strong>Password:</strong> ${password}</li>
-                    <li>
-                    <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Login</a>
-                    </li>
-                    <!-- You can add more user details here if needed -->
-                </ul>
-                <p>Feel free to explore our platform and start enjoying our services.</p>
-                <p>If you have any questions or need assistance, don't hesitate to contact us.</p>
-                <p>Thank you for choosing YourCompany!</p>
-                <p>Best regards,</p>
-                <p>Your Company Team</p>
+            <div class="container-main">
+              <div class="header">
+                <img
+                  src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+                  alt="kapil_Groups_Logo"
+                  class="banner"
+                />
+              </div>
+       
+              <hr style="margin: 0" />
+              <div class="content">
+                <h5 style="font-size: 1rem; font-weight: 500">
+                  Dear <span style="font-weight: bold">Bhavitha</span>,
+                </h5>
+       
+                <div style="font-size: 0.8rem">
+                  <p style="line-height: 1.4">
+                    Welcome to ATBT! We're thrilled to have you on board and excited
+                    to empower you to streamline your decision taken in board meeting
+                    and to boost productivity.
+                  </p>
+                  <p>Below are your login credentials to ATBT</p>
+                  <p><span style="font-weight: bold">User Id :</span></p>
+                  <p><span style="font-weight: bold">Password :</span></p>
+                  <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22); color: #fff; text-decoration: none; border-radius: 5px;">Login</a>
+                  <p>Regards,</p>
+                  <p>(Created User Name)</p>
+                  <p>Kapil Group</p>
+                </div>
+              </div>
+              <div class="footer">
+                <p style="color: white; font-size: 15px; margin: 0">
+                  All rights are reserved by Kapil Group
+                </p>
+              </div>
             </div>
+          </div>
+            
         `,
     };
 
@@ -443,7 +478,7 @@ const List_User = async (req, res) => {
 
 const Update_User = async (req, res) => {
     try {
-        const { id } = req.params;
+        let { id} = req.params;
         const { role: roleId } = req.body;
         let data = req.body;
         const file = req.file;
@@ -475,6 +510,38 @@ const Update_User = async (req, res) => {
                 console.error("Error updating User:", error);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
+        mycon.query('SELECT email FROM Users WHERE id = ?', id, (err, result) => {
+                if (err) {
+                  console.error('Error retrieving data: ' + err.stack);
+                  res.status(500).send('Error retrieving data');
+                  return;
+                }
+            const email = result.map(entry => entry.email);
+            const mailData = {
+                from: 'nirajkr00024@gmail.com',
+                to: email,
+                subject: 'User updated',
+                html: `
+                  <style>
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9; }
+                    .banner { margin-bottom: 20px; }
+                    .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
+                    .button:hover { background-color: #0056b3; }
+                    p { margin-bottom: 15px; }
+                  </style>
+                  <div class="container">
+                    <p>Hi there,</p>
+                    <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+                    <p>The board meeting has been updated. Please check the details on the platform.</p>
+                    <p>If you have any questions, please contact us.</p>
+                    <p>Thank you,</p>
+                    <p>Infoz IT Team</p>
+                  </div>
+                `,
+              };
+      
+              transporter.sendMail(mailData);
+              });   
             res.status(201).json(`${id}`);
         });
     } catch (error) {
