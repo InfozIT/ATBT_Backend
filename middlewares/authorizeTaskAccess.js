@@ -111,9 +111,9 @@ const authorizeTaskAccess = async (req, res, next) => {
         }
       });
   
-      if (tasks.length === 0) {
-        return res.status(404).json({ error: 'No tasks found for the user' });
-      }
+    //   if (tasks.length === 0) {
+    //     return res.status(404).json({ error: 'No tasks found for the user' });
+    //   }
   
       req.tasks = tasks;
   
