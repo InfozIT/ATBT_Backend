@@ -131,6 +131,18 @@ app.get('/', (req, res) => {
           <li>
           board meeting done
           </li>
+          <li>                <p> 1. User Created </p>
+
+          <p> 2. User Details Updated </p>
+          
+         <p>3. Password Change </p>
+          
+          <p> 4. Forget Password </p>
+          
+         <p> 5. Board Meeting Created </p>
+          
+          <p> 6. Board Meeting Updated </p>
+          </li>
         </ul>
       </body>
     </html>
@@ -214,18 +226,6 @@ const task = new cron.CronJob('0 10 * * *', function() {
                 <p>If you have any questions, please contact us.</p>
                 <p>Thank you,</p>
                 <p>Infoz IT Team</p>
-                <p> 1. User Created </p>
-
-                <p> 2. User Details Updated </p>
-                
-               <p>3. Password Change </p>
-                
-                <p> 4. Forget Password </p>
-                
-               <p> 5. Board Meeting Created </p>
-                
-                <p> 6. Board Meeting Updated </p>
-
               </div>
             `,
           };
