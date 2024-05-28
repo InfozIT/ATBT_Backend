@@ -8,63 +8,12 @@ const uploadToS3 = require('../utils/wearhouse')
 // const User = db.User;
 
 
-// const CreateMeeting = async (req, res) => {
-//   try {
-//     let file = req.file;
-//     let data = req.body;
-//     let Query = req.query;
-//     console.log("jbvipbwevbev")
-
-//     // Extracting entityId and teamId from query parameters
-//     const entityId = Query?.entity ?? null;
-//     const teamId = Query?.team ?? null;
-//     const userId = Query?.user ?? null;
-
-//     // Modify data if file is present
-//     if (file) {
-//       const result = await uploadToS3(req.file);
-//       data = {
-//         image: `${result.Location}`,
-//         ...data,
-//       };
-//     }
-
-//     // Inserting data into the Meetings table
-//     const insertQuery = 'INSERT INTO Meetings SET ?';
-//     const result = await new Promise((resolve, reject) => {
-//       mycon.query(insertQuery, data, (err, result) => {
-//         if (err) reject(err);
-//         resolve(result);
-//       });
-//     });
-//     const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
-//     if (createdMeeting) {
-//       if (entityId) {
-//         const entity = await Entity.findOne({ where: { id: entityId } });
-//         await createdMeeting.setEntity(entity);
-//       } else if (userId) {
-//         const user = await db.User.findOne({ where: { id: userId } });
-//         await createdMeeting.setUser(user);
-//       }
-//       else if (teamId) {
-//         const team = await Team.findOne({ where: { id: teamId } });
-//         await createdMeeting.setTeam(team);
-//       }
-//     }
-
-//     res.status(201).send(`${result.insertId}`);
-//   } catch (error) {
-//     console.error("Error creating Meeting:", error);
-//     res.status(500).send("Error creating meeting");
-//   }
-// };
-
-
 const CreateMeeting = async (req, res) => {
   try {
     let file = req.file;
     let data = req.body;
     let Query = req.query;
+    console.log("jbvipbwevbev")
 
     // Extracting entityId and teamId from query parameters
     const entityId = Query?.entity ?? null;
@@ -79,11 +28,16 @@ const CreateMeeting = async (req, res) => {
         ...data,
       };
     }
+
     // Inserting data into the Meetings table
-    let meetings = await db.Meeting.create(data);
-    let insertId= meetings.dataValues.id;
-    // res.status(201).json(meetings.dataValues.id);
-    const createdMeeting = await db.Meeting.findOne({ where: { id:insertId } });
+    const insertQuery = 'INSERT INTO Meetings SET ?';
+    const result = await new Promise((resolve, reject) => {
+      mycon.query(insertQuery, data, (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      });
+    });
+    const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
     if (createdMeeting) {
       if (entityId) {
         const entity = await Entity.findOne({ where: { id: entityId } });
@@ -97,80 +51,126 @@ const CreateMeeting = async (req, res) => {
         await createdMeeting.setTeam(team);
       }
     }
-   const member = await db.Meeting.findOne({ where: { id:insertId } });
-   Meetmember = (member.dataValues.members)
-   createdby = (member.dataValues.createdBy)
-  
-   Meetmember.push(createdby)
-   let num = Number(userId);
-   Meetmember.push(num)
 
-  console.log(Meetmember)
-
-
-   let email = await db.User.findAll({
-    attributes: ['email'],
-    where: { id: { [Op.in]: Meetmember } },
-    raw: true
-  });
-
-let emails = email.map(entry => entry.email);
-
-
-// const mailData = {
-//   from: 'nirajkr00024@gmail.com',
-//   to: emails,
-//   subject: 'Board meeting Created',
-//   html: `
-//       <style>
-//           /* Add CSS styles here */
-//           .container {
-//               max-width: 600px;
-//               margin: 0 auto;
-//               padding: 20px;
-//               font-family: Arial, sans-serif;
-//               background-color: #f9f9f9;
-//           }
-//           .banner {
-//               margin-bottom: 20px;
-//           }
-//           .button {
-//               display: inline-block;
-//               padding: 10px 20px;
-//               background-color: #007bff;
-//               color: #fff;
-//               text-decoration: none;
-//               border-radius: 5px;
-//           }
-//           .button:hover {
-//               background-color: #0056b3;
-//           }
-//           p {
-//               margin-bottom: 15px;
-//           }
-//       </style>
-//       <div class="container">
-//           <p>Hi there,</p>
-//           <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-//           <p>We received a request to reset the password for your account.</p>
-//           <p>If this was you, please click the button below to reset your password:</p>
-//           <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
-//           <p>If you didn't request this password reset, you can safely ignore this email.</p>
-//           <p>Thank you,</p>
-//           <p>Infoz IT Team</p>
-//       </div>
-//   `,
-// };
-
-// await transporter.sendMail(mailData);
-
-
-    res.status(201).send(`${meetings.dataValues.id}`);
+    res.status(201).send(`${result.insertId}`);
   } catch (error) {
     console.error("Error creating Meeting:", error);
     res.status(500).send("Error creating meeting");
   }
 };
+
+
+// const CreateMeeting = async (req, res) => {
+//   try {
+//     let file = req.file;
+//     let data = req.body;
+//     let Query = req.query;
+
+//     // Extracting entityId and teamId from query parameters
+//     const entityId = Query?.entity ?? null;
+//     const teamId = Query?.team ?? null;
+//     const userId = Query?.user ?? null;
+
+//     // Modify data if file is present
+//     if (file) {
+//       const result = await uploadToS3(req.file);
+//       data = {
+//         image: `${result.Location}`,
+//         ...data,
+//       };
+//     }
+//     // Inserting data into the Meetings table
+//     let meetings = await db.Meeting.create(data);
+//     let insertId= meetings.dataValues.id;
+//     // res.status(201).json(meetings.dataValues.id);
+//     const createdMeeting = await db.Meeting.findOne({ where: { id:insertId } });
+//     if (createdMeeting) {
+//       if (entityId) {
+//         const entity = await Entity.findOne({ where: { id: entityId } });
+//         await createdMeeting.setEntity(entity);
+//       } else if (userId) {
+//         const user = await db.User.findOne({ where: { id: userId } });
+//         await createdMeeting.setUser(user);
+//       }
+//       else if (teamId) {
+//         const team = await Team.findOne({ where: { id: teamId } });
+//         await createdMeeting.setTeam(team);
+//       }
+//     }
+//    const member = await db.Meeting.findOne({ where: { id:insertId } });
+//    Meetmember = (member.dataValues.members)
+//    createdby = (member.dataValues.createdBy)
+  
+//    Meetmember.push(createdby)
+//    let num = Number(userId);
+//    Meetmember.push(num)
+
+//   console.log(Meetmember)
+
+
+//    let email = await db.User.findAll({
+//     attributes: ['email'],
+//     where: { id: { [Op.in]: Meetmember } },
+//     raw: true
+//   });
+
+// let emails = email.map(entry => entry.email);
+
+
+// // const mailData = {
+// //   from: 'nirajkr00024@gmail.com',
+// //   to: emails,
+// //   subject: 'Board meeting Created',
+// //   html: `
+// //       <style>
+// //           /* Add CSS styles here */
+// //           .container {
+// //               max-width: 600px;
+// //               margin: 0 auto;
+// //               padding: 20px;
+// //               font-family: Arial, sans-serif;
+// //               background-color: #f9f9f9;
+// //           }
+// //           .banner {
+// //               margin-bottom: 20px;
+// //           }
+// //           .button {
+// //               display: inline-block;
+// //               padding: 10px 20px;
+// //               background-color: #007bff;
+// //               color: #fff;
+// //               text-decoration: none;
+// //               border-radius: 5px;
+// //           }
+// //           .button:hover {
+// //               background-color: #0056b3;
+// //           }
+// //           p {
+// //               margin-bottom: 15px;
+// //           }
+// //       </style>
+// //       <div class="container">
+// //           <p>Hi there,</p>
+// //           <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+// //           <p>We received a request to reset the password for your account.</p>
+// //           <p>If this was you, please click the button below to reset your password:</p>
+// //           <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+// //           <p>If you didn't request this password reset, you can safely ignore this email.</p>
+// //           <p>Thank you,</p>
+// //           <p>Infoz IT Team</p>
+// //       </div>
+// //   `,
+// // };
+
+// // await transporter.sendMail(mailData);
+
+
+//     res.status(201).send(`${meetings.dataValues.id}`);
+//   } catch (error) {
+//     console.error("Error creating Meeting:", error);
+//     res.status(500).send("Error creating meeting");
+//   }
+// };
 
 
 
