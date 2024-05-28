@@ -214,6 +214,35 @@ const task = new cron.CronJob('0 10 * * *', function() {
                 <p>If you have any questions, please contact us.</p>
                 <p>Thank you,</p>
                 <p>Infoz IT Team</p>
+                <p> 1. User Created
+
+                2. User Details Updated
+                
+                3. Password Change
+                
+                4. Forget Password
+                
+                5. Board Meeting Created
+                
+                6. Board Meeting Updated
+                
+                7. Team Created
+                
+                8. Team Updated
+                
+                9. Task Assigned to user
+                
+                10. Task Updated by User
+                
+                11. Task Completed by User
+                
+                12. Sub Task Created
+                
+                13. Reminder – One Day before Board Meeting
+                
+                14. Reminder – One day before task due date
+                
+                15. Overdue – One email for a week with the list of overdue tasks </P>
               </div>
             `,
           };
