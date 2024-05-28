@@ -1,7 +1,7 @@
 var db = require('../models/index');
 const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const uploadToS3 = require('../utils/wearhouse')
 
 
@@ -718,7 +718,7 @@ const GetTaskbyId = async (req, res) => {
 
     // Fetch the meeting details
     const meeting = await db.Meeting.findOne({
-      attributes: ['members', 'UserId', 'EntityId', 'TeamId', 'meetingnumber'], // Include TeamId in the attributes
+      attributes: ['members','date', 'UserId', 'EntityId', 'TeamId', 'meetingnumber'], // Include TeamId in the attributes
       where: { id: meetingId },
       raw: true
     });
@@ -843,7 +843,7 @@ const GetTaskbyId = async (req, res) => {
       file: task.file || null, // Use task file or null if undefined
       comments: commentsWithUserInfo || [], // Use comments array or empty array if undefined
       group: groupMembers, // Include group field with all members associated with the task's meeting, including additional users based on EntityId and team members
-      meetingnumber: meeting ? meeting.meetingnumber : null,
+      // meetingnumber: meeting ? meeting.meetingnumber : null,
     };
 
     // Fetch task creator entity name
@@ -1006,6 +1006,7 @@ const GetAllTask = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
   let Query = req.query;
 
+
   // Extracting entityId and teamId from query parameters
   const entityId = Query?.entity ?? null;
   const teamId = Query?.team ?? null;
@@ -1048,6 +1049,7 @@ const GetAllTask = async (req, res) => {
     console.log(UsrID)
     var { count, rows } = await db.Task.findAndCountAll({
       where: {
+        
         meetingId: UsrID
       },
       raw: true // Get raw data instead of Sequelize model instances
@@ -1264,7 +1266,7 @@ const GetSubTaskbyId = async (req, res) => {
 
     // Fetch the meeting details
     const meeting = await db.Meeting.findOne({
-      attributes: ['members', 'UserId', 'EntityId', 'TeamId', 'meetingnumber'], // Include TeamId in the attributes
+      attributes: ['members','date', 'UserId', 'EntityId', 'TeamId', 'meetingnumber'], // Include TeamId in the attributes
       where: { id: meetingId },
       raw: true
     });
@@ -1360,6 +1362,7 @@ const GetSubTaskbyId = async (req, res) => {
       date: subTask.date,
       meetingnumber: subTask.meetingnumber,
       meetingnumber: meeting ? meeting.meetingnumber : null,
+      date: meeting ? meeting.date : null,
       priority: subTask.priority,
       members: subTask.members,
       dueDate: subTask.dueDate,
@@ -1472,7 +1475,7 @@ const GetSubList = async (req, res) => {
 
     // Fetch the meeting details
     const meeting = await db.Meeting.findOne({
-      attributes: ['members', 'UserId', 'EntityId', 'TeamId', 'meetingnumber'], // Include TeamId in the attributes
+      attributes: ['members','date', 'UserId', 'EntityId', 'TeamId', 'meetingnumber'], // Include TeamId in the attributes
       where: { id: meetingId },
       raw: true
     });
@@ -1549,6 +1552,7 @@ const GetSubList = async (req, res) => {
       ...row,
       group: groupMembers,
       meetingnumber: meeting ? meeting.meetingnumber : null,
+      date: meeting ? meeting.date : null,
     }));
 
 
@@ -2241,6 +2245,16 @@ const GetTask = async (req, res) => {
 
   try {
     let whereClause = {};
+    
+     // Use authorized tasks from req.tasks
+    if (req.tasks) {
+      const taskIds = req.tasks.map(task => task.id);
+      console.log("Authorized Task IDs:", taskIds);
+      whereClause.id = { [Op.in]: taskIds };
+    } else {
+      console.log("No authorized tasks found in req.tasks");
+      return res.status(403).json({ error: 'Unauthorized access to tasks' });
+    }
 
     if (entityId) {
       let userEntities = await db.Meeting.findAll({
@@ -2282,6 +2296,10 @@ const GetTask = async (req, res) => {
         : { [Op.in]: teamMeetingIds };
     }
 
+    // Use authorized tasks from req.tasks
+   
+
+    
     let tasks = await db.Task.findAll({
       where: whereClause,
       order: [['createdAt', 'DESC']]
@@ -2442,6 +2460,7 @@ const GetTask = async (req, res) => {
 
       const meeting = meetings.find(m => String(m.id) === String(task.meetingId)); // Convert to string for comparison
       const meetingNumber = meeting ? meeting.meetingnumber : null; // Get the meeting number
+      const meetingdate = meeting ? meeting.date : null;
 
       // Log for debugging purposes
       if (!meeting) {
@@ -2454,6 +2473,7 @@ const GetTask = async (req, res) => {
         id: task.id,
         decision: task.decision,
         meetingId: task.meetingId,
+        date: meetingdate,
         meetingNumber: meetingNumber, // Add the meeting number to the response
         priority: task.priority,
         group: uniqueMembers,
@@ -2491,6 +2511,20 @@ const GetTask = async (req, res) => {
 
 const ListTaskCount = async (req, res) => {
   try {
+
+    let whereClause = {};
+   
+    
+     // Use authorized tasks from req.tasks
+    if (req.tasks) {
+      const taskIds = req.tasks.map(task => task.id);
+      console.log("Authorized Task IDs:", taskIds);
+      whereClause.id = { [Op.in]: taskIds };
+    } else {
+      console.log("No authorized tasks found in req.tasks");
+      return res.status(403).json({ error: 'Unauthorized access to tasks' });
+    }
+
     // Define the possible statuses
     const statuses = ["To-Do", "In-Progress", "Over-Due", "Completed"];
 
@@ -2504,12 +2538,18 @@ const ListTaskCount = async (req, res) => {
     };
 
     // Count all tasks
-    taskCounts.allTasksCount = await db.Task.count();
+    taskCounts.allTasksCount = await db.Task.count({
+      where: whereClause
+    });
+
+    
 
     // Count tasks by status
     for (const status of statuses) {
       const count = await db.Task.count({
-        where: { status }
+        where: { 
+          ...whereClause,
+          status }
       });
 
       switch (status) {
