@@ -1110,9 +1110,9 @@ const GetMeeting = async (req, res) => {
       options.where.TeamId = teamId;
     }
     
-    if(userIdd){
-    options.where.UserId = userIdd;
-  }
+    
+    options.where.createdBy = userId;
+  
     const memebers = db.sequelize.where(
       db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('members'), JSON.stringify(userId)),
       true
