@@ -51,7 +51,70 @@ const CreateMeeting = async (req, res) => {
         await createdMeeting.setTeam(team);
       }
     }
+   let insertId =(result.insertId)
+   const member = await db.Meeting.findOne({ where: { id:insertId } });
+   Meetmember = (member.dataValues.members)
+   createdby = (member.dataValues.createdBy)
+   let num1 = Number(createdby);
+   Meetmember.push(num1)
+   let num = Number(userId);
+   Meetmember.push(num)
+   let email = await db.User.findAll({
+    attributes: ['email'],
+    where: { id: { [Op.in]: Meetmember } },
+    raw: true
+  });
 
+  let emails = email.map(entry => entry.email);
+
+
+const mailData = {
+  from: 'nirajkr00024@gmail.com',
+  to: emails,
+  subject: 'Board meeting Created',
+  html: `
+      <style>
+          /* Add CSS styles here */
+          .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+              font-family: Arial, sans-serif;
+              background-color: #f9f9f9;
+          }
+          .banner {
+              margin-bottom: 20px;
+          }
+          .button {
+              display: inline-block;
+              padding: 10px 20px;
+              background-color: #007bff;
+              color: #fff;
+              text-decoration: none;
+              border-radius: 5px;
+          }
+          .button:hover {
+              background-color: #0056b3;
+          }
+          p {
+              margin-bottom: 15px;
+          }
+      </style>
+      <div class="container">
+          <p>Hi there,</p>
+          <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+          <p>We received a request to reset the password for your account.</p>
+          <p>If this was you, please click the button below to reset your password:</p>
+          <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+          <p>If you didn't request this password reset, you can safely ignore this email.</p>
+          <p>Thank you,</p>
+          <p>Infoz IT Team</p>
+      </div>
+  `,
+};
+
+await transporter.sendMail(mailData);
+    
     res.status(201).send(`${result.insertId}`);
   } catch (error) {
     console.error("Error creating Meeting:", error);
