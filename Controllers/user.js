@@ -13,11 +13,12 @@ const { json } = require('sequelize');
 
 const Create_User = async (req, res) => {
     try {
-        console.log(req.file, req.body, "multer")
+        // console.log(req.file, req.body, "multer")
         const { email, role: roleId } = req.body;
         let { entityname, ...data } = req.body;
-        console.log(entityname)
         const file = req.file;
+        var name = req.body.name;
+        let createdBy = req.body.createdBy;
         const password = generateRandomPassword();
 
         // Hash the password
@@ -65,7 +66,16 @@ const Create_User = async (req, res) => {
                 if (getEntity) {
                     await createdUser.setEntity(getEntity);
                 }
-                await sendEmail(email, password);
+                let Createdbyname = await db.User.findOne({
+                    attributes: ['name'],
+                    where: {
+                      id: createdBy,
+                    },
+                  });
+                var Creatorname = Createdbyname.dataValues.name;
+
+
+                await sendEmail(email, password,name,Creatorname);
                 res.status(201).send(`${result.insertId}`);
             } catch (emailError) {
                 console.error("Error sending email:", emailError);
@@ -87,7 +97,7 @@ function generateRandomPassword() {
     return password;
 }
 // Function to send email
-async function sendEmail(email, password) {
+async function sendEmail(email, password,name,Creatorname) {
 
     const mailData = {
         from: 'nirajkr00024@gmail.com',
@@ -96,85 +106,84 @@ async function sendEmail(email, password) {
         html: `
         <style>
         .container {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 24px 0;
-            font-family: "Poppins", sans-serif;
-            background-color: rgb(231 229 228);
-            border-radius: 1%;
-          }
-          .banner {
-            margin-bottom: 10px;
-            width: 90px;
-            height: 8vh;
-            margin-right: 20px;
-          }
-       
-          .header {
-            display: flex;
-            align-items: center;
-       
-            padding-top: 10px;
-          }
-       
-          p {
-            margin-bottom: 15px;
-          }
-          .container-main {
-            max-width: 650px;
-            margin: 0 auto;
-       
-            font-family: "serif", sans-serif;
-            background-color: #fafafa;
-            border-radius: 1%;
-          }
-          .content {
-            padding: 25px;
-          }
-          .footer {
-            background-color: rgb(249 115 22);
-            padding: 0.5em;
-            text-align: center;
-          }
-          </style>
-            <div class="container">
-            <div class="container-main">
-              <div class="header">
-                <img
-                  src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
-                  alt="kapil_Groups_Logo"
-                  class="banner"
-                />
-              </div>
-       
-              <hr style="margin: 0" />
-              <div class="content">
-                <h5 style="font-size: 1rem; font-weight: 500">
-                  Dear <span style="font-weight: bold">Bhavitha</span>,
-                </h5>
-       
-                <div style="font-size: 0.8rem">
-                  <p style="line-height: 1.4">
-                    Welcome to ATBT! We're thrilled to have you on board and excited
-                    to empower you to streamline your decision taken in board meeting
-                    and to boost productivity.
-                  </p>
-                  <p>Below are your login credentials to ATBT</p>
-                  <p><span style="font-weight: bold">User Id :</span></p>
-                  <p><span style="font-weight: bold">Password :</span></p>
-                  <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22); color: #fff; text-decoration: none; border-radius: 5px;">Login</a>
-                  <p>Regards,</p>
-                  <p>(Created User Name)</p>
-                  <p>Kapil Group</p>
-                </div>
-              </div>
-              <div class="footer">
-                <p style="color: white; font-size: 15px; margin: 0">
-                  All rights are reserved by Kapil Group
-                </p>
-              </div>
-            </div>
-          </div>
+           max-width: 700px;
+           margin: 0 auto;
+           padding: 24px 0;
+           font-family: "Poppins", sans-serif;
+           background-color: rgb(231 229 228);
+           border-radius: 1%;
+         }
+         .banner {
+           margin-bottom: 10px;
+           width: 75px;
+           height: 8vh;
+           margin-right: 20px;
+         }
+      
+         .header {
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           padding-top: 10px;
+         }
+      
+         p {
+           margin-bottom: 15px;
+         }
+         .container-main {
+           max-width: 650px;
+           margin: 0 auto;
+      
+           font-family: "serif", sans-serif;
+           background-color: #fafafa;
+           border-radius: 1%;
+         }
+         .content {
+           padding: 25px;
+         }
+         .footer {
+           background-color: rgb(249 115 22);
+           padding: 0.5em;
+           text-align: center;
+         }
+       </style>
+       <div class="container">
+       <div class="container-main">
+         <div class="header">
+           <img
+             src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+             alt="kapil_Groups_Logo"
+             class="banner"
+           />
+         </div>
+         <hr style="margin: 0" />
+         <div class="content">
+           <h5 style="font-size: 1rem; font-weight: 500">
+             Dear <span style="font-weight: bold">${name}</span>,
+           </h5>
+  
+           <div style="font-size: 0.8rem">
+             <p style="line-height: 1.4">
+               Welcome to ATBT! We're thrilled to have you on board and excited
+               to empower you to streamline your decision taken in board meeting
+               and to boost productivity.
+             </p>
+             <p>Below are your login credentials to ATBT</p>
+             <p><span style="font-weight: bold"> User Id :</span> ${email}</p>
+             <p><span style="font-weight: bold"> Password :</span> ${password}</p>
+             <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22); color: #fff; text-decoration: none; border-radius: 5px; margin-bottom: 30px;">Login</a>
+             <p>Regards,</p>
+             <p>${Creatorname}</p>
+             <p>Kapil Group</p>
+           </div>
+         </div>
+         <div class="footer">
+           <p style="color: white; font-size: 15px; margin: 0">
+             All rights are reserved by Kapil Group
+           </p>
+         </div>
+       </div>
+     </div>
             
         `,
     };
@@ -482,6 +491,8 @@ const Update_User = async (req, res) => {
         const { role: roleId } = req.body;
         let data = req.body;
         const file = req.file;
+        var nameup = req.body.name;
+
         let image;
 
         // Find role in the database
@@ -521,22 +532,85 @@ const Update_User = async (req, res) => {
                 from: 'nirajkr00024@gmail.com',
                 to: email,
                 subject: 'User updated',
-                html: `
-                  <style>
-                    .container { max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9; }
-                    .banner { margin-bottom: 20px; }
-                    .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
-                    .button:hover { background-color: #0056b3; }
-                    p { margin-bottom: 15px; }
-                  </style>
-                  <div class="container">
-                    <p>Hi there,</p>
-                    <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-                    <p>The board meeting has been updated. Please check the details on the platform.</p>
-                    <p>If you have any questions, please contact us.</p>
-                    <p>Thank you,</p>
-                    <p>Infoz IT Team</p>
-                  </div>
+                html: `  <style>
+                .container {
+                  max-width: 700px;
+                  margin: 0 auto;
+                  padding: 24px 0;
+                  font-family: "Poppins", sans-serif;
+                  background-color: rgb(231 229 228);
+                  border-radius: 1%;
+                }
+                .banner {
+                  margin-bottom: 10px;
+                  width: 75px;
+                  height: 8vh;
+                  margin-right: 20px;
+                }
+             
+                .header {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  padding-top: 10px;
+                }
+             
+                p {
+                  margin-bottom: 15px;
+                }
+                .container-main {
+                  max-width: 650px;
+                  margin: 0 auto;
+             
+                  font-family: "serif", sans-serif;
+                  background-color: #fafafa;
+                  border-radius: 1%;
+                }
+                .content {
+                  padding: 25px;
+                }
+                .footer {
+                  background-color: rgb(249 115 22);
+                  padding: 0.5em;
+                  text-align: center;
+                }
+              </style>
+              <div class="container">
+      <div class="container-main">
+        <div class="header">
+          <img
+            src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+            alt="kapil_Groups_Logo"
+            class="banner"
+          />
+        </div>
+ 
+        <hr style="margin: 0" />
+        <div class="content">
+          <h5 style="font-size: 1rem; font-weight: 500">
+            Dear <span style="font-weight: bold">$</span>,
+          </h5>
+ 
+          <div style="font-size: 0.8rem">
+            <p style="line-height: 1.4">
+              We're pleased to inform you that your account details have been
+              successfully updated. Please take a moment to review your profile
+              to ensure all details are accurate.
+            </p>
+ 
+            <p style="padding-top: 15px;">Best Regards,</p>
+ 
+            <p>Kapil Group</p>
+          </div>
+        </div>
+        <div class="footer">
+          <p style="color: white; font-size: 15px; margin: 0">
+            All rights are reserved by Kapil Group
+          </p>
+        </div>
+      </div>
+    </div>
+
                 `,
               };
       
