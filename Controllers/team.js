@@ -41,7 +41,70 @@ const CreateTeam = async (req, res) => {
       if (createdEntity && members) {
         await createdEntity.addUsers(members);
       }
+
       res.status(201).send(`${result.insertId}`);
+      let insertId =(result.insertId)
+      const member = await db.Team.findOne({ where: { id:insertId } });
+      Meetmember = (member.dataValues.members)
+      createdby = (member.dataValues.createdBy)
+      let num1 = Number(createdby);
+      Meetmember.push(num1)
+
+      let email = await db.User.findAll({
+       attributes: ['email'],
+       where: { id: { [Op.in]: Meetmember } },
+       raw: true
+     });
+   
+     let emails = email.map(entry => entry.email);
+        
+   
+      const mailData = {
+        from: 'nirajkr00024@gmail.com',
+        to: emails,
+        subject: 'Board meeting Created',
+        html: `
+            <style>
+                /* Add CSS styles here */
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    font-family: Arial, sans-serif;
+                    background-color: #f9f9f9;
+                }
+                .banner {
+                    margin-bottom: 20px;
+                }
+                .button {
+                    display: inline-block;
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: #fff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                }
+                .button:hover {
+                    background-color: #0056b3;
+                }
+                p {
+                    margin-bottom: 15px;
+                }
+            </style>
+            <div class="container">
+                <p>Hi there,</p>
+                <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+                <p>We received a request to reset the password for your account.</p>
+                <p>If this was you, please click the button below to reset your password:</p>
+                <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+                <p>If you didn't request this password reset, you can safely ignore this email.</p>
+                <p>Thank you,</p>
+                <p>Infoz IT Team</p>
+            </div>
+        `,
+      };
+      
+      await transporter.sendMail(mailData);
 
     });
   } catch (error) {
@@ -52,18 +115,16 @@ const CreateTeam = async (req, res) => {
 
 const UpdateTeam = async (req, res) => {
   try {
-    const { id } = req.params;
+    let { id } = req.params;
     let data = req.body;
     let file = req.file;
     let image;
-    if (file) {
-      const result = await uploadToS3(req.file);
 
+    // Handle file upload
+    if (file) {
+      const result = await uploadToS3(file);
       image = `${result.Location}`;
-      data = {
-        image,
-        ...data
-      }
+      data.image = image;
     }
 
     // Define the SQL query to update the Teams
@@ -75,13 +136,73 @@ const UpdateTeam = async (req, res) => {
         console.error("Error updating Teams:", error);
         return res.status(500).json({ error: "Internal Server Error" });
       }
-      res.status(201).send(`${id}`);
+
+      // Query the updated team details
+      mycon.query('SELECT * FROM Teams WHERE id = ?', [id], (err, teamResult) => {
+        if (err) {
+          console.error("Error retrieving updated team:", err);
+          return res.status(500).json({ error: "Internal Server Error" });
+        }
+
+        if (teamResult.length === 0) {
+          return res.status(404).json({ error: "Team not found" });
+        }
+
+        let members = teamResult[0].members;
+        let createdBy = teamResult[0].createdBy;
+        let memberIds = [...members, createdBy];
+
+        // Query emails of team members
+        mycon.query('SELECT email FROM Users WHERE id IN (?)', [memberIds], (err, emailResults) => {
+          if (err) {
+            console.error('Error retrieving emails:', err);
+            return res.status(500).json({ error: "Internal Server Error" });
+          }
+
+          const emails = emailResults.map(entry => entry.email);
+
+          // Send notification email
+          const mailData = {
+            from: 'nirajkr00024@gmail.com',
+            to: emails,
+            subject: 'Team updated',
+            html: `
+              <style>
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9; }
+                .banner { margin-bottom: 20px; }
+                .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
+                .button:hover { background-color: #0056b3; }
+                p { margin-bottom: 15px; }
+              </style>
+              <div class="container">
+                <p>Hi there,</p>
+                <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+                <p>The board meeting has been updated. Please check the details on the platform.</p>
+                <p>If you have any questions, please contact us.</p>
+                <p>Thank you,</p>
+                <p>Infoz IT Team</p>
+              </div>
+            `,
+          };
+
+          transporter.sendMail(mailData, (mailError, info) => {
+            if (mailError) {
+              console.error('Error sending email:', mailError);
+            } else {
+              console.log('Email sent:', info.response);
+            }
+          });
+
+          res.status(200).json({ message: "Team updated successfully" });
+        });
+      });
     });
   } catch (error) {
     console.error("Error updating Teams:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 const DeleteTeamById = async (req, res) => {
   const TeamId = req.params.id;
