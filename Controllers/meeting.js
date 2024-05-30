@@ -8,14 +8,172 @@ const uploadToS3 = require('../utils/wearhouse')
 // const User = db.User;
 
 
+// const CreateMeeting = async (req, res) => {
+//   try {
+//     let file = req.file;
+//     let data = req.body;
+//     let Query = req.query;
+
+//     // Extracting entityId and teamId from query parameters
+//     const entityId = Query?.entity ?? null;
+//     const teamId = Query?.team ?? null;
+//     const userId = Query?.user ?? null;
+
+//     // Modify data if file is present
+//     if (file) {
+//       const result = await uploadToS3(req.file);
+//       data = {
+//         image: `${result.Location}`,
+//         ...data,
+//       };
+//     }
+
+//     // Inserting data into the Meetings table
+//     const insertQuery = 'INSERT INTO Meetings SET ?';
+//     const result = await new Promise((resolve, reject) => {
+//       mycon.query(insertQuery, data, (err, result) => {
+//         if (err) reject(err);
+//         resolve(result);
+//       });
+//     });
+//     const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
+//     if (createdMeeting) {
+//       if (entityId) {
+//         const entity = await Entity.findOne({ where: { id: entityId } });
+//         await createdMeeting.setEntity(entity);
+//       } else if (userId) {
+//         const user = await db.User.findOne({ where: { id: userId } });
+//         await createdMeeting.setUser(user);
+//       }
+//       else if (teamId) {
+//         const team = await Team.findOne({ where: { id: teamId } });
+//         await createdMeeting.setTeam(team);
+//       }
+//     }
+//    let insertId =(result.insertId)
+//    const member = await db.Meeting.findOne({ where: { id:insertId } });
+//    Meetmember = (member.dataValues.members)
+//    createdby = (member.dataValues.createdBy)
+//    let num1 = Number(createdby);
+//    Meetmember.push(num1)
+//    let num = Number(userId);
+//    Meetmember.push(num)
+//    let email = await db.User.findAll({
+//     attributes: ['email','name'],
+//     where: { id: { [Op.in]: Meetmember } },
+//     raw: true
+//   });
+
+//   let emails = email.map(entry => entry.email);
+//   let name = email.map(entry => entry.name);
+//   console.log(name,emails)
+
+
+
+// const mailData = {
+//   from: 'nirajkr00024@gmail.com',
+//   to: emails,
+//   subject: 'Board meeting Created',
+//   html: `
+//       <style>
+//       .container {
+//           max-width: 700px;
+//           margin: 0 auto;
+//           padding: 24px 0;
+//           font-family: "Poppins", sans-serif;
+//           background-color: rgb(231 229 228);
+//           border-radius: 1%;
+//         }
+//         .banner {
+//           margin-bottom: 10px;
+//           width: 90px;
+//           height: 8vh;
+//           margin-right: 20px;
+//         }
+    
+//         .header {
+//           display: flex;
+//           align-items: center;
+    
+//           padding-top: 10px;
+//         }
+    
+//         p {
+//           margin-bottom: 15px;
+//         }
+//         .container-main {
+//           max-width: 650px;
+//           margin: 0 auto;
+    
+//           font-family: "serif", sans-serif;
+//           background-color: #fafafa;
+//           border-radius: 1%;
+//         }
+//         .content {
+//           padding: 25px;
+//         }
+//         .footer {
+//           background-color: rgb(249 115 22);
+//           padding: 0.5em;
+//           text-align: center;
+//         }
+//         </style>
+//         <div class="container">
+//         <div class="container-main">
+//           <div class="header">
+//             <img
+//               src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+//               alt="kapil_Groups_Logo"
+//               class="banner"
+//             />
+//           </div>
+
+//           <hr style="margin: 0" />
+//           <div class="content">
+//             <h5 style="font-size: 1rem; font-weight: 500">
+//               Dear <span style="font-weight: bold">${name}</span>,
+//             </h5>
+
+//             <div style="font-size: 0.8rem">
+//               <p style="line-height: 1.4">
+//                 You are cordially invited to the Board Meeting on [Date]. Below are the details:
+              
+//               </p>
+            
+//               <p><span style="font-weight: bold">Meeting Id :</span></p>
+//               <p><span style="font-weight: bold">Members :</span></p>
+//               <p>Please mark the meeting date on your calendar to ensure your attendance.</p>
+//               <p style="padding-top: 15px;">Warm regards,</p>
+//               <p>[Board Meeting Organizer]</p>
+//               <p>Kapil Group</p>
+//             </div>
+//           </div>
+//           <div class="footer">
+//             <p style="color: white; font-size: 15px; margin: 0">
+//               All rights are reserved by Kapil Group
+//             </p>
+//           </div>
+//         </div>
+//       </div>
+//     has context menu
+//   `,
+// };
+
+// await transporter.sendMail(mailData);
+    
+//     res.status(201).send(`${result.insertId}`);
+//   } catch (error) {
+//     console.error("Error creating Meeting:", error);
+//     res.status(500).send("Error creating meeting");
+//   }
+// };
 const CreateMeeting = async (req, res) => {
   try {
     let file = req.file;
     let data = req.body;
     let Query = req.query;
-    console.log("jbvipbwevbev")
 
-    // Extracting entityId and teamId from query parameters
+    // Extracting entityId, teamId, and userId from query parameters
     const entityId = Query?.entity ?? null;
     const teamId = Query?.team ?? null;
     const userId = Query?.user ?? null;
@@ -45,76 +203,124 @@ const CreateMeeting = async (req, res) => {
       } else if (userId) {
         const user = await db.User.findOne({ where: { id: userId } });
         await createdMeeting.setUser(user);
-      }
-      else if (teamId) {
+      } else if (teamId) {
         const team = await Team.findOne({ where: { id: teamId } });
         await createdMeeting.setTeam(team);
       }
     }
-   let insertId =(result.insertId)
-   const member = await db.Meeting.findOne({ where: { id:insertId } });
-   Meetmember = (member.dataValues.members)
-   createdby = (member.dataValues.createdBy)
-   let num1 = Number(createdby);
-   Meetmember.push(num1)
-   let num = Number(userId);
-   Meetmember.push(num)
-   let email = await db.User.findAll({
-    attributes: ['email'],
-    where: { id: { [Op.in]: Meetmember } },
-    raw: true
-  });
 
-  let emails = email.map(entry => entry.email);
+    let insertId = result.insertId;
+    const member = await db.Meeting.findOne({ where: { id: insertId } });
+    let Meetmember = member.dataValues.members;
+    let createdby = member.dataValues.createdBy;
+    let date = member.dataValues.date;
 
+    let num1 = Number(createdby);
+    let Ceatorname = await db.User.findAll({
+      attributes: ['name'],
+      where: { id: num1 },
+      raw: true,
+    });
+    let Creatorname = Ceatorname.map(entry => entry.name);
+    Meetmember.push(num1);
+    let num = Number(userId);
+    Meetmember.push(num);
 
-const mailData = {
-  from: 'nirajkr00024@gmail.com',
-  to: emails,
-  subject: 'Board meeting Created',
-  html: `
-      <style>
-          /* Add CSS styles here */
-          .container {
-              max-width: 600px;
+    let email = await db.User.findAll({
+      attributes: ['email', 'name'],
+      where: { id: { [Op.in]: Meetmember } },
+      raw: true,
+    });
+
+    let emails = email.map(entry => entry.email);
+    let names = email.map(entry => entry.name);
+
+    // Send individual emails to each recipient
+    for (let i = 0; i < emails.length; i++) {
+      const mailData = {
+        from: 'nirajkr00024@gmail.com',
+        to: emails[i],
+        subject: 'Board Meeting Created',
+        html: `
+          <style>
+            .container {
+              max-width: 700px;
               margin: 0 auto;
-              padding: 20px;
-              font-family: Arial, sans-serif;
-              background-color: #f9f9f9;
-          }
-          .banner {
-              margin-bottom: 20px;
-          }
-          .button {
-              display: inline-block;
-              padding: 10px 20px;
-              background-color: #007bff;
-              color: #fff;
-              text-decoration: none;
-              border-radius: 5px;
-          }
-          .button:hover {
-              background-color: #0056b3;
-          }
-          p {
+              padding: 24px 0;
+              font-family: "Poppins", sans-serif;
+              background-color: rgb(231 229 228);
+              border-radius: 1%;
+            }
+            .banner {
+              margin-bottom: 10px;
+              width: 90px;
+              height: 8vh;
+              margin-right: 20px;
+            }
+            .header {
+              display: flex;
+              align-items: center;
+              justify-content:center;
+              padding-top: 10px;
+            }
+            p {
               margin-bottom: 15px;
-          }
-      </style>
-      <div class="container">
-          <p>Hi there,</p>
-          <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-          <p>We received a request to reset the password for your account.</p>
-          <p>If this was you, please click the button below to reset your password:</p>
-          <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
-          <p>If you didn't request this password reset, you can safely ignore this email.</p>
-          <p>Thank you,</p>
-          <p>Infoz IT Team</p>
-      </div>
-  `,
-};
+            }
+            .container-main {
+              max-width: 650px;
+              margin: 0 auto;
+              font-family: "serif", sans-serif;
+              background-color: #fafafa;
+              border-radius: 1%;
+            }
+            .content {
+              padding: 25px;
+            }
+            .footer {
+              background-color: rgb(249 115 22);
+              padding: 0.5em;
+              text-align: center;
+            }
+          </style>
+          <div class="container">
+            <div class="container-main">
+              <div class="header">
+                <img
+                  src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+                  alt="kapil_Groups_Logo"
+                  class="banner"
+                />
+              </div>
+              <hr style="margin: 0" />
+              <div class="content">
+                <h5 style="font-size: 1rem; font-weight: 500">
+                  Dear <span style="font-weight: bold">${names[i]}</span>,
+                </h5>
+                <div style="font-size: 0.8rem">
+                  <p style="line-height: 1.4">
+                    You are cordially invited to the Board Meeting on ${date}. Below are the details:
+                  </p>
+                  <p><span style="font-weight: bold">Meeting Id :</span> ${insertId}</p>
+                  <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
+                  <p>Please mark the meeting date on your calendar to ensure your attendance.</p>
+                  <p style="padding-top: 15px;">Warm regards,</p>
+                  <p>${Creatorname}</p>
+                  <p>Kapil Group</p>
+                </div>
+              </div>
+              <div class="footer">
+                <p style="color: white; font-size: 15px; margin: 0">
+                  All rights are reserved by Kapil Group
+                </p>
+              </div>
+            </div>
+          </div>
+        `,
+      };
 
-await transporter.sendMail(mailData);
-    
+      await transporter.sendMail(mailData);
+    }
+
     res.status(201).send(`${result.insertId}`);
   } catch (error) {
     console.error("Error creating Meeting:", error);
@@ -123,211 +329,171 @@ await transporter.sendMail(mailData);
 };
 
 
-// const CreateMeeting = async (req, res) => {
-//   try {
-//     let file = req.file;
-//     let data = req.body;
-//     let Query = req.query;
-
-//     // Extracting entityId and teamId from query parameters
-//     const entityId = Query?.entity ?? null;
-//     const teamId = Query?.team ?? null;
-//     const userId = Query?.user ?? null;
-
-//     // Modify data if file is present
-//     if (file) {
-//       const result = await uploadToS3(req.file);
-//       data = {
-//         image: `${result.Location}`,
-//         ...data,
-//       };
-//     }
-//     // Inserting data into the Meetings table
-//     let meetings = await db.Meeting.create(data);
-//     let insertId= meetings.dataValues.id;
-//     // res.status(201).json(meetings.dataValues.id);
-//     const createdMeeting = await db.Meeting.findOne({ where: { id:insertId } });
-//     if (createdMeeting) {
-//       if (entityId) {
-//         const entity = await Entity.findOne({ where: { id: entityId } });
-//         await createdMeeting.setEntity(entity);
-//       } else if (userId) {
-//         const user = await db.User.findOne({ where: { id: userId } });
-//         await createdMeeting.setUser(user);
-//       }
-//       else if (teamId) {
-//         const team = await Team.findOne({ where: { id: teamId } });
-//         await createdMeeting.setTeam(team);
-//       }
-//     }
-//    const member = await db.Meeting.findOne({ where: { id:insertId } });
-//    Meetmember = (member.dataValues.members)
-//    createdby = (member.dataValues.createdBy)
-  
-//    Meetmember.push(createdby)
-//    let num = Number(userId);
-//    Meetmember.push(num)
-
-//   console.log(Meetmember)
-
-
-//    let email = await db.User.findAll({
-//     attributes: ['email'],
-//     where: { id: { [Op.in]: Meetmember } },
-//     raw: true
-//   });
-
-// let emails = email.map(entry => entry.email);
-
-
-// // const mailData = {
-// //   from: 'nirajkr00024@gmail.com',
-// //   to: emails,
-// //   subject: 'Board meeting Created',
-// //   html: `
-// //       <style>
-// //           /* Add CSS styles here */
-// //           .container {
-// //               max-width: 600px;
-// //               margin: 0 auto;
-// //               padding: 20px;
-// //               font-family: Arial, sans-serif;
-// //               background-color: #f9f9f9;
-// //           }
-// //           .banner {
-// //               margin-bottom: 20px;
-// //           }
-// //           .button {
-// //               display: inline-block;
-// //               padding: 10px 20px;
-// //               background-color: #007bff;
-// //               color: #fff;
-// //               text-decoration: none;
-// //               border-radius: 5px;
-// //           }
-// //           .button:hover {
-// //               background-color: #0056b3;
-// //           }
-// //           p {
-// //               margin-bottom: 15px;
-// //           }
-// //       </style>
-// //       <div class="container">
-// //           <p>Hi there,</p>
-// //           <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-// //           <p>We received a request to reset the password for your account.</p>
-// //           <p>If this was you, please click the button below to reset your password:</p>
-// //           <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
-// //           <p>If you didn't request this password reset, you can safely ignore this email.</p>
-// //           <p>Thank you,</p>
-// //           <p>Infoz IT Team</p>
-// //       </div>
-// //   `,
-// // };
-
-// // await transporter.sendMail(mailData);
-
-
-//     res.status(201).send(`${meetings.dataValues.id}`);
-//   } catch (error) {
-//     console.error("Error creating Meeting:", error);
-//     res.status(500).send("Error creating meeting");
-//   }
-// };
-
-
-
 // const UpdateMeetings = async (req, res) => {
 //   try {
 //     const { id } = req.params;
 //     let data = req.body;
 //     let file = req.file;
+
+//     // If a file is uploaded, process it
 //     if (file) {
-//       const result = await uploadToS3(req.file);
-//       data = {
-//         image: `${result.Location}`,
-//         ...data
+//       try {
+//         const result = await uploadToS3(file);
+//         data = {
+//           image: result.Location,
+//           ...data
+//         };
+//       } catch (fileError) {
+//         console.error("Error uploading file to S3:", fileError);
+//         return res.status(500).json({ error: "File upload error" });
 //       }
 //     }
 
-//     // Define the SQL query to update the user
+//     // Define the SQL query to update the meeting
 //     const updateQuery = `UPDATE Meetings SET ? WHERE id = ?`;
 
 //     // Execute the update query
-//     mycon.query(updateQuery, [data, id], (error, updateResults) => {
+//     mycon.query(updateQuery, [data, id], async (error, updateResults) => {
 //       if (error) {
-//         console.error("Error updating User:", error);
+//         console.error("Error updating Meeting:", error);
 //         return res.status(500).json({ error: "Internal Server Error" });
 //       }
-//       res.status(201).send(`${id}`);
+
+//       // Find the updated meeting and related users
+//       try {
+//         const member = await db.Meeting.findOne({ where: { id } });
+//         if (!member) {
+//           return res.status(404).json({ error: "Meeting not found" });
+//         }
+
+//         let meetMembers = member.dataValues.members;
+//         const userId = member.dataValues.UserId;
+//         const createdBy = member.dataValues.createdBy;
+//         const num2 = Number(createdBy);
+
+//         let date = member.dataValues.date;
+
+//         let Ceatorname = await db.User.findAll({
+//           attributes: ['name'],
+//           where: { id: num2 },
+//           raw: true,
+//         });
+//         let Creatorname = Ceatorname.map(entry => entry.name);
+
+
+//         // Convert userId to a number and add to meetMembers
+//         const num = Number(userId);
+//         if (!meetMembers.includes(num)) {
+//           meetMembers.push(num);
+//         }
+        
+
+//         // Fetch emails of the members
+//         const emailResults = await db.User.findAll({
+//           attributes: ['email'],
+//           where: { id: { [Op.in]: meetMembers } },
+//           raw: true
+//         });
+
+//         let emails = emailResults.map(entry => entry.email);
+//         let names = emailResults.map(entry => entry.name);
+    
+//         // Send individual emails to each recipient
+//         for (let i = 0; i < emails.length; i++) {
+//           const mailData = {
+//             from: 'nirajkr00024@gmail.com',
+//             to: emails[i],
+//             subject: 'Board Meeting Created',
+//             html: `
+//               <style>
+//                 .container {
+//                   max-width: 700px;
+//                   margin: 0 auto;
+//                   padding: 24px 0;
+//                   font-family: "Poppins", sans-serif;
+//                   background-color: rgb(231 229 228);
+//                   border-radius: 1%;
+//                 }
+//                 .banner {
+//                   margin-bottom: 10px;
+//                   width: 90px;
+//                   height: 8vh;
+//                   margin-right: 20px;
+//                 }
+//                 .header {
+//                   display: flex;
+//                   align-items: center;
+//                   justify-content:center;
+//                   padding-top: 10px;
+//                 }
+//                 p {
+//                   margin-bottom: 15px;
+//                 }
+//                 .container-main {
+//                   max-width: 650px;
+//                   margin: 0 auto;
+//                   font-family: "serif", sans-serif;
+//                   background-color: #fafafa;
+//                   border-radius: 1%;
+//                 }
+//                 .content {
+//                   padding: 25px;
+//                 }
+//                 .footer {
+//                   background-color: rgb(249 115 22);
+//                   padding: 0.5em;
+//                   text-align: center;
+//                 }
+//               </style>
+//               <div class="container">
+//                 <div class="container-main">
+//                   <div class="header">
+//                     <img
+//                       src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+//                       alt="kapil_Groups_Logo"
+//                       class="banner"
+//                     />
+//                   </div>
+//                   <hr style="margin: 0" />
+//                   <div class="content">
+//                     <h5 style="font-size: 1rem; font-weight: 500">
+//                       Dear <span style="font-weight: bold">${names[i]}</span>,
+//                     </h5>
+//                     <div style="font-size: 0.8rem">
+//                       <p style="line-height: 1.4">
+//                         You are cordially invited to the Board Meeting on ${date}. Below are the details:
+//                       </p>
+//                       <p><span style="font-weight: bold">Meeting Id :</span> ${id}</p>
+//                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
+//                       <p>Please mark the meeting date on your calendar to ensure your attendance.</p>
+//                       <p style="padding-top: 15px;">Warm regards,</p>
+//                       <p>${Creatorname}</p>
+//                       <p>Kapil Group</p>
+//                     </div>
+//                   </div>
+//                   <div class="footer">
+//                     <p style="color: white; font-size: 15px; margin: 0">
+//                       All rights are reserved by Kapil Group
+//                     </p>
+//                   </div>
+//                 </div>
+//               </div>
+//             `,
+//           };
+    
+//           await transporter.sendMail(mailData);
+//         }
+    
+//         res.status(201).send(`${id}`);
+//       } catch (dbError) {
+//         console.error("Error fetching meeting or users:", dbError);
+//         return res.status(500).json({ error: "Internal Server Error" });
+//       }
 //     });
 //   } catch (error) {
-//     console.error("Error updating User:", error);
+//     console.error("Unexpected error:", error);
 //     res.status(500).json({ error: "Internal Server Error" });
 //   }
-  
-
-//   const member = await db.Meeting.findOne({ where: id  });
-//   Meetmember = (member.dataValues.members)
-//   userid = (member.dataValues.UserId)
-//   createdby = (member.dataValues.createdBy)
-
-
-//   let num = Number(userId);
-//   Meetmember.push(num)
-//   let email = await db.User.findAll({
-//    attributes: ['email'],
-//    where: { id: { [Op.in]: Meetmember } },
-//    raw: true
-//  });
-
-// let emails = email.map(entry => entry.email);
-// const mailData = {
-//  from: 'nirajkr00024@gmail.com',
-//  to: emails,
-//  subject: 'Board meeting updated',
-//  html: `
-//      <style>
-//          /* Add CSS styles here */
-//          .container {
-//              max-width: 600px;
-//              margin: 0 auto;
-//              padding: 20px;
-//              font-family: Arial, sans-serif;
-//              background-color: #f9f9f9;
-//          }
-//          .banner {
-//              margin-bottom: 20px;
-//          }
-//          .button {
-//              display: inline-block;
-//              padding: 10px 20px;
-//              background-color: #007bff;
-//              color: #fff;
-//              text-decoration: none;
-//              border-radius: 5px;
-//          }
-//          .button:hover {
-//              background-color: #0056b3;
-//          }
-//          p {
-//              margin-bottom: 15px;
-//          }
-//      </style>
-//      <div class="container">
-//          <p>Hi there,</p>
-//          <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-//          <p>We received a request to reset the password for your account.</p>
-//          <p>If this was you, please click the button below to reset your password:</p>
-//          <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
-//          <p>If you didn't request this password reset, you can safely ignore this email.</p>
-//          <p>Thank you,</p>
-//          <p>Infoz IT Team</p>
-//      </div>
-//  `,
-// };
-
-// await transporter.sendMail(mailData);
 // };
 
 const UpdateMeetings = async (req, res) => {
@@ -342,7 +508,7 @@ const UpdateMeetings = async (req, res) => {
         const result = await uploadToS3(file);
         data = {
           image: result.Location,
-          ...data
+          ...data,
         };
       } catch (fileError) {
         console.error("Error uploading file to S3:", fileError);
@@ -370,47 +536,127 @@ const UpdateMeetings = async (req, res) => {
         let meetMembers = member.dataValues.members;
         const userId = member.dataValues.UserId;
         const createdBy = member.dataValues.createdBy;
+        const meetingDate = member.dataValues.date;
 
-        // Convert userId to a number and add to meetMembers
-        const num = Number(userId);
-        if (!meetMembers.includes(num)) {
-          meetMembers.push(num);
+        // Convert userId and createdBy to numbers
+        const numUserId = Number(userId);
+        const numCreatedBy = Number(createdBy);
+
+        // Add userId to meetMembers if not already present
+        if (!meetMembers.includes(numUserId)) {
+          meetMembers.push(numUserId);
         }
 
-        // Fetch emails of the members
+        // Fetch creator's name
+        const creator = await db.User.findOne({
+          attributes: ['name'],
+          where: { id: numCreatedBy },
+          raw: true,
+        });
+
+        if (!creator) {
+          return res.status(404).json({ error: "Creator not found" });
+        }
+
+        const creatorName = creator.name;
+
+        // Fetch emails and names of the members
         const emailResults = await db.User.findAll({
-          attributes: ['email'],
+          attributes: ['email', 'name'],
           where: { id: { [Op.in]: meetMembers } },
-          raw: true
+          raw: true,
         });
 
         const emails = emailResults.map(entry => entry.email);
-        const mailData = {
-          from: 'nirajkr00024@gmail.com',
-          to: emails,
-          subject: 'Board meeting updated',
-          html: `
-            <style>
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9; }
-              .banner { margin-bottom: 20px; }
-              .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
-              .button:hover { background-color: #0056b3; }
-              p { margin-bottom: 15px; }
-            </style>
-            <div class="container">
-              <p>Hi there,</p>
-              <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-              <p>The board meeting has been updated. Please check the details on the platform.</p>
-              <p>If you have any questions, please contact us.</p>
-              <p>Thank you,</p>
-              <p>Infoz IT Team</p>
-            </div>
-          `,
-        };
+        const names = emailResults.map(entry => entry.name);
 
-        await transporter.sendMail(mailData);
+        // Send individual emails to each recipient
+        for (let i = 0; i < emails.length; i++) {
+          const mailData = {
+            from: 'nirajkr00024@gmail.com',
+            to: emails[i],
+            subject: 'Board Meeting Update',
+            html: `
+              <style>
+                .container {
+                  max-width: 700px;
+                  margin: 0 auto;
+                  padding: 24px 0;
+                  font-family: "Poppins", sans-serif;
+                  background-color: rgb(231 229 228);
+                  border-radius: 1%;
+                }
+                .banner {
+                  margin-bottom: 10px;
+                  width: 90px;
+                  height: 8vh;
+                  margin-right: 20px;
+                }
+                .header {
+                  display: flex;
+                  align-items: center;
+                  justify-content:center;
+                  padding-top: 10px;
+                }
+                p {
+                  margin-bottom: 15px;
+                }
+                .container-main {
+                  max-width: 650px;
+                  margin: 0 auto;
+                  font-family: "serif", sans-serif;
+                  background-color: #fafafa;
+                  border-radius: 1%;
+                }
+                .content {
+                  padding: 25px;
+                }
+                .footer {
+                  background-color: rgb(249 115 22);
+                  padding: 0.5em;
+                  text-align: center;
+                }
+              </style>
+              <div class="container">
+                <div class="container-main">
+                  <div class="header">
+                    <img
+                      src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+                      alt="kapil_Groups_Logo"
+                      class="banner"
+                    />
+                  </div>
+                  <hr style="margin: 0" />
+                  <div class="content">
+                    <h5 style="font-size: 1rem; font-weight: 500">
+                      Dear <span style="font-weight: bold">${names[i]}</span>,
+                    </h5>
+                    <div style="font-size: 0.8rem">
+                      <p style="line-height: 1.4">
+                        We regret to inform you that the Board Meeting on ${meetingDate} has been rescheduled. Below are the updated details:
+                      </p>
+                      <p><span style="font-weight: bold">Meeting Id :</span> ${id}</p>
+                      <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
+                      <p>Kindly update your calendar to reflect the new meeting date.</p>
+              <p>Thank you for your understanding.</p>
+              <p style="padding-top: 10px;">Warm regards,</p>
+                      <p>${creatorName}</p>
+                      <p>Kapil Group</p>
+                    </div>
+                  </div>
+                  <div class="footer">
+                    <p style="color: white; font-size: 15px; margin: 0">
+                      All rights are reserved by Kapil Group
+                    </p>
+                  </div>
+                </div>
+              </div>
+            `,
+          };
 
-        // Send a response indicating success
+          await transporter.sendMail(mailData);
+        }
+
         res.status(201).send(`${id}`);
       } catch (dbError) {
         console.error("Error fetching meeting or users:", dbError);
@@ -438,169 +684,6 @@ const DeleteMeeting = async (req, res) => {
   }
 };
 
-// const ListUserGroup = async (req, res) => {
-//   try {
-//     var users = await db.Meeting.findAll({
-//       attributes: ['members','UserId'],
-//       where: {
-//         id: req.params.id
-//       },
-//       raw: true
-//     });
-//     const extractedIds = users.flatMap(entry => entry.members.map(member => member.id));
-//     const userId = users.map(item => parseInt(item.UserId))
-//     const uniqIds = [...new Set(extractedIds)];
-//     const members = await db.User.findAll({
-//       attributes: ['id', 'image', 'name','email','EntityId'],
-//       where: {
-//         id: { [Op.in]: uniqIds }
-//       },
-//     });
-//     const self = await db.User.findAll({
-//       attributes: ['id', 'image', 'name','email','EntityId'],
-//       where: {
-//         id: { [Op.in]: userId }
-//       },
-//     });
-    
-//     let combinedUsers = [...self, ...members];
-
-//     let uniqueUsers = new Map();
-//     combinedUsers.forEach(user => {
-//       uniqueUsers.set(user.id, user);
-//     });
-
-//     // Convert map values (unique user objects) back to an array
-//     combinedUsers = Array.from(uniqueUsers.values());
-
-
-//     res.status(200).json(combinedUsers); // Send users as JSON response      
-  
-
-//   } catch (error) {
-//     console.error('Error: ' + error);
-//     res.status(500).send('Error processing request');
-//   }
-// };
-// const ListTeamGroup = async (req, res) => {
-//   try {
-//     let users = await db.Meeting.findAll({
-//       attributes: ['members','TeamId'],
-//       where: {
-//         id: req.params.id
-//       },
-//       raw: true
-//     });
-//     const extractedIds = users.flatMap(entry => entry.members.map(member => member.id));
-//     let TeamId = users.map(item => parseInt(item.TeamId))
-
-//     const membersForMeeting = await db.User.findAll({
-//       attributes: ['id', 'image', 'name','email','EntityId'],
-//       where: {
-//         id: { [Op.in]: extractedIds }
-//       },
-//     });
-//     const TeamMemberid = await db.Team.findAll({
-//       attributes: ['members'],
-//       where: {
-//         id: TeamId }
-//     });
-//     const membersForTeam = await db.User.findAll({
-//       attributes: ['id', 'image', 'name','email','EntityId'],
-//       where: {
-//         id: { [Op.in]: TeamMemberid }
-//       },
-//     });
-    
-//     let combinedUsers = [...membersForTeam, ...membersForMeeting];
-
-//     let uniqueUsers = new Map();
-//     combinedUsers.forEach(user => {
-//       uniqueUsers.set(user.id, user);
-//     });
-
-//     // Convert map values (unique user objects) back to an array
-//     combinedUsers = Array.from(uniqueUsers.values());
-
-
-//     res.status(200).json(combinedUsers); // Send users as JSON response      
-  
-
-//   } catch (error) {
-//     console.error('Error: ' + error);
-//     res.status(500).send('Error processing request');
-//   }
-// };
-
-// const GetById = async (req, res) => {
-//   try {
-//     const meetings = await Meet.findOne({
-//       where: { id: req.params.id },
-//       // truncate: true
-//     });
-
-//     res.status(200).json(meetings);
-//   } catch (error) {
-//     console.error("Error deleting:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
-
-// const GetById = async (req, res) => {
-//   try {
-//     // Step 1: Fetch the meeting by its ID
-//     const meeting = await Meet.findOne({
-//       where: { id: req.params.id },
-//     });
-
-//     // Check if meeting exists
-//     if (!meeting) {
-//       return res.status(404).json({ error: 'Meeting not found' });
-//     }
-
-//     // Step 2: Extract the user IDs from the members column
-//     let members = meeting.members;
-
-//     // console.log("members", members); // Log members object to inspect its structure
-
-//     // Step 3: Check if members is an array and extract IDs
-//     // const memberIds = Array.isArray(members) ? members : [];
-//     const memberIds = Array.isArray(members) ? members : [];
-
-
-//     // console.log("memberIds:", memberIds); // Log memberIds to verify the IDs
-
-//     // Step 4: If no member IDs found, return the meeting with empty members array
-//     if (memberIds.length === 0) {
-//       const updatedMeeting = {
-//         ...meeting.toJSON(),
-//         members: [],
-//       };
-//       return res.status(200).json(updatedMeeting);
-//     }
-
-//     // Step 5: Query the User table to get the details of these users
-//     const users = await db.User.findAll({
-//       attributes: ['id', 'image', 'name', 'email', 'EntityId'],
-//       where: {
-//         id: {
-//           [Op.in]: memberIds,
-//         },
-//       },
-//       logging: console.log, // Enable logging to inspect the query
-//     });
-
-//     const updatedMeeting = {
-//       ...meeting.toJSON(),
-//       members: users,
-//     };
-
-//     res.status(200).json(updatedMeeting);
-//   } catch (error) {
-//     console.error('Error fetching meeting details:', error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// };
 
 const GetById = async (req, res) => {
   try {
