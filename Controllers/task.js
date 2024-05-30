@@ -1164,6 +1164,8 @@ const SubTaskUpdate = async (req, res) =>{
 try {
   const updateData = req.body;
   let file = req.file;
+  const { userId} = req.user;
+
 
   if (file) {
     const result = await uploadToS3(req.file)
@@ -1217,8 +1219,6 @@ try {
         raw: true,
       });
       let Creatorname = Ceatorname.map(entry => entry.name);
-
-      
       const names = emailResults.map(entry => entry.name);
 
       // Send individual emails to each recipient
@@ -1226,7 +1226,7 @@ try {
         const mailData = {
           from: 'nirajkr00024@gmail.com',
           to: emails[i],
-          subject: 'Task Created',
+          subject: 'Sub Task Created',
           html: `
          
           <style>

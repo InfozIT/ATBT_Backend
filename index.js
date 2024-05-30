@@ -243,6 +243,83 @@ const task = new cron.CronJob('0 10 * * *', function() {
 task.start();
 
 
+// const task2 = new cron.CronJob('0 10 * * *', function() {
+//   mycon.query('SELECT * FROM Meetings', (err, result) => {
+//     if (err) {
+//       console.error('Error retrieving data: ' + err.stack);
+//       // Handle the error here
+//       return;
+//     }
+
+//     // Get the dates that are less than 24 hours away
+//     const dateless = result.filter(entry => isLessThan24HoursAway(entry.date)).map(entry => entry.date);
+
+//     if (dateless.length > 0) {
+//       // Perform the query with the filtered dates
+//       mycon.query('SELECT members, createdBy FROM Meetings WHERE date IN (?)', [dateless], (err, result) => {
+//         if (err) {
+//           console.error('Error retrieving data: ' + err.stack);
+//           return;
+//         }
+        
+//         // Collect members and createdBy values
+//         let meetMembers = [];
+//         result.forEach(entry => {
+//           if (Array.isArray(entry.members)) {
+//             meetMembers = meetMembers.concat(entry.members);
+//           }
+//           const createdByNum = Number(entry.createdBy);
+//           if (!Number.isNaN(createdByNum)) {
+//             meetMembers.push(createdByNum);
+//           }
+//         });
+
+//         // Remove duplicates
+//         const uniqueIds = [...new Set(meetMembers)];
+
+//         // Query Users table with the collected IDs
+//         mycon.query('SELECT email FROM Users WHERE id IN (?)', [uniqueIds], (err, result) => {
+//           if (err) {
+//             console.error('Error retrieving data: ' + err.stack);
+//             return;
+//           }
+//           const emails = result.map(entry => entry.email);
+//           const mailData = {
+//             from: 'nirajkr00024@gmail.com',
+//             to: emails,
+//             subject: 'Board meeting Remainder',
+//             html: `
+//               <style>
+//                 .container { max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9; }
+//                 .banner { margin-bottom: 20px; }
+//                 .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
+//                 .button:hover { background-color: #0056b3; }
+//                 p { margin-bottom: 15px; }
+//               </style>
+//               <div class="container">
+//                 <p>Hi there,</p>
+//                 <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
+//                 <p>The board meeting has been updated. Please check the details on the platform.</p>
+//                 <p>If you have any questions, please contact us.</p>
+//                 <p>Thank you,</p>
+//                 <p>Infoz IT Team</p>
+//               </div>
+//             `,
+//           };
+  
+//         transporter.sendMail(mailData);
+//         });
+//       });
+//     } else {
+//       console.log('No dates less than 24 hours away');
+//     }
+//   });
+// });
+
+// Start the cron job
+task2.start();
+
+
 
 
 
