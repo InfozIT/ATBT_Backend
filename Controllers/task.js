@@ -823,6 +823,17 @@ const GetTaskbyId = async (req, res) => {
       senderImage: userMap[parseInt(comment.senderId)] ? userMap[parseInt(comment.senderId)].senderImage : null
     }));
 
+    // Fetch user details based on userIds
+    // Extract member IDs from the meeting
+    const collaborators = task.collaborators;
+
+    // Fetch user details for the members
+    let collaboratorsusers = await db.User.findAll({
+      attributes: ['id', 'name', 'email', 'image', 'entityname'],
+      where: { id: { [Op.in]: collaborators } },
+      raw: true
+    });
+
     
 
     // Prepare the response data
@@ -835,7 +846,7 @@ const GetTaskbyId = async (req, res) => {
       meetingnumber: meeting ? meeting.meetingnumber : null,
       priority: task.priority || null, // Use task priority or null if undefined
       members: task.members,
-      collaborators: "",
+      collaborators: collaboratorsusers,
       dueDate: task.dueDate,
       status: task.status,
       createdAt: task.createdAt,

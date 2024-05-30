@@ -814,67 +814,67 @@ const GetById = async (req, res) => {
 //   });
 // };
 
-const ListMeetings = async (req, res) => {
-  const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
-  const filters = {};
-  for (const key in restQueries) {
-    filters[key] = restQueries[key];
-  }
-  const offset = (parseInt(page) - 1) * parseInt(pageSize);
+// const ListMeetings = async (req, res) => {
+//   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+//   const filters = {};
+//   for (const key in restQueries) {
+//     filters[key] = restQueries[key];
+//   }
+//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-  // MySQL query to fetch paginated meetings
-  let sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
+//   // MySQL query to fetch paginated meetings
+//   let sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
 
-  // Add conditions for additional filter fields
-  for (const [field, value] of Object.entries(filters)) {
-    if (value !== '') {
-      sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-    }
-  }
+//   // Add conditions for additional filter fields
+//   for (const [field, value] of Object.entries(filters)) {
+//     if (value !== '') {
+//       sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+//     }
+//   }
 
-  // Add LIMIT and OFFSET clauses to the SQL query
-  sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+//   // Add LIMIT and OFFSET clauses to the SQL query
+//   sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
 
-  mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
-    if (err) {
-      console.error('Error executing MySQL query: ' + err.stack);
-      res.status(500).json({ error: 'Internal server error' });
-      return;
-    }
+//   mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
+//     if (err) {
+//       console.error('Error executing MySQL query: ' + err.stack);
+//       res.status(500).json({ error: 'Internal server error' });
+//       return;
+//     }
 
-    // Execute the count query to get the total number of meetings
-    let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
+//     // Execute the count query to get the total number of meetings
+//     let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
 
-    // Add conditions for additional filter fields
-    for (const [field, value] of Object.entries(filters)) {
-      if (value !== '') {
-        sqlCount += ` AND ${field} LIKE '%${value}%'`;
-      }
-    }
+//     // Add conditions for additional filter fields
+//     for (const [field, value] of Object.entries(filters)) {
+//       if (value !== '') {
+//         sqlCount += ` AND ${field} LIKE '%${value}%'`;
+//       }
+//     }
 
-    mycon.query(sqlCount, (err, countResult) => {
-      if (err) {
-        console.error('Error executing MySQL count query: ' + err.stack);
-        res.status(500).json({ error: 'Internal server error' });
-        return;
-      }
+//     mycon.query(sqlCount, (err, countResult) => {
+//       if (err) {
+//         console.error('Error executing MySQL count query: ' + err.stack);
+//         res.status(500).json({ error: 'Internal server error' });
+//         return;
+//       }
 
-      const totalMeetings = countResult[0].total;
-      const totalPages = Math.ceil(totalMeetings / pageSize);
+//       const totalMeetings = countResult[0].total;
+//       const totalPages = Math.ceil(totalMeetings / pageSize);
 
-      res.json({
-        Meetings: result,
-        totalPages: parseInt(totalPages),
-        currentPage: parseInt(page),
-        pageSize: parseInt(pageSize),
-        totalMeetings: parseInt(totalMeetings),
-        startMeeting: parseInt(offset) + 1, // Correct the start meeting index
-        endMeeting: parseInt(offset) + parseInt(pageSize), // Correct the end meeting index
-        search
-      });
-    });
-  });
-};
+//       res.json({
+//         Meetings: result,
+//         totalPages: parseInt(totalPages),
+//         currentPage: parseInt(page),
+//         pageSize: parseInt(pageSize),
+//         totalMeetings: parseInt(totalMeetings),
+//         startMeeting: parseInt(offset) + 1, // Correct the start meeting index
+//         endMeeting: parseInt(offset) + parseInt(pageSize), // Correct the end meeting index
+//         search
+//       });
+//     });
+//   });
+// };
 
 
 //revarted
@@ -1062,10 +1062,9 @@ const ListMeetings = async (req, res) => {
 // };
 
 
-const GetMeeting = async (req, res) => {
-  // console.log(req.query.user, "I am from Quarry");
 
-  
+const GetMeeting = async (req, res) => {
+  console.log(req.query.user, "I am from Quarry");
 
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -1074,34 +1073,19 @@ const GetMeeting = async (req, res) => {
     const searchQuery = req.query.search || '';
     const entityId = req.query.entity;
     const teamId = req.query.team;
-    const userIdd = req.query.user;
-    const userId = req.user.userId;
-    console.log("userId", userId)
+    const userId = req.query.user;
+
     const options = {
       offset: (page - 1) * pageSize,
       limit: pageSize,
-      order: sortBy === 'meetingnumber' ? [['meetingnumber']] : sortBy === 'description' ? [['description']] : [[sortBy]],
+      order: [[sortBy]],
       where: {
         [Op.or]: [
           { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
           { description: { [Op.like]: `%${searchQuery}%` } },
-          // Add more conditions based on your model's attributes
         ],
       },
     };
-
-    // Modify the search condition based on meetingnumber
-    if (searchQuery) {
-      const meetingNumberSearch = { meetingnumber: { [Op.like]: `%${searchQuery}%` } };
-      options.where = {
-        [Op.and]: [
-          options.where,
-          { [Op.or]: [meetingNumberSearch, { description: { [Op.like]: `%${searchQuery}%` } }] }
-        ]
-      };
-    }
-
-    
 
     if (entityId) {
       options.where.EntityId = entityId;
@@ -1109,33 +1093,29 @@ const GetMeeting = async (req, res) => {
     if (teamId) {
       options.where.TeamId = teamId;
     }
-    
-    
-    options.where.createdBy = userId;
-  
-    const memebers = db.sequelize.where(
-      db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('members'), JSON.stringify(userId)),
-      true
-    );
-    options.where = {
-      memebers
-    };
-    
-    
+    if (userId) {
+      options.where.UserId = userId;
+    }
+
+    if (req.meetingmembers) {
+      const meetingMembersIds = req.meetingmembers.map(meet => meet.id);
+      console.log("Authorized Task IDs:", meetingMembersIds);
+      options.where.id = { [Op.in]: meetingMembersIds };
+    } else {
+      console.log("No authorized tasks found in req.tasks");
+      return res.status(403).json({ error: 'Unauthorized access to tasks' });
+    }
 
     const { count, rows: Meetings } = await db.Meeting.findAndCountAll(options);
 
-    // Calculate the range of meetings being displayed
     const startMeeting = (page - 1) * pageSize + 1;
     const endMeeting = Math.min(page * pageSize, count);
-
     const totalPages = Math.ceil(count / pageSize);
 
-    // Get task counts for each meeting
     for (let meeting of Meetings) {
       const [totalTaskCount, overDueCount, completedCount, inProgressCount, toDoCount] = await Promise.all([
         db.Task.count({ where: { meetingId: meeting.id } }),
-        db.Task.count({ where: { meetingId: meeting.id, stat: 'Over-Due' } }),
+        db.Task.count({ where: { meetingId: meeting.id, status: 'Over-Due' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'Completed' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'In-Progress' } }),
         db.Task.count({ where: { meetingId: meeting.id, status: 'To-Do' } })
@@ -1151,13 +1131,13 @@ const GetMeeting = async (req, res) => {
     }
 
     res.status(200).json({
-      Meetings: Meetings,
+      Meetings,
       totalMeetings: count,
-      totalPages: totalPages,
+      totalPages,
       currentPage: page,
-      pageSize: pageSize,
-      startMeeting: startMeeting,
-      endMeeting: endMeeting,
+      pageSize,
+      startMeeting,
+      endMeeting,
       search: searchQuery
     });
   } catch (error) {
@@ -1169,6 +1149,119 @@ const GetMeeting = async (req, res) => {
 
 
 
+// const GetMeeting = async (req, res) => {
+//   // console.log(req.query.user, "I am from Quarry");
+
+//   try {
+//     const page = parseInt(req.query.page, 10) || 1;
+//     const pageSize = parseInt(req.query.pageSize, 10) || 10;
+//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+//     const searchQuery = req.query.search || '';
+//     const entityId = req.query.entity;
+//     const teamId = req.query.team;
+//     const userIdd = req.query.user;
+//     const userId = req.user.userId;
+//     console.log("userId", userId)
+//     const options = {
+//       offset: (page - 1) * pageSize,
+//       limit: pageSize,
+//       order: sortBy === 'meetingnumber' ? [['meetingnumber']] : sortBy === 'description' ? [['description']] : [[sortBy]],
+//       where: {
+//         [Op.or]: [
+//           { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+//           { description: { [Op.like]: `%${searchQuery}%` } },
+          
+//           // Add more conditions based on your model's attributes
+//         ],
+//       },
+//     };
+
+//     // Modify the search condition based on meetingnumber
+//     if (searchQuery) {
+//       const meetingNumberSearch = { meetingnumber: { [Op.like]: `%${searchQuery}%` } };
+//       options.where = {
+//         [Op.and]: [
+//           options.where,
+//           { [Op.or]: [meetingNumberSearch, { description: { [Op.like]: `%${searchQuery}%` } }] }
+//         ] 
+//       };
+//     }
+
+//     if (entityId) {
+//       options.where.EntityId = entityId;
+//     }
+//     if (teamId) {
+//       options.where.TeamId = teamId;
+//     }
+    
+    
+  
+//     const members = db.sequelize.where(
+//       db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('members'), JSON.stringify(userId)),
+//       true
+//     );
+    
+    
+//     // where.createdBy = userId;
+//     // where.UserId = userId;
+    
+
+    
+//     const createdBycondition = { createdBy: userId}
+    
+
+//     const { count, rows: Meetings } = await db.Meeting.findAndCountAll({
+//       where: { ...createdBycondition },
+//       ...options,
+//       ...members
+//     });
+
+    
+
+//     // Calculate the range of meetings being displayed
+//     const startMeeting = (page - 1) * pageSize + 1;
+//     const endMeeting = Math.min(page * pageSize, count);
+
+//     const totalPages = Math.ceil(count / pageSize);
+
+//     // Get task counts for each meeting
+//     for (let meeting of Meetings) {
+//       const [totalTaskCount, overDueCount, completedCount, inProgressCount, toDoCount] = await Promise.all([
+//         db.Task.count({ where: { meetingId: meeting.id } }),
+//         db.Task.count({ where: { meetingId: meeting.id, stat: 'Over-Due' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'Completed' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'In-Progress' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'To-Do' } })
+//       ]);
+
+//       meeting.setDataValue('taskCounts', {
+//         totalTaskCount,
+//         overDueCount,
+//         completedCount,
+//         inProgressCount,
+//         toDoCount
+//       });
+//     }
+
+//     res.status(200).json({
+//       Meetings: Meetings,
+//       totalMeetings: count,
+//       totalPages: totalPages,
+//       currentPage: page,
+//       pageSize: pageSize,
+//       startMeeting: startMeeting,
+//       endMeeting: endMeeting,
+//       search: searchQuery
+//     });
+//   } catch (error) {
+//     console.error("Error fetching Meetings:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
+
+
+
 
 
 
@@ -1176,7 +1269,7 @@ const GetMeeting = async (req, res) => {
 
 module.exports = {
   CreateMeeting,
-  ListMeetings,
+  // ListMeetings,
   GetMeeting,
   UpdateMeetings,
   DeleteMeeting,
