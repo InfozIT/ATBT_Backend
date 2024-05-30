@@ -47,65 +47,112 @@ const CreateTeam = async (req, res) => {
       const member = await db.Team.findOne({ where: { id:insertId } });
       Meetmember = (member.dataValues.members)
       createdby = (member.dataValues.createdBy)
+
       let num1 = Number(createdby);
+      let Ceatorname = await db.User.findAll({
+        attributes: ['name'],
+        where: { id: num1 },
+        raw: true,
+      });
+      let Creatorname = Ceatorname.map(entry => entry.name);
       Meetmember.push(num1)
+      let TeamName = (member.dataValues.name)
+
 
       let email = await db.User.findAll({
-       attributes: ['email'],
+       attributes: ['email','name'],
        where: { id: { [Op.in]: Meetmember } },
        raw: true
      });
    
      let emails = email.map(entry => entry.email);
-        
-   
-      const mailData = {
+     let Names = email.map(entry => entry.name);
+     console.log(Names)
+
+     for (let i = 0; i < emails.length; i++) {
+    const mailData = {
         from: 'nirajkr00024@gmail.com',
-        to: emails,
-        subject: 'Board meeting Created',
+        to: emails[i],
+        subject: 'Team Created',
         html: `
-            <style>
-                /* Add CSS styles here */
-                .container {
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                    font-family: Arial, sans-serif;
-                    background-color: #f9f9f9;
-                }
-                .banner {
-                    margin-bottom: 20px;
-                }
-                .button {
-                    display: inline-block;
-                    padding: 10px 20px;
-                    background-color: #007bff;
-                    color: #fff;
-                    text-decoration: none;
-                    border-radius: 5px;
-                }
-                .button:hover {
-                    background-color: #0056b3;
-                }
-                p {
-                    margin-bottom: 15px;
-                }
-            </style>
-            <div class="container">
-                <p>Hi there,</p>
-                <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-                <p>We received a request to reset the password for your account.</p>
-                <p>If this was you, please click the button below to reset your password:</p>
-                <a href="https://www.betaatbt.infozit.com/changepassword/" class="button"  style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
-                <p>If you didn't request this password reset, you can safely ignore this email.</p>
-                <p>Thank you,</p>
-                <p>Infoz IT Team</p>
+          <style>
+            .container {
+              max-width: 700px;
+              margin: 0 auto;
+              padding: 24px 0;
+              font-family: "Poppins", sans-serif;
+              background-color: rgb(231 229 228);
+              border-radius: 1%;
+            }
+            .banner {
+              margin-bottom: 10px;
+              width: 90px;
+              height: 8vh;
+              margin-right: 20px;
+            }
+            .header {
+              display: flex;
+              align-items: center;
+              justify-content:center;
+              padding-top: 10px;
+            }
+            p {
+              margin-bottom: 15px;
+            }
+            .container-main {
+              max-width: 650px;
+              margin: 0 auto;
+              font-family: "serif", sans-serif;
+              background-color: #fafafa;
+              border-radius: 1%;
+            }
+            .content {
+              padding: 25px;
+            }
+            .footer {
+              background-color: rgb(249 115 22);
+              padding: 0.5em;
+              text-align: center;
+            }
+          </style>
+          <div class="container">
+            <div class="container-main">
+              <div class="header">
+                <img
+                  src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+                  alt="kapil_Groups_Logo"
+                  class="banner"
+                />
+              </div>
+              <hr style="margin: 0" />
+              <div class="content">
+                <h5 style="font-size: 1rem; font-weight: 500">
+                  Dear <span style="font-weight: bold">${Names[i]}</span>,
+                </h5>
+                <div style="font-size: 0.8rem">
+                  <p style="line-height: 1.4">
+                  We're excited to extend an invitation for you to join ${TeamName}. Here are the team members:
+                   
+                  </p>
+                  <p> ${Names.join(', ')}</p>
+     
+                  <p style="padding-top: 15px;">Warm regards,</p>
+                  <p>${Creatorname}</p>
+                  <p>Kapil Group</p>
+                </div>
+              </div>
+              <div class="footer">
+                <p style="color: white; font-size: 15px; margin: 0">
+                  All rights are reserved by Kapil Group
+                </p>
+              </div>
             </div>
+          </div>
         `,
       };
-      
-      await transporter.sendMail(mailData);
 
+      await transporter.sendMail(mailData);
+    }
     });
   } catch (error) {
     console.error("Error creating Entity:", error);
