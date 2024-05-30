@@ -633,7 +633,7 @@ const UpdateMeetings = async (req, res) => {
                     </h5>
                     <div style="font-size: 0.8rem">
                       <p style="line-height: 1.4">
-                        We regret to inform you that the Board Meeting on ${meetingDate} has been rescheduled. Below are the updated details:
+                        We regret to inform you that the Board Meeting on ${meetingDate} have been updated. Below are the updated details:
                       </p>
                       <p><span style="font-weight: bold">Meeting Id :</span> ${id}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
