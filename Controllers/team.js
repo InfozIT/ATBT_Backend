@@ -442,7 +442,7 @@ const UpdateTeam = async (req, res) => {
       await transporter.sendMail(mailData);
     }
 
-    res.status(200).json({ message: 'Team updated successfully' });
+    res.status(201).json({ message: 'Team updated successfully' });
   } catch (error) {
     console.error('Error updating Teams:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -684,7 +684,7 @@ const getTeamDataById = async (req, res) => {
         members: users,
       };
   
-      res.status(200).json(updatedTeam);
+      res.status(201).json(updatedTeam);
     } catch (error) {
       console.error('Error fetching meeting details:', error);
       res.status(500).json({ error: 'Internal Server Error' });
