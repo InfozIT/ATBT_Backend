@@ -253,7 +253,7 @@ const authorizeTaskAccess = async (req, res, next) => {
     //     return next();
     //   }
 
-    if (loggedInUser && loggedInUser.role === 7) {
+    if (loggedInUser && loggedInUser.RoleId === 7) {
         // If the user is super admin, fetch all tasks and meetings without filtering
         const allTasks = await db.Task.findAll();
         const allMeetings = await db.Meeting.findAll();
