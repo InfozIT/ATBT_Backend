@@ -442,7 +442,7 @@ const UpdateTeam = async (req, res) => {
       await transporter.sendMail(mailData);
     }
 
-    res.status(201).json({ message: 'Team updated successfully' });
+    res.status(201).send(id);
   } catch (error) {
     console.error('Error updating Teams:', error);
     res.status(500).json({ error: 'Internal Server Error' });
