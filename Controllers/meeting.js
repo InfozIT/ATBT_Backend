@@ -538,6 +538,8 @@ const UpdateMeetings = async (req, res) => {
         const userId = member.dataValues.UserId;
         const createdBy = member.dataValues.createdBy;
         const meetingDate = member.dataValues.date;
+        let BMno = member.dataValues.meetingnumber;
+
 
         // Convert userId and createdBy to numbers
         const numUserId = Number(userId);
@@ -636,7 +638,7 @@ const UpdateMeetings = async (req, res) => {
                       <p style="line-height: 1.4">
                         We regret to inform you that the Board Meeting on ${meetingDate} have been updated. Below are the updated details:
                       </p>
-                      <p><span style="font-weight: bold">Meeting Id :</span> ${id}</p>
+                      <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
                       <p>Kindly update your calendar to reflect the new meeting date.</p>
               <p>Thank you for your understanding.</p>
