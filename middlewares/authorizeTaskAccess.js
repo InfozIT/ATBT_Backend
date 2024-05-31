@@ -238,6 +238,8 @@ const authVerify = require('./authVerify.middleware');
 
 
 
+// working code
+
 const authorizeTaskAccess = async (req, res, next) => {
     try {
       const userId = req.user.userId;
@@ -246,8 +248,20 @@ const authorizeTaskAccess = async (req, res, next) => {
   
       const loggedInUser = await db.User.findOne({ where: { id: userId } });
   
-      if (loggedInUser && loggedInUser.role === 7) {
-        // If the user is super admin, skip filtering and proceed
+    //   if (loggedInUser && loggedInUser.role === 7) {
+    //     // If the user is super admin, skip filtering and proceed
+    //     return next();
+    //   }
+
+    if (loggedInUser && loggedInUser.role === 7) {
+        // If the user is super admin, fetch all tasks and meetings without filtering
+        const allTasks = await db.Task.findAll();
+        const allMeetings = await db.Meeting.findAll();
+  
+        req.tasks = allTasks;
+        req.meetingmembers = allMeetings;
+  
+        console.log("Super admin access granted to all tasks and meetings.");
         return next();
       }
   
@@ -267,6 +281,23 @@ const authorizeTaskAccess = async (req, res, next) => {
           ]
         }
       });
+
+    //   // For sub tasks
+    //   const stcollaboratorCondition = db.sequelize.where(
+    //     db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(userId)),
+    //     true
+    //   );
+  
+    //   // Fetch tasks where the user is a collaborator, a member, or the creator
+    //   const subtasks = await db.Task.findAll({
+    //     where: {
+    //       [Op.or]: [
+    //         stcollaboratorCondition,
+    //         { members: userId },
+    //         { createdby: userId }
+    //       ]
+    //     }
+    //   });
   
       // Fetch all meetings
       const allMeetings = await db.Meeting.findAll();
@@ -322,6 +353,7 @@ const authorizeTaskAccess = async (req, res, next) => {
       const finalAuthorizedMeetings = [...new Set([...authorizedMeetings, ...authorizedEntityMeetings])];
   
       req.tasks = tasks;
+    //   req.subtasks = subtasks;
       req.meetingmembers = finalAuthorizedMeetings;
   
       console.log("Authorized Meetings:", finalAuthorizedMeetings.map(m => m.id));
@@ -332,8 +364,9 @@ const authorizeTaskAccess = async (req, res, next) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   };
-  
-  
+
+
+
 
   
   
