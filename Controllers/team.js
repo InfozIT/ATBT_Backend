@@ -160,6 +160,150 @@ const CreateTeam = async (req, res) => {
   }
 };
 
+// const UpdateTeam = async (req, res) => {
+//   try {
+//     let { id } = req.params;
+//     let data = req.body;
+//     let file = req.file;
+//     let image;
+
+//     // Handle file upload
+//     if (file) {
+//       const result = await uploadToS3(file);
+//       image = `${result.Location}`;
+//       data.image = image;
+//     }
+
+//     // Define the SQL query to update the Teams
+//     const updateQuery = `UPDATE Teams SET ? WHERE id = ?`;
+
+//     // Execute the update query
+//     mycon.query(updateQuery, [data, id], (error, updateResults) => {
+//       if (error) {
+//         console.error("Error updating Teams:", error);
+//         return res.status(500).json({ error: "Internal Server Error" });
+//       }
+
+//       const member = await db.Team.findOne({ where: { id:insertId } });
+//       Meetmember = (member.dataValues.members)
+//       createdby = (member.dataValues.createdBy)
+
+//       let num1 = Number(createdby);
+//       let Ceatorname = await db.User.findAll({
+//         attributes: ['name'],
+//         where: { id: num1 },
+//         raw: true,
+//       });
+//       let Creatorname = Ceatorname.map(entry => entry.name);
+//       Meetmember.push(num1)
+//       let TeamName = (member.dataValues.name)
+
+
+//       let email = await db.User.findAll({
+//        attributes: ['email','name'],
+//        where: { id: { [Op.in]: Meetmember } },
+//        raw: true
+//      });
+   
+//      let emails = email.map(entry => entry.email);
+//      let Names = email.map(entry => entry.name);
+//      console.log(Names)
+
+//      for (let i = 0; i < emails.length; i++) {
+//     const mailData = {
+//         from: 'nirajkr00024@gmail.com',
+//         to: emails[i],
+//         subject: 'Team Created',
+//         html: `
+//           <style>
+//             .container {
+//               max-width: 700px;
+//               margin: 0 auto;
+//               padding: 24px 0;
+//               font-family: "Poppins", sans-serif;
+//               background-color: rgb(231 229 228);
+//               border-radius: 1%;
+//             }
+//             .banner {
+//               margin-bottom: 10px;
+//               width: 90px;
+//               height: 8vh;
+//               margin-right: 20px;
+//             }
+//             .header {
+//               display: flex;
+//               align-items: center;
+//               justify-content:center;
+//               padding-top: 10px;
+//             }
+//             p {
+//               margin-bottom: 15px;
+//             }
+//             .container-main {
+//               max-width: 650px;
+//               margin: 0 auto;
+//               font-family: "serif", sans-serif;
+//               background-color: #fafafa;
+//               border-radius: 1%;
+//             }
+//             .content {
+//               padding: 25px;
+//             }
+//             .footer {
+//               background-color: rgb(249 115 22);
+//               padding: 0.5em;
+//               text-align: center;
+//             }
+//           </style>
+//           <div class="container">
+//             <div class="container-main">
+//               <div class="header">
+//                 <img
+//                   src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+//                   alt="kapil_Groups_Logo"
+//                   class="banner"
+//                 />
+//               </div>
+//               <hr style="margin: 0" />
+//               <div class="content">
+//                 <h5 style="font-size: 1rem; font-weight: 500">
+//                   Dear <span style="font-weight: bold">${Names[i]}</span>,
+//                 </h5>
+//                 <div style="font-size: 0.8rem">
+//                   <p style="line-height: 1.4">
+//                   We're excited to extend an invitation for you to join ${TeamName}. Here are the team members:
+                   
+//                   </p>
+//                   <p> ${Names.join(', ')}</p>
+     
+//                   <p style="padding-top: 15px;">Warm regards,</p>
+//                   <p>${Creatorname}</p>
+//                   <p>Kapil Group</p>
+//                 </div>
+//               </div>
+//               <div class="footer">
+//                 <p style="color: white; font-size: 15px; margin: 0">
+//                   All rights are reserved by Kapil Group
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+//         `,
+//       };
+
+//     transporter.sendMail(mailData);
+//     }
+
+
+//       res.status(200).json({ message: "Team updated successfully" });
+        
+//     });
+//   } catch (error) {
+//     console.error("Error updating Teams:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
 const UpdateTeam = async (req, res) => {
   try {
     let { id } = req.params;
@@ -175,80 +319,136 @@ const UpdateTeam = async (req, res) => {
     }
 
     // Define the SQL query to update the Teams
-    const updateQuery = `UPDATE Teams SET ? WHERE id = ?`;
+    const updateQuery = 'UPDATE Teams SET ? WHERE id = ?';
 
-    // Execute the update query
-    mycon.query(updateQuery, [data, id], (error, updateResults) => {
-      if (error) {
-        console.error("Error updating Teams:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
-
-      // Query the updated team details
-      mycon.query('SELECT * FROM Teams WHERE id = ?', [id], (err, teamResult) => {
-        if (err) {
-          console.error("Error retrieving updated team:", err);
-          return res.status(500).json({ error: "Internal Server Error" });
+    // Execute the update query using promises
+    const updateResults = await new Promise((resolve, reject) => {
+      mycon.query(updateQuery, [data, id], (error, results) => {
+        if (error) {
+          return reject(error);
         }
-
-        if (teamResult.length === 0) {
-          return res.status(404).json({ error: "Team not found" });
-        }
-
-        let members = teamResult[0].members;
-        let createdBy = teamResult[0].createdBy;
-        let memberIds = [...members, createdBy];
-
-        // Query emails of team members
-        mycon.query('SELECT email FROM Users WHERE id IN (?)', [memberIds], (err, emailResults) => {
-          if (err) {
-            console.error('Error retrieving emails:', err);
-            return res.status(500).json({ error: "Internal Server Error" });
-          }
-
-          const emails = emailResults.map(entry => entry.email);
-
-          // Send notification email
-          const mailData = {
-            from: 'nirajkr00024@gmail.com',
-            to: emails,
-            subject: 'Team updated',
-            html: `
-              <style>
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9; }
-                .banner { margin-bottom: 20px; }
-                .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; }
-                .button:hover { background-color: #0056b3; }
-                p { margin-bottom: 15px; }
-              </style>
-              <div class="container">
-                <p>Hi there,</p>
-                <img src="https://atbtmain.teksacademy.com/images/logo.png" alt="Infoz IT logo" class="banner" />
-                <p>The board meeting has been updated. Please check the details on the platform.</p>
-                <p>If you have any questions, please contact us.</p>
-                <p>Thank you,</p>
-                <p>Infoz IT Team</p>
-              </div>
-            `,
-          };
-
-          transporter.sendMail(mailData, (mailError, info) => {
-            if (mailError) {
-              console.error('Error sending email:', mailError);
-            } else {
-              console.log('Email sent:', info.response);
-            }
-          });
-
-          res.status(200).json({ message: "Team updated successfully" });
-        });
+        resolve(results);
       });
     });
+
+    // Find the updated team
+    const member = await db.Team.findOne({ where: { id: id } });
+    let Meetmember = member.dataValues.members;
+    let createdBy = member.dataValues.createdBy;
+
+    let num1 = Number(createdBy);
+    let creatorData = await db.User.findAll({
+      attributes: ['name'],
+      where: { id: num1 },
+      raw: true,
+    });
+    let creatorName = creatorData.map(entry => entry.name)[0];
+    Meetmember.push(num1);
+    let teamName = member.dataValues.name;
+
+    let emailData = await db.User.findAll({
+      attributes: ['email', 'name'],
+      where: { id: { [Op.in]: Meetmember } },
+      raw: true,
+    });
+
+    let emails = emailData.map(entry => entry.email);
+    let names = emailData.map(entry => entry.name);
+
+    // Send emails to the team members
+    for (let i = 0; i < emails.length; i++) {
+      const mailData = {
+        from: 'nirajkr00024@gmail.com',
+        to: emails[i],
+        subject: 'Team Updated',
+        html: `
+          <style>
+            .container {
+              max-width: 700px;
+              margin: 0 auto;
+              padding: 24px 0;
+              font-family: "Poppins", sans-serif;
+              background-color: rgb(231 229 228);
+              border-radius: 1%;
+            }
+            .banner {
+              margin-bottom: 10px;
+              width: 90px;
+              height: 8vh;
+              margin-right: 20px;
+            }
+            .header {
+              display: flex;
+              align-items: center;
+              justify-content:center;
+              padding-top: 10px;
+            }
+            p {
+              margin-bottom: 15px;
+            }
+            .container-main {
+              max-width: 650px;
+              margin: 0 auto;
+              font-family: "serif", sans-serif;
+              background-color: #fafafa;
+              border-radius: 1%;
+            }
+            .content {
+              padding: 25px;
+            }
+            .footer {
+              background-color: rgb(249 115 22);
+              padding: 0.5em;
+              text-align: center;
+            }
+          </style>
+          <div class="container">
+            <div class="container-main">
+              <div class="header">
+                <img
+                  src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+                  alt="kapil_Groups_Logo"
+                  class="banner"
+                />
+              </div>
+              <hr style="margin: 0" />
+              <div class="content">
+                <h5 style="font-size: 1rem; font-weight: 500">
+                  Dear <span style="font-weight: bold">${names[i]}</span>,
+                </h5>
+                <div style="font-size: 0.8rem">
+                  <p style="line-height: 1.4">
+                  We have updated the team details of ${teamName}. Here are the updated team members:
+
+                   
+                  </p>
+                  <p> ${names.join(', ')}</p>
+     
+                  <p style="padding-top: 15px;">Warm regards,</p>
+                  <p>${creatorName}</p>
+                  <p>Kapil Group</p>
+                </div>
+              </div>
+              <div class="footer">
+                <p style="color: white; font-size: 15px; margin: 0">
+                  All rights are reserved by Kapil Group
+                </p>
+              </div>
+            </div>
+          </div>
+        `,
+      };
+
+      await transporter.sendMail(mailData);
+    }
+
+    res.status(200).json({ message: 'Team updated successfully' });
   } catch (error) {
-    console.error("Error updating Teams:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error('Error updating Teams:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
 
 
 const DeleteTeamById = async (req, res) => {
