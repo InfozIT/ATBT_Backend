@@ -214,6 +214,7 @@ const CreateMeeting = async (req, res) => {
     let Meetmember = member.dataValues.members;
     let createdby = member.dataValues.createdBy;
     let date = member.dataValues.date;
+    let BMno = member.dataValues.meetingnumber;
 
     let num1 = Number(createdby);
     let Ceatorname = await db.User.findAll({
@@ -300,7 +301,7 @@ const CreateMeeting = async (req, res) => {
                   <p style="line-height: 1.4">
                     You are cordially invited to the Board Meeting on ${date}. Below are the details:
                   </p>
-                  <p><span style="font-weight: bold">Meeting Id :</span> ${insertId}</p>
+                  <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                   <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
                   <p>Please mark the meeting date on your calendar to ensure your attendance.</p>
                   <p style="padding-top: 15px;">Warm regards,</p>
