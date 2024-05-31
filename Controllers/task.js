@@ -1339,16 +1339,6 @@ try {
         await transporter.sendMail(mailData);
       }
 
-
-
-
-
-
-
-
-
-
-
   res.status(200).json({ message: "successfully updated",updatedTask })
 } catch (error) {
   console.error("Error updating task:", error);

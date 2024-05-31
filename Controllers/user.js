@@ -521,13 +521,16 @@ const Update_User = async (req, res) => {
                 console.error("Error updating User:", error);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
-        mycon.query('SELECT email FROM Users WHERE id = ?', id, (err, result) => {
+        mycon.query('SELECT email,name FROM Users WHERE id = ?', id, (err, result) => {
                 if (err) {
                   console.error('Error retrieving data: ' + err.stack);
                   res.status(500).send('Error retrieving data');
                   return;
                 }
             const email = result.map(entry => entry.email);
+            const name = result.map(entry => entry.name);
+            console.log(name,email)
+
             const mailData = {
                 from: 'nirajkr00024@gmail.com',
                 to: email,
@@ -588,7 +591,7 @@ const Update_User = async (req, res) => {
         <hr style="margin: 0" />
         <div class="content">
           <h5 style="font-size: 1rem; font-weight: 500">
-            Dear <span style="font-weight: bold">$</span>,
+            Dear <span style="font-weight: bold">${name}</span>,
           </h5>
  
           <div style="font-size: 0.8rem">
@@ -801,8 +804,6 @@ const Delete_User = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
 
 const RenewPassword = async (req, res) => {
     try {
