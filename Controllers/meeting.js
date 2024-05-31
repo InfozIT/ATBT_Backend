@@ -483,9 +483,7 @@ const CreateMeeting = async (req, res) => {
 
         const Final = Meetmember.concat(flattenedArray);
 
-        finalMem  = [...new Set(Final)]; // Ensure unique IDs
-
-        console.log(finalMem)
+        finalMem  = [...new Set(Final)]; 
     
         let email = await db.User.findAll({
           attributes: ['email', 'name'],
