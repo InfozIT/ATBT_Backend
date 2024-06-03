@@ -13,7 +13,7 @@ const authorizeTaskAccess = require('../middlewares/authorizeTaskAccess');
 
 
 router.post('/add', hasPermission("entity", "canCreate"), upload.single('image'), Meeting.CreateMeeting)
-router.post('/list', hasPermission("meeting", "canRead"), Meeting.GetMeetingList)
+router.post('/list',authorizeTaskAccess, hasPermission("meeting", "canRead"), Meeting.GetMeetingList)
 router.get('/getByid/:id', hasPermission("meeting", "canRead"), Meeting.GetById)
 
 router.get('/list', authorizeTaskAccess, hasPermission("meeting", "canRead"), Meeting.GetMeeting)
