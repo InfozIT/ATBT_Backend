@@ -16,7 +16,7 @@ router.post('/add', hasPermission("entity", "canCreate"), upload.single('image')
 // router.post('/list', hasPermission("meeting", "canRead"), Meeting.ListMeetings)
 router.get('/getByid/:id', hasPermission("meeting", "canRead"), Meeting.GetById)
 
-router.get('/list', authorizeTaskAccess, hasPermission("meeting", "canRead"), Meeting.GetMeeting)
+router.post('/list', authorizeTaskAccess, hasPermission("meeting", "canRead"), Meeting.GetMeeting)
 router.put('/update/:id', hasPermission("meeting", "canUpdate"),upload.single('image'), Meeting.UpdateMeetings)
 router.delete('/delete/:id', hasPermission("meeting", "canDelete"), Meeting.DeleteMeeting)
 
