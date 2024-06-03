@@ -1410,7 +1410,7 @@ const GetById = async (req, res) => {
 //   }
 // };
 
-
+//bala working code 
 
 const GetMeeting = async (req, res) => {
   console.log(req.query.user, "I am from Quarry");
@@ -1494,6 +1494,94 @@ const GetMeeting = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+const GetMeetingList = async (req, res) => {
+  console.log(req.query.user, "I am from Quarry");
+
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+    const searchQuery = req.query.search || '';
+    const entityId = req.query.entity;
+    const teamId = req.query.team;
+    const userId = req.query.user;
+
+    // Extract the rest of the query parameters for dynamic filtering
+    const { page: _page, pageSize: _pageSize, sortBy: _sortBy, search: _search, entity: _entity, team: _team, user: _user, ...restQueries } = req.query;
+
+    const options = {
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
+      order: [[sortBy]],
+      where: {
+        [Op.or]: [
+          { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+          { description: { [Op.like]: `%${searchQuery}%` } },
+        ],
+        ...restQueries // Add dynamic filters here
+      },
+    };
+
+    if (entityId) {
+      options.where.EntityId = entityId;
+    }
+    if (teamId) {
+      options.where.TeamId = teamId;
+    }
+    if (userId) {
+      options.where.UserId = userId;
+    }
+
+    if (req.meetingmembers) {
+      const meetingMembersIds = req.meetingmembers.map(meet => meet.id);
+      console.log("Authorized Task IDs:", meetingMembersIds);
+      options.where.id = { [Op.in]: meetingMembersIds };
+    } else {
+      console.log("No authorized tasks found in req.tasks");
+      return res.status(403).json({ error: 'Unauthorized access to tasks' });
+    }
+
+    const { count, rows: Meetings } = await db.Meeting.findAndCountAll(options);
+
+    const startMeeting = (page - 1) * pageSize + 1;
+    const endMeeting = Math.min(page * pageSize, count);
+    const totalPages = Math.ceil(count / pageSize);
+
+    for (let meeting of Meetings) {
+      const [totalTaskCount, overDueCount, completedCount, inProgressCount, toDoCount] = await Promise.all([
+        db.Task.count({ where: { meetingId: meeting.id } }),
+        db.Task.count({ where: { meetingId: meeting.id, status: 'Over-Due' } }),
+        db.Task.count({ where: { meetingId: meeting.id, status: 'Completed' } }),
+        db.Task.count({ where: { meetingId: meeting.id, status: 'In-Progress' } }),
+        db.Task.count({ where: { meetingId: meeting.id, status: 'To-Do' } })
+      ]);
+
+      meeting.setDataValue('taskCounts', {
+        totalTaskCount,
+        overDueCount,
+        completedCount,
+        inProgressCount,
+        toDoCount
+      });
+    }
+
+    res.status(200).json({
+      Meetings,
+      totalMeetings: count,
+      totalPages,
+      currentPage: page,
+      pageSize,
+      startMeeting,
+      endMeeting,
+      search: searchQuery
+    });
+  } catch (error) {
+    console.error("Error fetching Meetings:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 
 
 
@@ -1622,6 +1710,7 @@ module.exports = {
   GetMeeting,
   UpdateMeetings,
   DeleteMeeting,
+  GetMeetingList,
   // ListEntiyGroup,
   // ListTeamGroup,
   // ListUserGroup,
