@@ -198,128 +198,128 @@ const UpdateEntity = async (req, res) => {
 
 
 
-// const ListEntity = async (req, res) => {
-//   const { userId } = req.user;
+const ListEntity = async (req, res) => {
+  const { userId } = req.user;
 
-//   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+  const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
 
-//   const filters = {};
+  const filters = {};
 
-//   for (const key in restQueries) {
-//       filters[key] = restQueries[key];
-//   }
+  for (const key in restQueries) {
+      filters[key] = restQueries[key];
+  }
 
-//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
+  const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-//   const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
-//   const Data = await db.User.findOne({ where: { id: userId } });
-//   let EntityId = Data.EntityId
+  const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+  const Data = await db.User.findOne({ where: { id: userId } });
+  let EntityId = Data.EntityId
 
-//   // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
+  // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
 
-//   // MySQL query to fetch paginated entities
-//   let sql;
+  // MySQL query to fetch paginated entities
+  let sql;
 
-//   if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-//     // console.log("hello _ 1")
-//       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
-//   } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-//     // console.log("hello _ 2")
-//       let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-//       console.log(entityIds, typeof (entityIds), "entityIds")
-//       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//     } 
-//     else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-//       // console.log("hello _ 3", accessdata.selected_users)
-//       //get array of user entity ids
-//       // userEntityIds = [56]
-//       const users = await db.User.findAll({
-//         attributes: ['EntityId'], // Only fetch the entityId column
-//         where: {
-//           id: [...JSON.parse(accessdata.selected_users)] // Filter users based on userIds array
-//         },
-//         raw: true // Get raw data instead of Sequelize model instances
-//       });
-//       const entityIds = users.map(user => user.EntityId);
-//       // console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
-//       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//       // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
-//   } 
-//   else if (!accessdata) {
-//     // console.log("hello _ 4")
-//       sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
-//   }
+  if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+    // console.log("hello _ 1")
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
+  } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+    // console.log("hello _ 2")
+      let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
+      console.log(entityIds, typeof (entityIds), "entityIds")
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
+    } 
+    else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
+      // console.log("hello _ 3", accessdata.selected_users)
+      //get array of user entity ids
+      // userEntityIds = [56]
+      const users = await db.User.findAll({
+        attributes: ['EntityId'], // Only fetch the entityId column
+        where: {
+          id: [...JSON.parse(accessdata.selected_users)] // Filter users based on userIds array
+        },
+        raw: true // Get raw data instead of Sequelize model instances
+      });
+      const entityIds = users.map(user => user.EntityId);
+      // console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
+      // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
+  } 
+  else if (!accessdata) {
+    // console.log("hello _ 4")
+      sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
+  }
 
-//   // Add conditions for additional filter fields
-//   for (const [field, value] of Object.entries(filters)) {
-//       if (value !== '') {
-//           sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-//       }
-//   }
+  // Add conditions for additional filter fields
+  for (const [field, value] of Object.entries(filters)) {
+      if (value !== '') {
+          sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
+      }
+  }
 
-//   // Add LIMIT and OFFSET clauses to the SQL query
-//   sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
+  // Add LIMIT and OFFSET clauses to the SQL query
+  sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
 
-//   mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
-//       if (err) {
-//           console.error('Error executing MySQL query: ' + err.stack);
-//           res.status(500).json({ error: 'Internal server error' });
-//           return;
-//       }
+  mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
+      if (err) {
+          console.error('Error executing MySQL query: ' + err.stack);
+          res.status(500).json({ error: 'Internal server error' });
+          return;
+      }
 
-//       // Execute the count query to get the total number of entities
-//       let sqlCount;
-//       if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-//         // console.log("first _ 1")
-//           sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
-//       } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-//         // console.log("first _ 2")
-//           let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-//           // console.log(entityIds, "entityIds")
-//           sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//       } 
-//       else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-//         // console.log("first _ 3")
-//         //get array of user entity ids
-//         userEntityIds = [81]
-//         sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${userEntityIds.join(',')})`;
-//         // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
-//     }
-//        else if (!accessdata) {
-//         // console.log("first _ 4")
-//           sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
-//       }
+      // Execute the count query to get the total number of entities
+      let sqlCount;
+      if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
+        // console.log("first _ 1")
+          sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`;
+      } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
+        // console.log("first _ 2")
+          let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
+          // console.log(entityIds, "entityIds")
+          sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
+      } 
+      else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
+        // console.log("first _ 3")
+        //get array of user entity ids
+        userEntityIds = [81]
+        sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%') AND id IN (${userEntityIds.join(',')})`;
+        // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
+    }
+       else if (!accessdata) {
+        // console.log("first _ 4")
+          sqlCount = `SELECT COUNT(*) as total FROM Users WHERE (name LIKE '%${search}%') AND id = '${EntityId}'`;
+      }
 
-//       // Add conditions for additional filter fields
-//       for (const [field, value] of Object.entries(filters)) {
-//           if (value !== '') {
-//               sqlCount += ` AND ${field} LIKE '%${value}%'`;
-//           }
-//       }
+      // Add conditions for additional filter fields
+      for (const [field, value] of Object.entries(filters)) {
+          if (value !== '') {
+              sqlCount += ` AND ${field} LIKE '%${value}%'`;
+          }
+      }
 
-//       mycon.query(sqlCount, async (err, countResult) => {
-//           if (err) {
-//               console.error('Error executing MySQL count query: ' + err.stack);
-//               res.status(500).json({ error: 'Internal server error' });
-//               return;
-//           }
+      mycon.query(sqlCount, async (err, countResult) => {
+          if (err) {
+              console.error('Error executing MySQL count query: ' + err.stack);
+              res.status(500).json({ error: 'Internal server error' });
+              return;
+          }
 
-//           const totalEntities = countResult[0].total;
-//           const totalPages = Math.ceil(totalEntities / pageSize);
+          const totalEntities = countResult[0].total;
+          const totalPages = Math.ceil(totalEntities / pageSize);
 
-//           res.json({
-//               Entities: result,
-//               totalPages: parseInt(totalPages),
-//               currentPage: parseInt(page),
-//               pageSize: parseInt(pageSize),
-//               totalEntities: parseInt(totalEntities),
-//               startEntity: parseInt(offset) + 1, // Correct the start entity index
-//               endEntity: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
-//               search
-//           });
-//       });
-//   });
-// };
+          res.json({
+              Entities: result,
+              totalPages: parseInt(totalPages),
+              currentPage: parseInt(page),
+              pageSize: parseInt(pageSize),
+              totalEntities: parseInt(totalEntities),
+              startEntity: parseInt(offset) + 1, // Correct the start entity index
+              endEntity: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
+              search
+          });
+      });
+  });
+};
 
 
 // sequilize
@@ -397,187 +397,187 @@ const UpdateEntity = async (req, res) => {
 // };
 
 
-const ListEntity = async (req, res) => {
-  const { userId } = req.user;
-  const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+// const ListEntity = async (req, res) => {
+//   const { userId } = req.user;
+//   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
 
-  const filters = {};
-  for (const key in restQueries) {
-    filters[key] = restQueries[key];
-  }
+//   const filters = {};
+//   for (const key in restQueries) {
+//     filters[key] = restQueries[key];
+//   }
 
-  const offset = (parseInt(page) - 1) * parseInt(pageSize);
+//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-  try {
-    const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
-    const user = await db.User.findOne({ where: { id: userId } });
-    const EntityId = user.EntityId;
+//   try {
+//     const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+//     const user = await db.User.findOne({ where: { id: userId } });
+//     const EntityId = user.EntityId;
 
-    let whereClause = {
-      name: { [Op.like]: `%${search}%` },
-    };
+//     let whereClause = {
+//       name: { [Op.like]: `%${search}%` },
+//     };
 
-    if (accessdata) {
-      if (!accessdata.selected_users && !accessdata.entity_id) {
-        // No additional filters
-      } else if (!accessdata.selected_users && accessdata.entity_id) {
-        const entityIds = [...JSON.parse(accessdata.entity_id), EntityId];
-        whereClause.id = { [Op.in]: entityIds };
-      } else if (accessdata.selected_users && !accessdata.entity_id) {
-        const users = await db.User.findAll({
-          attributes: ['EntityId'],
-          where: { id: { [Op.in]: JSON.parse(accessdata.selected_users) } },
-          raw: true,
-        });
-        const entityIds = users.map(user => user.EntityId);
-        whereClause.id = { [Op.in]: entityIds };
-      }
-    } else {
-      whereClause.id = EntityId;
-    }
+//     if (accessdata) {
+//       if (!accessdata.selected_users && !accessdata.entity_id) {
+//         // No additional filters
+//       } else if (!accessdata.selected_users && accessdata.entity_id) {
+//         const entityIds = [...JSON.parse(accessdata.entity_id), EntityId];
+//         whereClause.id = { [Op.in]: entityIds };
+//       } else if (accessdata.selected_users && !accessdata.entity_id) {
+//         const users = await db.User.findAll({
+//           attributes: ['EntityId'],
+//           where: { id: { [Op.in]: JSON.parse(accessdata.selected_users) } },
+//           raw: true,
+//         });
+//         const entityIds = users.map(user => user.EntityId);
+//         whereClause.id = { [Op.in]: entityIds };
+//       }
+//     } else {
+//       whereClause.id = EntityId;
+//     }
 
-    // Add additional filters
-    for (const [field, value] of Object.entries(filters)) {
-      if (value !== '') {
-        whereClause[field] = { [Op.like]: `%${value}%` };
-      }
-    }
+//     // Add additional filters
+//     for (const [field, value] of Object.entries(filters)) {
+//       if (value !== '') {
+//         whereClause[field] = { [Op.like]: `%${value}%` };
+//       }
+//     }
 
-    const entities = await db.Entity.findAndCountAll({
-      where: whereClause,
-      order: [[sortBy.split(' ')[0], sortBy.split(' ')[1]]],
-      limit: parseInt(pageSize),
-      offset,
-    });
+//     const entities = await db.Entity.findAndCountAll({
+//       where: whereClause,
+//       order: [[sortBy.split(' ')[0], sortBy.split(' ')[1]]],
+//       limit: parseInt(pageSize),
+//       offset,
+//     });
 
-    // Function to get task counts for an entity
-    const getTaskCounts = async (entityId) => {
-      const users = await db.User.findAll({
-        attributes: ['id'],
-        where: { entityname: entityId },
-        raw: true,
-      });
+//     // Function to get task counts for an entity
+//     const getTaskCounts = async (entityId) => {
+//       const users = await db.User.findAll({
+//         attributes: ['id'],
+//         where: { entityname: entityId },
+//         raw: true,
+//       });
 
-      console.log("users", users)
+//       console.log("users", users)
 
-      const userIds = users.map(user => user.id);
+//       const userIds = users.map(user => user.id);
 
-      console.log("userIds", userIds)
+//       console.log("userIds", userIds)
 
-      if (userIds.length === 0) {
-        return {
-          totalTaskCount: 0,
-          overDueCount: 0,
-          completedCount: 0,
-          inProgressCount: 0,
-          toDoCount: 0,
-        };
-      }
+//       if (userIds.length === 0) {
+//         return {
+//           totalTaskCount: 0,
+//           overDueCount: 0,
+//           completedCount: 0,
+//           inProgressCount: 0,
+//           toDoCount: 0,
+//         };
+//       }
 
-      const collaboratorCondition = db.sequelize.where(
-        db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(userIds)),
-        true
-      );
+//       const collaboratorCondition = db.sequelize.where(
+//         db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(userIds)),
+//         true
+//       );
 
-      // const totalTaskCount = await db.Task.count({
-      //   where: {
-      //     [Op.or]: [
-      //       { createdby: userIds},
-      //       { members: userIds },
-      //       collaboratorCondition
-      //     ]
-      //   }
-      // });
+//       // const totalTaskCount = await db.Task.count({
+//       //   where: {
+//       //     [Op.or]: [
+//       //       { createdby: userIds},
+//       //       { members: userIds },
+//       //       collaboratorCondition
+//       //     ]
+//       //   }
+//       // });
 
       
 
-      const overDueCount = await db.Task.count({
-        where: {
-          [Op.or]: [
-            collaboratorCondition,
-            { members: userIds },
-            { createdby: userIds }
+//       const overDueCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: userIds },
+//             { createdby: userIds }
             
-          ],
-          dueDate: { [Op.lt]: new Date() },
-          status: { [Op.ne]: 'Completed' }
-        }
-      });
+//           ],
+//           dueDate: { [Op.lt]: new Date() },
+//           status: { [Op.ne]: 'Completed' }
+//         }
+//       });
 
-      const completedCount = await db.Task.count({
-        where: {
-          [Op.or]: [
-            collaboratorCondition,
-            { members: userIds },
-            { createdby: userIds }
+//       const completedCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: userIds },
+//             { createdby: userIds }
             
-          ],
-          status: 'Completed'
-        }
-      });
+//           ],
+//           status: 'Completed'
+//         }
+//       });
 
-      const inProgressCount = await db.Task.count({
-        where: {
-          [Op.or]: [
-            collaboratorCondition,
-            { members: userIds },
-            { createdby: userIds }
+//       const inProgressCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: userIds },
+//             { createdby: userIds }
             
-          ],
-          status: 'In-Progress'
-        }
-      });
+//           ],
+//           status: 'In-Progress'
+//         }
+//       });
 
-      const toDoCount = await db.Task.count({
-        where: {
-          [Op.or]: [
-            collaboratorCondition,
-            { members: userIds },
-            { createdby: userIds }
+//       const toDoCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: userIds },
+//             { createdby: userIds }
             
-          ],
-          status: 'To-Do'
-        }
-      });
+//           ],
+//           status: 'To-Do'
+//         }
+//       });
 
-      const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount
+//       const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount
 
-      return {
-        totalTaskCount,
-        overDueCount,
-        completedCount,
-        inProgressCount,
-        toDoCount,
-      };
-    };
+//       return {
+//         totalTaskCount,
+//         overDueCount,
+//         completedCount,
+//         inProgressCount,
+//         toDoCount,
+//       };
+//     };
 
-    // Add task counts to each entity
-    const entitiesWithTaskCounts = await Promise.all(entities.rows.map(async (entity) => {
-      const taskCounts = await getTaskCounts(entity.id);
-      return {
-        ...entity.dataValues,
-        taskCounts,
-      };
-    }));
+//     // Add task counts to each entity
+//     const entitiesWithTaskCounts = await Promise.all(entities.rows.map(async (entity) => {
+//       const taskCounts = await getTaskCounts(entity.id);
+//       return {
+//         ...entity.dataValues,
+//         taskCounts,
+//       };
+//     }));
 
-    const totalEntities = entities.count;
-    const totalPages = Math.ceil(totalEntities / pageSize);
+//     const totalEntities = entities.count;
+//     const totalPages = Math.ceil(totalEntities / pageSize);
 
-    res.json({
-      Entities: entitiesWithTaskCounts,
-      totalPages,
-      currentPage: parseInt(page),
-      pageSize: parseInt(pageSize),
-      totalEntities,
-      startEntity: offset + 1,
-      endEntity: offset + parseInt(pageSize),
-      search,
-    });
-  } catch (err) {
-    console.error('Error executing Sequelize query: ' + err.stack);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
+//     res.json({
+//       Entities: entitiesWithTaskCounts,
+//       totalPages,
+//       currentPage: parseInt(page),
+//       pageSize: parseInt(pageSize),
+//       totalEntities,
+//       startEntity: offset + 1,
+//       endEntity: offset + parseInt(pageSize),
+//       search,
+//     });
+//   } catch (err) {
+//     console.error('Error executing Sequelize query: ' + err.stack);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
 
 
 
