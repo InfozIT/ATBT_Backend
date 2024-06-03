@@ -528,6 +528,10 @@ const ListTeam = async (req, res) => {
   });
 };
 
+
+
+// sequilize
+
 // const ListTeam = async (req, res) => {
 //   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
 //   const offset = (parseInt(page) - 1) * parseInt(pageSize);
@@ -571,67 +575,144 @@ const ListTeam = async (req, res) => {
 //   }
 // };
 
+
 // const ListTeam = async (req, res) => {
 //   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
 //   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
+//   // Define the search conditions using Sequelize operators
 //   const condition = {
 //     name: { [Op.like]: `%${search}%` }
 //   };
 
+//   // Include additional filters in the condition
 //   Object.entries(restQueries).forEach(([field, value]) => {
 //     if (value !== '') {
 //       condition[field] = { [Op.like]: `%${value}%` };
 //     }
 //   });
 
+  
+
 //   try {
+//     // Execute the findAndCountAll method to fetch the paginated results and total count
 //     const { count, rows } = await db.Team.findAndCountAll({
 //       where: condition,
 //       order: [[sortBy, 'ASC']],
 //       limit: parseInt(pageSize),
-//       offset: offset,
-//       include: [{
-//         model: db.Task,
-//         as: 'Tasks', // Ensure correct association alias
-//         attributes: []
-//       }]
+//       offset: offset
 //     });
 
 //     const totalPages = Math.ceil(count / pageSize);
 
-//     // Function to get task counts for a team
-//     const getTaskCounts = async (team) => {
-//       const userIds = [team.createdBy, ...team.members];
-//       const taskCondition = {
-//         [Op.or]: [
-//           { createdBy: userIds},
-//           { members: userIds},
-//           { collaborators: { [Op.overlap]: userIds }}
-//         ]
-//       };
+//     // Function to extract unique numeric user IDs from members and createdBy fields
+//     const extractUserIds = (rows) => {
+//       const userIds = new Set();
+//       rows.forEach(row => {
+//         if (Array.isArray(row.members)) {
+//           row.members.forEach(id => userIds.add(Number(id)));
+//         }
+//         if (row.createdBy) {
+//           userIds.add(Number(row.createdBy));
+//         }
+//       });
+//       return Array.from(userIds);
+//     };
 
-//       const totalTaskCount = await db.Task.count({ where: taskCondition });
-//       const overDueCount = await db.Task.count({ where: { ...taskCondition, dueDate: { [Op.lt]: new Date() }, status: { [Op.ne]: 'Completed' }}});
-//       const completedCount = await db.Task.count({ where: { ...taskCondition, status: 'Completed' }});
-//       const inProgressCount = await db.Task.rowCount({ where: { ...taskCondition, status: 'In-Progress' }});
-//       const toDoCount = await db.Task.rowCount({ where: { ...taskCondition, status: 'To-Do' }});
+//     const userIdArray = extractUserIds(rows);
+
+//     console.log("userIdArray", userIdArray);
+
+//     if (userIdArray.length === 0) {
+//       return res.json({
+//         Teams: rows,
+//         totalPages,
+//         currentPage: parseInt(page),
+//         pageSize: parseInt(pageSize),
+//         totalTeams: count,
+//         startTeam: offset + 1,
+//         endTeam: Math.min(offset + parseInt(pageSize), count),
+//         search,
+//         taskCounts: {
+//           totalTaskCount: 0,
+//           overDueCount: 0,
+//           completedCount: 0,
+//           inProgressCount: 0,
+//           toDoCount: 0,
+//         }
+//       });
+//     }
+
+//     // Function to get task counts for a specific team
+//     const getTaskCounts = async (team) => {
+//       const teamUserIds = extractUserIds([team]);
+//       const collaboratorCondition = db.sequelize.where(
+//         db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
+//         true
+//       );
+
+//       const overDueCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           dueDate: { [Op.lt]: new Date() },
+//           status: { [Op.ne]: 'Completed' }
+//         }
+//       });
+
+//       const completedCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'Completed'
+//         }
+//       });
+
+//       const inProgressCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'In-Progress'
+//         }
+//       });
+
+//       const toDoCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'To-Do'
+//         }
+//       });
+
+//       const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
 
 //       return {
 //         totalTaskCount,
 //         overDueCount,
 //         completedCount,
 //         inProgressCount,
-//         toDoCount
+//         toDoCount,
 //       };
 //     };
 
-//     // Map over teams and add task counts
-//     const teamsWithTaskCounts = await Promise.all(rows.map(async team => {
-//       const taskCounts = await getTaskCounts(team);
+//     // Add task counts to each entity
+//     const teamsWithTaskCounts = await Promise.all(rows.map(async (entity) => {
+//       const taskCounts = await getTaskCounts(entity);
 //       return {
-//         ...team.dataValues,
-//         taskCounts
+//         ...entity.dataValues,
+//         taskCounts,
 //       };
 //     }));
 
@@ -650,7 +731,6 @@ const ListTeam = async (req, res) => {
 //     res.status(500).json({ error: 'Internal server error' });
 //   }
 // };
-
 
 
 const List_Team_Pub = async (req, res) => {
@@ -745,6 +825,10 @@ const List_Team_Pub = async (req, res) => {
   });
 
 };
+
+
+
+
 // const getTeamDataById = (req, res) => {
 //   const entityId = req.params.id;
 //   mycon.query('SELECT * FROM Teams WHERE id = ?', entityId, (err, result) => {
