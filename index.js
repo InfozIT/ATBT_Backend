@@ -416,6 +416,174 @@ const task2 = new cron.CronJob('*/2 * * * *', async function() {
 
 task2.start();
 
+const task3 = new cron.CronJob('0 0 * * SUN', async function() {
+  mycon.query('SELECT * FROM Tasks WHERE stat = "Over-Due"', async (err, result) => {
+    if (err) {
+      console.error('Error retrieving data: ' + err.stack);
+      return;
+    }
+
+    for (const entry of result) {
+      let status = entry.stat;
+      let dueDate = entry.dueDate;
+      let PR = entry.members;
+
+      try {
+        let creator = await db.User.findOne({
+          attributes: ['name'],
+          where: { id: PR }, 
+          raw: true,
+        });
+        let PersonResponseible = creator.name;
+        let decision = entry.decision;
+        let meetingId = entry.meetingId;
+        let colab = entry.collaborators;
+        let meetMembers = colab.concat(PR);
+
+        mycon.query('SELECT meetingnumber, date FROM Meetings WHERE id = ?', [meetingId], (err, result) => {
+          if (err) {
+            console.error('Error retrieving meeting data: ' + err.stack);
+            return;
+          }
+
+          if (result.length === 0) {
+            console.error('No meeting found with ID: ' + meetingId);
+            return;
+          }
+
+          let Meetdate = result[0].date;
+          let MeetNo = result[0].meetingnumber;
+
+          let uniqueIds = [...new Set(meetMembers)]; // Ensure unique IDs
+
+          mycon.query('SELECT email, name FROM Users WHERE id IN (?)', [uniqueIds], (err, result) => {
+            if (err) {
+              console.error('Error retrieving user emails: ' + err.stack);
+              return;
+            }
+
+            const emails = result.map(entry => entry.email);
+            const names = result.map(entry => entry.name);
+
+            for (let i = 0; i < emails.length; i++) {
+              const mailData = {
+                from: 'nirajkr00024@gmail.com',
+                to: emails[i],
+                subject: 'Task OverDue List',
+                html: `
+                  <style>
+                    .container {
+                      max-width: 700px;
+                      margin: 0 auto;
+                      padding: 24px 0;
+                      font-family: "Poppins", sans-serif;
+                      background-color: rgb(231 229 228);
+                      border-radius: 1%;
+                    }
+                    .banner {
+                      margin-bottom: 10px;
+                      width: 90px;
+                      height: 8vh;
+                      margin-right: 20px;
+                    }
+                    .header {
+                      display: flex;
+                      align-items: center;
+                      justify-content:center;
+                      padding-top: 10px;
+                    }
+                    p {
+                      margin-bottom: 15px;
+                    }
+                    .container-main {
+                      max-width: 650px;
+                      margin: 0 auto;
+                      font-family: "serif", sans-serif;
+                      background-color: #fafafa;
+                      border-radius: 1%;
+                    }
+                    .content {
+                      padding: 25px;
+                    }
+                    .footer {
+                      background-color: rgb(249 115 22);
+                      padding: 0.5em;
+                      text-align: center;
+                    }
+                  </style>
+                  <div class="container">
+                    <div class="container-main">
+                      <div class="header">
+                        <img
+                          src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+                          alt="kapil_Groups_Logo"
+                          class="banner"
+                        />
+                      </div>
+                      <hr style="margin: 0" />
+                      <div class="content">
+                        <h5 style="font-size: 1rem; font-weight: 500">
+                          Dear <span style="font-weight: bold">${names[i]}</span>,
+                        </h5>
+                        <div style="font-size: 0.8rem">
+                          <p style="line-height: 1.4">
+                            We wanted to inform you that ${PersonResponseible} has marked a decision taken during Meeting Number:<span style="font-weight:bold">${MeetNo}</span> on ${Meetdate} as completed.
+                          </p>
+                          <p>Here are the details:</p>
+                          <table>
+                            <thead>
+                              <th>Decision Taken</th>
+                              <th>Due Date</th>
+                              <th>Decision Status</th>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>${decision}</td>
+                                <td>${dueDate}</td>
+                                <td>${status}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <p style="padding-top: 15px;">Best regards,</p>
+                          <p>Kapil Group</p>
+                        </div>
+                      </div>
+                      <div class="footer">
+                        <p style="color: white; font-size: 15px; margin: 0">
+                          All rights are reserved by Kapil Group
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                `,
+              };
+
+              transporter.sendMail(mailData, (error, info) => {
+                if (error) {
+                  return console.error('Error sending email: ' + error.stack);
+                }
+                console.log('Email sent: ' + info.response);
+
+                // Mark the task as having had an email sent
+                mycon.query('UPDATE Tasks SET emailSent = TRUE WHERE id = ?', [entry.id], (err, result) => {
+                  if (err) {
+                    console.error('Error updating task: ' + err.stack);
+                    return;
+                  }
+                  console.log('Task marked as email sent.');
+                });
+              });
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Error retrieving user data: ' + error.stack);
+      }
+    }
+  });
+});
+
+task3.start();
 
 
 
