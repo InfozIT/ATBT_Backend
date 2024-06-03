@@ -1410,7 +1410,7 @@ const GetById = async (req, res) => {
 //   }
 // };
 
-//bala working code 
+//bala working code   Get method
 
 const GetMeeting = async (req, res) => {
   console.log(req.query.user, "I am from Quarry");
@@ -1495,6 +1495,8 @@ const GetMeeting = async (req, res) => {
   }
 };
 
+
+// post method
 const GetMeetingList = async (req, res) => {
   console.log(req.query.user, "I am from Quarry");
 
