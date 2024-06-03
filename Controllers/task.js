@@ -10,7 +10,7 @@ const CreateTask = async (req, res) => {
   try {
     let file = req.file;
     var data = req.body;
-    let {collaborators,taskCreatedBy} = req.body
+    let {createdby,collaborators,taskCreatedBy} = req.body
     let bmId = req.params.id;
 
     // const CollaboratorsString = JSON.stringify(Collaborators);
@@ -23,7 +23,7 @@ const CreateTask = async (req, res) => {
         ...data
       }
     }
-    let task = await db.Task.create({ meetingId: bmId, collaborators : collaborators,taskCreateby:taskCreatedBy  }, data);
+    let task = await db.Task.create({ meetingId: bmId,createdby:createdby, collaborators : collaborators,taskCreateby:taskCreatedBy  }, data);
 
     res.status(201).send(task);
   } catch (error) {

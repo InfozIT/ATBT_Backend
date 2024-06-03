@@ -356,7 +356,8 @@ const authorizeTaskAccess = async (req, res, next) => {
     //   req.subtasks = subtasks;
       req.meetingmembers = finalAuthorizedMeetings;
   
-      console.log("Authorized Meetings:", finalAuthorizedMeetings.map(m => m.id));
+      // console.log("Authorized Meetings:", finalAuthorizedMeetings.map(m => m.id));
+      console.log("Authorized Meetings:", finalAuthorizedMeetings);
   
       next();
     } catch (error) {
