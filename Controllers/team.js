@@ -555,8 +555,19 @@ const ListTeam = async (req, res) => {
 console.log("pageSize", pageSize)
   try {
     
+    const optionss = {
+      where: {}
+    };
+    if (req.teamsauth) {
+      const teamsauthids = req.teamsauth.map(meet => meet.id);
+      console.log("Authorized team IDs:", teamsauthids);
+      optionss.where = { id: { [Op.in]: teamsauthids } };
+    } else {
+      console.log("No authorized tasks found in req.tasks");
+      return res.status(403).json({ error: 'Unauthorized access to tasks' });
+    }
     // Execute the findAndCountAll method to fetch the paginated results and total count
-    const { count, rows } = await db.Team.findAndCountAll({
+    const { count, rows } = await db.Team.findAndCountAll(optionss,{
       where: condition,
       order: [[sortBy, 'ASC']],
       limit: parseInt(pageSize),
