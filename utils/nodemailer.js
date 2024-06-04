@@ -9,8 +9,8 @@ transporter = nodemailer.createTransport({
         servername: 'smtp.gmail.com',
     },
     auth: {
-        user: 'nirajkr00024@gmail.com',
-        pass: 'fkjj xtju fauu tgai'
+        user: 'atbt.kapilgroup@gmail.com',
+        pass: 'ytgn zzdr tgvm ppoy'
     }
 });
 

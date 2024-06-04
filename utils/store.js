@@ -1,20 +1,26 @@
 const multer = require('multer');
 const path = require("path");
 
-const storage = multer.diskStorage({
-    destination: './Public/images',
-    filename: (req, file, cb) => {
-        return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
-    }
-})
-const upload = multer({
-    storage: storage,
+// const storage = multer.diskStorage({
+//     destination: './Public/images',
+//     filename: (req, file, cb) => {
+//         return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
+//     }
+// })
+
+
+
+
+let upload = multer({
     limits: {
-        fileSize: 1000000
+        fileSize: 10000000
     }
 })
 
 module.exports = upload 
+
+
+
 
 
 //for S3 Bucket 

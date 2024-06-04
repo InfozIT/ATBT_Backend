@@ -3,7 +3,7 @@ const router = express.Router();
 const ECont = require('../Controllers/entite')
 const upload = require('../utils/store');
 const hasPermission = require('../middlewares/rolePermission');
-const { Permission } = require('../models');
+
 
 
 
