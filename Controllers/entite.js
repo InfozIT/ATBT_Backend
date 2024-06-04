@@ -672,7 +672,16 @@ const ListEntity = async (req, res) => {
         true
       );
 
-      console.log("collaboratorCondition", collaboratorCondition)
+      // console.log("collaboratorCondition", collaboratorCondition)
+
+      const overDueCountD = await db.Task.findAll({
+        where: {id: 996},
+        // attributes: ['collaborators']
+      });
+
+      const arrycol = overDueCountD.map(item => item.collaborators)
+      console.log("overDueCountD", arrycol[0]);
+
 
       const overDueCount = await db.Task.count({
         where: {
