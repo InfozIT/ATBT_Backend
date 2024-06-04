@@ -460,7 +460,7 @@ const authorizeTaskAccess = async (req, res, next) => {
 
     // Filter meetings based on authorized TeamIds or user-specific criteria
     const authorizedMeetings = allMeetings.filter(meeting =>
-      // authorizedTeamIds.includes(userId) ||
+      authorizedTeamIds.includes(userId) ||
       meeting.UserId === userId ||
       meeting.createdBy === userId || 
       meeting.members.includes(userId)
@@ -486,7 +486,7 @@ const authorizeTaskAccess = async (req, res, next) => {
     const authorizedEntityMeetings = allMeetings.filter(meeting =>
       // entityUserIds.includes(meeting.UserId) ||
       // entityUserIds.includes(meeting.createdBy)
-      entityUserIds.includes(userId) ||
+      // entityUserIds.includes(userId) ||
       meeting.UserId === userId ||
       meeting.createdBy === userId || 
       meeting.members.includes(userId)
