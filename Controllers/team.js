@@ -563,7 +563,7 @@ console.log("pageSize", pageSize)
       console.log("Authorized team IDs:", teamsauthids);
       optionss.where = { id: { [Op.in]: teamsauthids } };
     } else {
-      console.log("No authorized tasks found in req.tasks");
+      console.log("No authorized teams found in req.tasks");
       return res.status(403).json({ error: 'Unauthorized access to tasks' });
     }
     // Execute the findAndCountAll method to fetch the paginated results and total count

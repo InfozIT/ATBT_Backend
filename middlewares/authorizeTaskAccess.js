@@ -387,9 +387,11 @@ const authorizeTaskAccess = async (req, res, next) => {
       // If the user is super admin, fetch all tasks and meetings without filtering
       const allTasks = await db.Task.findAll();
       const allMeetings = await db.Meeting.findAll();
+      const teamsauthids = await db.Team.findAll();
 
       req.tasks = allTasks;
       req.meetingmembers = allMeetings;
+      req.teamsauth = teamsauthids
 
       console.log("Super admin access granted to all tasks and meetings.");
       return next();
@@ -516,14 +518,11 @@ const authorizeTaskAccess = async (req, res, next) => {
     
     // const teamsauthids = teamsauth.map(t => t.id)
 
-    req.teamsauth = teamsauthids
-
-    console.log("teamsauth", teamsauthids)
-
-
+    
     req.tasks = tasks;
   //   req.subtasks = subtasks;
     req.meetingmembers = finalAuthorizedMeetings;
+    req.teamsauth = teamsauthids
 
     next();
   } catch (error) {
