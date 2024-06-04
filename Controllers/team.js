@@ -535,323 +535,9 @@ const DeleteTeamById = async (req, res) => {
 // niraj check this
 
 
-// const ListTeam = async (req, res) => {
-//   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
-//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
-//   // Define the search conditions using Sequelize operators
-//   const condition = {
-//     name: { [Op.like]: `%${search}%` }
-//   };
-
-//   // Include additional filters in the condition
-//   Object.entries(restQueries).forEach(([field, value]) => {
-//     if (value !== '') {
-//       condition[field] = { [Op.like]: `%${value}%` };
-//     }
-//   });
-
-  
-// console.log("pageSize", pageSize)
-//   try {
-    
-//     // Execute the findAndCountAll method to fetch the paginated results and total count
-//     const { count, rows } = await db.Team.findAndCountAll({
-//       where: condition,
-//       order: [[sortBy, 'ASC']],
-//       limit: parseInt(pageSize),
-//       offset: offset
-//     });
-
-//     const totalPages = Math.ceil(count / pageSize);
-
-//     // Function to extract unique numeric user IDs from members and createdBy fields
-//     const extractUserIds = (rows) => {
-//       const userIds = new Set();
-//       rows.forEach(row => {
-//         if (Array.isArray(row.members)) {
-//           row.members.forEach(id => userIds.add(Number(id)));
-//         }
-//         if (row.createdBy) {
-//           userIds.add(Number(row.createdBy));
-//         }
-//       });
-//       return Array.from(userIds);
-//     };
-
-//     const userIdArray = extractUserIds(rows);
-
-
-//     if (userIdArray.length === 0) {
-//       return res.json({
-//         Teams: rows,
-//         totalPages,
-//         currentPage: parseInt(page),
-//         pageSize: parseInt(pageSize),
-//         totalTeams: count,
-//         startTeam: offset + 1,
-//         endTeam: Math.min(offset + parseInt(pageSize), count),
-//         search,
-//         taskCounts: {
-//           totalTaskCount: 0,
-//           overDueCount: 0,
-//           completedCount: 0,
-//           inProgressCount: 0,
-//           toDoCount: 0,
-//         }
-//       });
-//     }
-
-//     // Function to get task counts for a specific team
-//     const getTaskCounts = async (team) => {
-//       const teamUserIds = extractUserIds([team]);
-//       const collaboratorCondition = db.sequelize.where(
-//         db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
-//         true
-//       );
-
-//       const overDueCount = await db.Task.count({
-//         where: {
-//           [Op.or]: [
-//             collaboratorCondition,
-//             { members: teamUserIds },
-//             { createdBy: teamUserIds }
-//           ],
-//           dueDate: { [Op.lt]: new Date() },
-//           status: { [Op.ne]: 'Completed' }
-//         }
-//       });
-
-//       const completedCount = await db.Task.count({
-//         where: {
-//           [Op.or]: [
-//             collaboratorCondition,
-//             { members: teamUserIds },
-//             { createdBy: teamUserIds }
-//           ],
-//           status: 'Completed'
-//         }
-//       });
-
-//       const inProgressCount = await db.Task.count({
-//         where: {
-//           [Op.or]: [
-//             collaboratorCondition,
-//             { members: teamUserIds },
-//             { createdBy: teamUserIds }
-//           ],
-//           status: 'In-Progress'
-//         }
-//       });
-
-//       const toDoCount = await db.Task.count({
-//         where: {
-//           [Op.or]: [
-//             collaboratorCondition,
-//             { members: teamUserIds },
-//             { createdBy: teamUserIds }
-//           ],
-//           status: 'To-Do'
-//         }
-//       });
-
-//       const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
-
-//       return {
-//         totalTaskCount,
-//         overDueCount,
-//         completedCount,
-//         inProgressCount,
-//         toDoCount,
-//       };
-//     };
-
-//     // Add task counts to each entity
-//     const teamsWithTaskCounts = await Promise.all(rows.map(async (entity) => {
-//       const taskCounts = await getTaskCounts(entity);
-//       return {
-//         ...entity.dataValues,
-//         taskCounts,
-//       };
-//     }));
-
-//     res.json({
-//       Teams: teamsWithTaskCounts,
-//       totalPages,
-//       currentPage: parseInt(page),
-//       pageSize: parseInt(pageSize),
-//       totalTeams: count,
-//       startTeam: offset + 1,
-//       endTeam: Math.min(offset + parseInt(pageSize), count),
-//       search
-//     });
-//   } catch (err) {
-//     console.error('Error executing Sequelize query: ' + err.stack);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
-
-// const ListTeam = async (req, res) => {
-//   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
-//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
-//   // Define the search conditions using Sequelize operators
-//   const condition = {
-//     name: { [Op.like]: `%${search}%` }
-//   };
-
-//   // Include additional filters in the condition
-//   Object.entries(restQueries).forEach(([field, value]) => {
-//     if (value !== '') {
-//       condition[field] = { [Op.like]: `%${value}%` };
-//     }
-//   });
-
-  
-// console.log("pageSize", pageSize)
-//   try {
-    
-//     // Execute the findAndCountAll method to fetch the paginated results and total count
-//     const { count, rows } = await db.Team.findAndCountAll({
-//       where: condition,
-//       order: [[sortBy, 'ASC']],
-//       limit: parseInt(pageSize),
-//       offset: offset
-//     });
-
-//     const totalPages = Math.ceil(count / pageSize);
-
-//     // Function to extract unique numeric user IDs from members and createdBy fields
-//     const extractUserIds = (rows) => {
-//       const userIds = new Set();
-//       rows.forEach(row => {
-//         if (Array.isArray(row.members)) {
-//           row.members.forEach(id => userIds.add(Number(id)));
-//         }
-//         if (row.createdBy) {
-//           userIds.add(Number(row.createdBy));
-//         }
-//       });
-//       return Array.from(userIds);
-//     };
-
-//     const userIdArray = extractUserIds(rows);
-
-
-//     if (userIdArray.length === 0) {
-//       return res.json({
-//         Teams: rows,
-//         totalPages,
-//         currentPage: parseInt(page),
-//         pageSize: parseInt(pageSize),
-//         totalTeams: count,
-//         startTeam: offset + 1,
-//         endTeam: Math.min(offset + parseInt(pageSize), count),
-//         search,
-//         taskCounts: {
-//           totalTaskCount: 0,
-//           overDueCount: 0,
-//           completedCount: 0,
-//           inProgressCount: 0,
-//           toDoCount: 0,
-//         }
-//       });
-//     }
-
-//     // Function to get task counts for a specific team
-//     const getTaskCounts = async (team) => {
-//       const teamUserIds = extractUserIds([team]);
-//       const collaboratorCondition = db.sequelize.where(
-//         db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
-//         true
-//       );
-
-//       const overDueCount = await db.Task.count({
-//         where: {
-//           [Op.or]: [
-//             collaboratorCondition,
-//             { members: teamUserIds },
-//             { createdBy: teamUserIds }
-//           ],
-//           dueDate: { [Op.lt]: new Date() },
-//           status: { [Op.ne]: 'Completed' }
-//         }
-//       });
-
-//       const completedCount = await db.Task.count({
-//         where: {
-//           [Op.or]: [
-//             collaboratorCondition,
-//             { members: teamUserIds },
-//             { createdBy: teamUserIds }
-//           ],
-//           status: 'Completed'
-//         }
-//       });
-
-//       const inProgressCount = await db.Task.count({
-//         where: {
-//           [Op.or]: [
-//             collaboratorCondition,
-//             { members: teamUserIds },
-//             { createdBy: teamUserIds }
-//           ],
-//           status: 'In-Progress'
-//         }
-//       });
-
-//       const toDoCount = await db.Task.count({
-//         where: {
-//           [Op.or]: [
-//             collaboratorCondition,
-//             { members: teamUserIds },
-//             { createdBy: teamUserIds }
-//           ],
-//           status: 'To-Do'
-//         }
-//       });
-
-//       const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
-
-//       return {
-//         totalTaskCount,
-//         overDueCount,
-//         completedCount,
-//         inProgressCount,
-//         toDoCount,
-//       };
-//     };
-
-//     // Add task counts to each entity
-//     const teamsWithTaskCounts = await Promise.all(rows.map(async (entity) => {
-//       const taskCounts = await getTaskCounts(entity);
-//       return {
-//         ...entity.dataValues,
-//         taskCounts,
-//       };
-//     }));
-
-//     res.json({
-//       Teams: teamsWithTaskCounts,
-//       totalPages,
-//       currentPage: parseInt(page),
-//       pageSize: parseInt(pageSize),
-//       totalTeams: count,
-//       startTeam: offset + 1,
-//       endTeam: Math.min(offset + parseInt(pageSize), count),
-//       search
-//     });
-//   } catch (err) {
-//     console.error('Error executing Sequelize query: ' + err.stack);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
 const ListTeam = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
-  const parsedPage = parseInt(page);
-  const parsedPageSize = parseInt(pageSize);
-  const offset = (parsedPage - 1) * parsedPageSize;
+  const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
   // Define the search conditions using Sequelize operators
   const condition = {
@@ -865,19 +551,19 @@ const ListTeam = async (req, res) => {
     }
   });
 
-  console.log("Query Condition:", condition);
-  console.log("Pagination - Page:", parsedPage, "PageSize:", parsedPageSize, "Offset:", offset);
-
+  
+console.log("pageSize", pageSize)
   try {
+    
     // Execute the findAndCountAll method to fetch the paginated results and total count
     const { count, rows } = await db.Team.findAndCountAll({
       where: condition,
       order: [[sortBy, 'ASC']],
-      limit: parsedPageSize,
+      limit: parseInt(pageSize),
       offset: offset
     });
 
-    const totalPages = Math.ceil(count / parsedPageSize);
+    const totalPages = Math.ceil(count / pageSize);
 
     // Function to extract unique numeric user IDs from members and createdBy fields
     const extractUserIds = (rows) => {
@@ -890,20 +576,21 @@ const ListTeam = async (req, res) => {
           userIds.add(Number(row.createdBy));
         }
       });
-      return Array.from(userIds).filter(id => !isNaN(id)); // Filter out NaN values
+      return Array.from(userIds);
     };
 
     const userIdArray = extractUserIds(rows);
+
 
     if (userIdArray.length === 0) {
       return res.json({
         Teams: rows,
         totalPages,
-        currentPage: parsedPage,
-        pageSize: parsedPageSize,
+        currentPage: parseInt(page),
+        pageSize: parseInt(pageSize),
         totalTeams: count,
         startTeam: offset + 1,
-        endTeam: Math.min(offset + parsedPageSize, count),
+        endTeam: Math.min(offset + parseInt(pageSize), count),
         search,
         taskCounts: {
           totalTaskCount: 0,
@@ -917,73 +604,66 @@ const ListTeam = async (req, res) => {
 
     // Function to get task counts for a specific team
     const getTaskCounts = async (team) => {
-      try {
-        const teamUserIds = extractUserIds([team]);
-        const collaboratorCondition = db.sequelize.where(
-          db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
-          true
-        );
+      const teamUserIds = extractUserIds([team]);
+      const collaboratorCondition = db.sequelize.where(
+        db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
+        true
+      );
 
-        console.log("Team User IDs:", teamUserIds);
+      const overDueCount = await db.Task.count({
+        where: {
+          [Op.or]: [
+            collaboratorCondition,
+            { members: teamUserIds },
+            { createdBy: teamUserIds }
+          ],
+          dueDate: { [Op.lt]: new Date() },
+          status: { [Op.ne]: 'Completed' }
+        }
+      });
 
-        const overDueCount = await db.Task.count({
-          where: {
-            [Op.or]: [
-              collaboratorCondition,
-              { members: { [Op.overlap]: teamUserIds } },
-              { createdBy: { [Op.in]: teamUserIds } }
-            ],
-            dueDate: { [Op.lt]: new Date() },
-            status: { [Op.ne]: 'Completed' }
-          }
-        });
+      const completedCount = await db.Task.count({
+        where: {
+          [Op.or]: [
+            collaboratorCondition,
+            { members: teamUserIds },
+            { createdBy: teamUserIds }
+          ],
+          status: 'Completed'
+        }
+      });
 
-        const completedCount = await db.Task.count({
-          where: {
-            [Op.or]: [
-              collaboratorCondition,
-              { members: { [Op.overlap]: teamUserIds } },
-              { createdBy: { [Op.in]: teamUserIds } }
-            ],
-            status: 'Completed'
-          }
-        });
+      const inProgressCount = await db.Task.count({
+        where: {
+          [Op.or]: [
+            collaboratorCondition,
+            { members: teamUserIds },
+            { createdBy: teamUserIds }
+          ],
+          status: 'In-Progress'
+        }
+      });
 
-        const inProgressCount = await db.Task.count({
-          where: {
-            [Op.or]: [
-              collaboratorCondition,
-              { members: { [Op.overlap]: teamUserIds } },
-              { createdBy: { [Op.in]: teamUserIds } }
-            ],
-            status: 'In-Progress'
-          }
-        });
+      const toDoCount = await db.Task.count({
+        where: {
+          [Op.or]: [
+            collaboratorCondition,
+            { members: teamUserIds },
+            { createdBy: teamUserIds }
+          ],
+          status: 'To-Do'
+        }
+      });
 
-        const toDoCount = await db.Task.count({
-          where: {
-            [Op.or]: [
-              collaboratorCondition,
-              { members: { [Op.overlap]: teamUserIds } },
-              { createdBy: { [Op.in]: teamUserIds } }
-            ],
-            status: 'To-Do'
-          }
-        });
+      const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
 
-        const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
-
-        return {
-          totalTaskCount,
-          overDueCount,
-          completedCount,
-          inProgressCount,
-          toDoCount,
-        };
-      } catch (error) {
-        console.error('Error getting task counts:', error);
-        throw error;
-      }
+      return {
+        totalTaskCount,
+        overDueCount,
+        completedCount,
+        inProgressCount,
+        toDoCount,
+      };
     };
 
     // Add task counts to each entity
@@ -998,15 +678,15 @@ const ListTeam = async (req, res) => {
     res.json({
       Teams: teamsWithTaskCounts,
       totalPages,
-      currentPage: parsedPage,
-      pageSize: parsedPageSize,
+      currentPage: parseInt(page),
+      pageSize: parseInt(pageSize),
       totalTeams: count,
       startTeam: offset + 1,
-      endTeam: Math.min(offset + parsedPageSize, count),
+      endTeam: Math.min(offset + parseInt(pageSize), count),
       search
     });
   } catch (err) {
-    console.error('Error executing Sequelize query:', err.stack);
+    console.error('Error executing Sequelize query: ' + err.stack);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
