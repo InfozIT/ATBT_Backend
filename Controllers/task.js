@@ -933,7 +933,7 @@ const UpdateTask = async (req, res) => {
         const mailData = {
           from: 'nirajkr00024@gmail.com',
           to: emails[i],
-          subject: 'Task Created',
+          subject: 'Task Assigned',
           html: `
          
           <style>
