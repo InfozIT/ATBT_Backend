@@ -1048,7 +1048,7 @@ const UpdateTask = async (req, res) => {
 
         if (due.every(date => date != null) && dec.every(decision => decision != null)) {
           await transporter.sendMail(mailData);
-          mycon.query(`UPDATE Tasks SET update_count = update_count + 1 WHERE id = ${taskId}`, (error, result) => {
+          mycon.query(`UPDATE Tasks SET update_count = 1 WHERE id = ${taskId}`, (error, result) => {
             if (error) {
                 console.error(error);
             } else {
