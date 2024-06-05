@@ -853,11 +853,6 @@ const GetTaskbyId = async (req, res) => {
   }
 };
 
-
-
-
-
-
 const UpdateTask = async (req, res) => {
   try {
     const taskId = req.params.id; // Assuming taskId is part of the URL
@@ -933,7 +928,7 @@ const UpdateTask = async (req, res) => {
         const mailData = {
           from: 'nirajkr00024@gmail.com',
           to: emails[i],
-          subject: 'Task Assigned',
+          subject: 'Task Created ',
           html: `
          
           <style>
@@ -1043,7 +1038,18 @@ const UpdateTask = async (req, res) => {
           `,
         };
 
-        await transporter.sendMail(mailData);
+
+        let tasks = await db.Task.findAll({
+          where: { id: req.params.id },
+          raw: true,
+        });
+        
+        let due = tasks.map(entry => entry.dueDate);
+        let dec = tasks.map(entry => entry.decision);
+
+        if (due.every(date => date != null) && dec.every(decision => decision != null)) {
+          await transporter.sendMail(mailData);
+        }
       }
 
     res.status(200).json({ message: "successfully updated" })
