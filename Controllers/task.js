@@ -1168,7 +1168,10 @@ const UpdateTask = async (req, res) => {
     let updateCount = taskData.update_count || 0;
   
     // Update the update_count
-    await db.Task.update({ update_count: updateCount + 1 }, { where: { id: taskId } });
+    mycon.execute('UPDATE Tasks SET update_count = update_count + 1 WHERE id = ?',
+          [taskId]
+      );
+  
   
     // Check if it's the first update
     if (updateCount === 0) {
