@@ -1040,7 +1040,7 @@ const UpdateTask = async (req, res) => {
         const mailData2 = {
           from: 'nirajkr00024@gmail.com',
           to: emails[i],
-          subject: 'Task Created ',
+          subject: 'Task updated',
           html: `
          
           <style>
@@ -1168,12 +1168,17 @@ const UpdateTask = async (req, res) => {
           let count = result.map(entry => entry.update_count);
           const taskIdNum = parseInt(count);
           console.log(taskIdNum)
-          if (taskIdNum === 1){
+          if (taskIdNum == 1){
             console.log("send update mail")
             transporter.sendMail(mailData2);
 
           }else{
-            transporter.sendMail(mailData1);
+
+            console.log("send Create mail")
+            transporter.sendMail(mailData);
+            mycon.query(`UPDATE Tasks SET update_count = 1 WHERE id = ${taskId}`, (result) => {
+
+            });
           }
           })
 
