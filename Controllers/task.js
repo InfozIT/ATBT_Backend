@@ -853,6 +853,188 @@ const GetTaskbyId = async (req, res) => {
   }
 };
 
+// const UpdateTask = async (req, res) => {
+//   try {
+//     let taskId = req.params.id; // Assuming taskId is part of the URL
+//     const updateData = req.body;
+//     let { members } = req.body;
+//     let data = req.body;
+//     const { userId } = req.user;
+  
+//     let file = req.file;
+//     const selectedmember = JSON.stringify(members);
+  
+//     if (file) {
+//       const result = await uploadToS3(req.file);
+//       updateData = {
+//         image: `${result.Location}`,
+//         members: selectedmember,
+//         createdby: userId,
+//         ...data,
+//       };
+//     }
+    
+//     const updatedTask = await db.Task.update(updateData, {
+//       where: { id: req.params.id },
+//     });
+  
+//     let member = await db.Task.findOne({ where: { id: req.params.id } });
+//     if (!member) {
+//       return res.status(404).json({ error: "Meeting not found" });
+//     }
+  
+//     let meetMembers = [];
+//     let { decision, dueDate, meetingId } = member.dataValues;
+//     let PR = member.dataValues.members;
+  
+//     meetMembers.push(userId);
+//     meetMembers.push(PR);
+  
+//     // Fetch creator's name
+//     const creator = await db.Meeting.findOne({
+//       attributes: ['meetingnumber'],
+//       where: { id: meetingId },
+//       raw: true,
+//     });
+  
+//     const meetingnumber = creator.meetingnumber;
+  
+//     // Fetch emails and names of the members
+//     const emailResults = await db.User.findAll({
+//       attributes: ['email', 'name'],
+//       where: { id: { [Op.in]: meetMembers } },
+//       raw: true,
+//     });
+  
+//     const emails = emailResults.map(entry => entry.email);
+//     const names = emailResults.map(entry => entry.name);
+//     let currentDate = new Date().toISOString().slice(0, 10);
+  
+//     const creatorNameResult = await db.User.findAll({
+//       attributes: ['name'],
+//       where: { id: userId },
+//       raw: true,
+//     });
+//     const creatorName = creatorNameResult.map(entry => entry.name)[0];
+  
+//     const mailData = {
+//       from: 'nirajkr00024@gmail.com',
+//       to: '',
+//       subject: 'Task Created',
+//       html: `
+//         <style>
+//           .container { max-width: 700px; margin: 0 auto; padding: 24px 0; font-family: "Poppins", sans-serif; background-color: rgb(231 229 228); border-radius: 1%; }
+//           .banner { margin-bottom: 10px; width: 90px; height: 8vh; margin-right: 20px; }
+//           .header { display: flex; align-items: center; justify-content: center; padding-top: 10px; }
+//           p { margin-bottom: 15px; }
+//           .container-main { max-width: 650px; margin: 0 auto; font-family: "serif", sans-serif; background-color: #fafafa; border-radius: 1%; }
+//           .content { padding: 25px; }
+//           table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+//           th, td { border: 1px solid black; padding: 8px; text-align: left; }
+//           tr:nth-child(even) { background-color: #f2f2f2; }
+//           .footer { background-color: rgb(249 115 22); padding: 0.5em; text-align: center; }
+//         </style>
+//         <div class="container">
+//           <div class="container-main">
+//             <div class="header">
+//               <img src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png" alt="kapil_Groups_Logo" class="banner"/>
+//             </div>
+//             <hr style="margin: 0" />
+//             <div class="content">
+//               <h5 style="font-size: 1rem; font-weight: 500">
+//                 Dear <span style="font-weight: bold">{name}</span>,
+//               </h5>
+//               <div style="font-size: 0.8rem">
+//                 <p style="line-height: 1.4">
+//                   You've been assigned a decision made during meeting number:
+//                   <span style="font-weight:bold"> ${meetingnumber}</span>. Here are the details:
+//                 </p>
+//                 <table>
+//                   <thead>
+//                     <th>Decision Taken</th>
+//                     <th>Assigned Date</th>
+//                     <th>Due Date</th>
+//                   </thead>
+//                   <tbody>
+//                     <tr>
+//                       <td> ${decision}</td>
+//                       <td> ${currentDate}</td>
+//                       <td> ${dueDate}</td>
+//                     </tr>
+//                   </tbody>
+//                 </table>
+//                 <p>Please ensure that the decision assigned to you is completed by the due date.</p>
+//                 <p style="padding-top: 15px;">Best regards,</p>
+//                 <p>${creatorName}</p>
+//                 <p>Kapil Group</p>
+//               </div>
+//             </div>
+//             <div class="footer">
+//               <p style="color: white; font-size: 15px; margin: 0">
+//                 All rights are reserved by Kapil Group
+//               </p>
+//             </div>
+//           </div>
+//         </div>
+//       `,
+//     };
+  
+//     const tasks = await db.Task.findAll({
+//       where: { id: req.params.id },
+//       raw: true,
+//     });
+  
+//     const dueDates = tasks.map(entry => entry.dueDate);
+//     const decisions = tasks.map(entry => entry.decision);
+  
+//     if (dueDates.every(date => date != null) && decisions.every(decision => decision != null)) {
+//       mycon.query('SELECT update_count FROM Tasks WHERE id = ?', [taskId], (err, result) => {
+//         if (err) {
+//           console.error("Error fetching update_count:", err);
+//           return res.status(500).json({ message: "Database query error" });
+//         }
+  
+//         let count = result[0].update_count;
+//         const taskIdNum = parseInt(count);
+  
+//         if (taskIdNum === 1) {
+//           console.log("send update mail");
+//           emails.forEach((email, i) => {
+//             mailData.to = email;
+//             mailData.subject = 'Task updated';
+//             mailData.html = mailData.html.replace('{name}', names[i]);
+//             transporter.sendMail(mailData, (error, info) => {
+//               if (error) {
+//                 console.error("Error sending update mail:", error);
+//                 return;
+//               }
+//               console.log("Update mail sent:", info.response);
+//             });
+//           });
+  
+//           // Update the update_count in the database
+//           mycon.query('UPDATE Tasks SET update_count = 1 WHERE id = ?', [taskId], (updateErr) => {
+//             if (updateErr) {
+//               console.error("Error updating update_count:", updateErr);
+//               return res.status(500).json({ message: "Database update error" });
+//             }
+//             console.log("Update count updated successfully");
+//           });
+//         } else {
+//           console.log("Task already updated. No need to send mail.");
+//         }
+  
+//         return res.status(200).json({ message: "successfully updated" });
+//       });
+//     } else {
+//       return res.status(400).json({ message: "Some data is missing." });
+//     }
+//   } catch (error) {
+//     console.error("Error updating task:", error);
+//     return res.status(500).send("Error updating task");
+//   }
+  
+// }
 const UpdateTask = async (req, res) => {
   try {
     let taskId = req.params.id; // Assuming taskId is part of the URL
@@ -866,29 +1048,26 @@ const UpdateTask = async (req, res) => {
   
     if (file) {
       const result = await uploadToS3(req.file);
-      updateData = {
-        image: `${result.Location}`,
-        members: selectedmember,
-        createdby: userId,
-        ...data,
-      };
+      updateData.image = `${result.Location}`;
     }
     
+    updateData.members = selectedmember;
+    updateData.createdby = userId;
     const updatedTask = await db.Task.update(updateData, {
-      where: { id: req.params.id },
+      where: { id: taskId },
     });
   
-    let member = await db.Task.findOne({ where: { id: req.params.id } });
-    if (!member) {
+    let task = await db.Task.findOne({ where: { id: taskId } });
+    if (!task) {
       return res.status(404).json({ error: "Meeting not found" });
     }
   
     let meetMembers = [];
-    let { decision, dueDate, meetingId } = member.dataValues;
-    let PR = member.dataValues.members;
+    let { decision, dueDate, meetingId } = task.dataValues;
+    let PR = JSON.parse(task.dataValues.members);
   
     meetMembers.push(userId);
-    meetMembers.push(PR);
+    meetMembers.push(...PR);
   
     // Fetch creator's name
     const creator = await db.Meeting.findOne({
@@ -910,17 +1089,17 @@ const UpdateTask = async (req, res) => {
     const names = emailResults.map(entry => entry.name);
     let currentDate = new Date().toISOString().slice(0, 10);
   
-    const creatorNameResult = await db.User.findAll({
+    const creatorNameResult = await db.User.findOne({
       attributes: ['name'],
       where: { id: userId },
       raw: true,
     });
-    const creatorName = creatorNameResult.map(entry => entry.name)[0];
+    const creatorName = creatorNameResult.name;
   
     const mailData = {
       from: 'nirajkr00024@gmail.com',
       to: '',
-      subject: 'Task Created',
+      subject: 'Task Updated',
       html: `
         <style>
           .container { max-width: 700px; margin: 0 auto; padding: 24px 0; font-family: "Poppins", sans-serif; background-color: rgb(231 229 228); border-radius: 1%; }
@@ -979,62 +1158,44 @@ const UpdateTask = async (req, res) => {
       `,
     };
   
-    const tasks = await db.Task.findAll({
-      where: { id: req.params.id },
+    // Fetch update_count
+    const taskData = await db.Task.findOne({
+      attributes: ['update_count'],
+      where: { id: taskId },
       raw: true,
     });
   
-    const dueDates = tasks.map(entry => entry.dueDate);
-    const decisions = tasks.map(entry => entry.decision);
+    let updateCount = taskData.update_count || 0;
   
-    if (dueDates.every(date => date != null) && decisions.every(decision => decision != null)) {
-      mycon.query('SELECT update_count FROM Tasks WHERE id = ?', [taskId], (err, result) => {
-        if (err) {
-          console.error("Error fetching update_count:", err);
-          return res.status(500).json({ message: "Database query error" });
-        }
+    // Update the update_count
+    await db.Task.update({ update_count: updateCount + 1 }, { where: { id: taskId } });
   
-        let count = result[0].update_count;
-        const taskIdNum = parseInt(count);
-  
-        if (taskIdNum === 1) {
-          console.log("send update mail");
-          emails.forEach((email, i) => {
-            mailData.to = email;
-            mailData.subject = 'Task updated';
-            mailData.html = mailData.html.replace('{name}', names[i]);
-            transporter.sendMail(mailData, (error, info) => {
-              if (error) {
-                console.error("Error sending update mail:", error);
-                return;
-              }
-              console.log("Update mail sent:", info.response);
-            });
-          });
-  
-          // Update the update_count in the database
-          mycon.query('UPDATE Tasks SET update_count = 1 WHERE id = ?', [taskId], (updateErr) => {
-            if (updateErr) {
-              console.error("Error updating update_count:", updateErr);
-              return res.status(500).json({ message: "Database update error" });
-            }
-            console.log("Update count updated successfully");
-          });
-        } else {
-          console.log("Task already updated. No need to send mail.");
-        }
-  
-        return res.status(200).json({ message: "successfully updated" });
+    // Check if it's the first update
+    if (updateCount === 0) {
+      console.log("send update mail");
+      emails.forEach((email, i) => {
+        mailData.to = email;
+        mailData.subject = 'Task Updated';
+        mailData.html = mailData.html.replace('{name}', names[i]);
+        transporter.sendMail(mailData, (error, info) => {
+          if (error) {
+            console.error("Error sending update mail:", error);
+            return;
+          }
+          console.log("Update mail sent:", info.response);
+        });
       });
     } else {
-      return res.status(400).json({ message: "Some data is missing." });
+      console.log("Task already updated. No need to send mail.");
     }
+  
+    return res.status(200).json({ message: "Successfully updated" });
   } catch (error) {
     console.error("Error updating task:", error);
     return res.status(500).send("Error updating task");
   }
-  
 }
+
   
 
 
