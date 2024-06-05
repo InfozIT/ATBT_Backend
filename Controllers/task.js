@@ -855,7 +855,7 @@ const GetTaskbyId = async (req, res) => {
 
 const UpdateTask = async (req, res) => {
   try {
-    const taskId = req.params.id; // Assuming taskId is part of the URL
+    let taskId = req.params.id; // Assuming taskId is part of the URL
     const updateData = req.body;
     let { members } = req.body;
     let data = req.body;
@@ -1048,15 +1048,13 @@ const UpdateTask = async (req, res) => {
 
         if (due.every(date => date != null) && dec.every(decision => decision != null)) {
           await transporter.sendMail(mailData);
-          await db.Task.update(
-            { update_count: 1 },
-            {
-              where: {
-                id: req.params.id,
-              },
-            },
-          );
-
+          mycon.query(`UPDATE Tasks SET update_count = update_count + 1 WHERE id = ${taskId}`, (error, result) => {
+            if (error) {
+                console.error(error);
+            } else {
+                console.log(result);
+            }
+        });
 
         }
       }
