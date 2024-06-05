@@ -1037,6 +1037,118 @@ const UpdateTask = async (req, res) => {
     </div>
           `,
         };
+        const mailData2 = {
+          from: 'nirajkr00024@gmail.com',
+          to: emails[i],
+          subject: 'Task Created ',
+          html: `
+         
+          <style>
+             .container {
+               max-width: 700px;
+               margin: 0 auto;
+               padding: 24px 0;
+               font-family: "Poppins", sans-serif;
+               background-color: rgb(231 229 228);
+               border-radius: 1%;
+             }
+             .banner {
+               margin-bottom: 10px;
+               width: 90px;
+               height: 8vh;
+               margin-right: 20px;
+             }
+          
+             .header {
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               padding-top: 10px;
+             }
+          
+             p {
+               margin-bottom: 15px;
+             }
+             .container-main {
+               max-width: 650px;
+               margin: 0 auto;
+          
+               font-family: "serif", sans-serif;
+               background-color: #fafafa;
+               border-radius: 1%;
+             }
+             .content {
+               padding: 25px;
+             }
+             table {
+               border-collapse: collapse;
+               width: 100%;
+               margin-top: 10px;
+             }
+             th, td {
+               border: 1px solid black;
+               padding: 8px;
+               text-align: left;
+             }
+             tr:nth-child(even) {
+               background-color: #f2f2f2;
+             }
+             .footer {
+               background-color: rgb(249 115 22);
+               padding: 0.5em;
+               text-align: center;
+             }
+          
+           </style>
+           <div class="container">
+      <div class="container-main">
+        <div class="header">
+          <img
+            src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+            alt="kapil_Groups_Logo"
+            class="banner"
+          />
+        </div>
+ 
+        <hr style="margin: 0" />
+        <div class="content">
+          <h5 style="font-size: 1rem; font-weight: 500">
+            Dear <span style="font-weight: bold">${names[i]}</span>,
+          </h5>
+          <div style="font-size: 0.8rem">
+            <p style="line-height: 1.4">
+              You've been assigned a decision  made during meeting number:
+              <span style="font-weight:bold"> ${meetingnumber}</span>. Here are the details:
+            </p>
+           <table>
+            <thead>
+              <th>Decision Taken</th>
+              <th>Assigned Date</th>
+              <th>Due Date</th>
+            </thead>
+            <tbody>
+              <tr>
+                <td> ${decision}</td>
+              <td> ${currentDate}</td>
+              <td> ${dueDate}</td>
+              </tr>
+            </tbody>
+           </table>
+           <p>Please ensure that the decision assigned to you is completed by the due date.</p>
+            <p style="padding-top: 15px;">Best regards,</p>
+            <p>${Creatorname}</p>
+            <p>Kapil Group</p>
+          </div>
+        </div>
+        <div class="footer">
+          <p style="color: white; font-size: 15px; margin: 0">
+            All rights are reserved by Kapil Group
+          </p>
+        </div>
+      </div>
+    </div>
+          `,
+        };
         
         let tasks = await db.Task.findAll({
           where: { id: req.params.id },
@@ -1052,11 +1164,33 @@ const UpdateTask = async (req, res) => {
             if (error) {
                 console.error(error);
             } else {
-                console.log(result);
+                console.log("-");
             }
         });
 
         }
+        mycon.query('SELECT update_count FROM Tasks WHERE id = ?', taskId, (err, result) => {
+          let count = result.map(entry => entry.update_count);
+          const taskIdNum = parseInt(count);
+          console.log(taskIdNum)
+          if (taskIdNum === 1){
+            console.log("send update mail")
+            transporter.sendMail(mailData2);
+
+          }
+
+
+
+          })
+
+
+
+
+
+
+
+
+
       }
 
     res.status(200).json({ message: "successfully updated" })
