@@ -1056,7 +1056,12 @@ const UpdateTask = async (req, res) => {
         }
       }
 
-
+    res.status(200).json({ message: "successfully updated" })
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).send("Error updating task");
+  }
+};
 
 
 const DeleteTask = async (req, res) => {
