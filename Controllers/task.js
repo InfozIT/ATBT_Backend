@@ -1049,9 +1049,14 @@ const UpdateTask = async (req, res) => {
         if (due.every(date => date != null) && dec.every(decision => decision != null)) {
           await transporter.sendMail(mailData);
           await db.Task.update(
-            { update_count: 1 },  // Set emailSent to true
-            { where: { id: req.params.id }, raw: true }  // Specify the task ID
+            { update_count: 1 },
+            {
+              where: {
+                id: req.params.id,
+              },
+            },
           );
+
 
         }
       }
