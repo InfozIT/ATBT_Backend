@@ -1163,20 +1163,17 @@ const UpdateTask = async (req, res) => {
 
         if (due.every(date => date != null) && dec.every(decision => decision != null)) {
 
-
-        await transporter.sendMail(mailData);
-
-
-
         }
         mycon.query('SELECT update_count FROM Tasks WHERE id = ?', taskId, (err, result) => {
           let count = result.map(entry => entry.update_count);
           const taskIdNum = parseInt(count);
           console.log(taskIdNum)
-          if (taskIdNum === 0){
+          if (taskIdNum === 1){
             console.log("send update mail")
             transporter.sendMail(mailData2);
 
+          }else{
+            transporter.sendMail(mailData1);
           }
           })
 
