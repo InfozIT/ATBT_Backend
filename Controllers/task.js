@@ -1037,8 +1037,7 @@ const UpdateTask = async (req, res) => {
     </div>
           `,
         };
-
-
+        
         let tasks = await db.Task.findAll({
           where: { id: req.params.id },
           raw: true,
