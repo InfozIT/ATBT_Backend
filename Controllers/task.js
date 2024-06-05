@@ -1157,30 +1157,27 @@ const UpdateTask = async (req, res) => {
         
         let due = tasks.map(entry => entry.dueDate);
         let dec = tasks.map(entry => entry.decision);
+        mycon.query(`UPDATE Tasks SET update_count = 1 WHERE id = ${taskId}`, (result) => {
+
+        });
 
         if (due.every(date => date != null) && dec.every(decision => decision != null)) {
-          await transporter.sendMail(mailData);
-          mycon.query(`UPDATE Tasks SET update_count = 1 WHERE id = ${taskId}`, (error, result) => {
-            if (error) {
-                console.error(error);
-            } else {
-                console.log("-");
-            }
-        });
+
+
+        await transporter.sendMail(mailData);
+
+
 
         }
         mycon.query('SELECT update_count FROM Tasks WHERE id = ?', taskId, (err, result) => {
           let count = result.map(entry => entry.update_count);
           const taskIdNum = parseInt(count);
           console.log(taskIdNum)
-          if (taskIdNum === 1){
+          if (taskIdNum === 0){
             console.log("send update mail")
             transporter.sendMail(mailData2);
 
           }
-
-
-
           })
 
 
