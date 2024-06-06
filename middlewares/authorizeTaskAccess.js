@@ -456,11 +456,13 @@ const authorizeTaskAccess = async (req, res, next) => {
     // Get authorized TeamIds
     const authorizedTeamIds = teams.map(team => team.id);
 
+    
+
     console.log("authorizedTeamIds", authorizedTeamIds)
 
     // Filter meetings based on authorized TeamIds or user-specific criteria
     const authorizedMeetings = allMeetings.filter(meeting =>
-      authorizedTeamIds.includes(userId) ||
+      authorizedTeamIds.includes(meeting.TeamId) ||
       meeting.UserId === userId ||
       meeting.createdBy === userId || 
       meeting.members.includes(userId)
@@ -473,20 +475,25 @@ const authorizeTaskAccess = async (req, res, next) => {
     // Fetch users where entityname matches the EntityId in meetings
     const entityUsers = await db.User.findAll({
       where: {
-        entityname: { [Op.in]: entityIds }
+        entityname: { [Op.in]: entityIds },
+        [Op.or]: [
+          { id: userId }
+        ]
       }
     });
 
     // Extract user IDs from entity users
-    const entityUserIds = entityUsers.map(user => user.id);
+    const entityUserIds = entityUsers.map(user => user.entityname);
 
+    const integerIds = entityUserIds.map(id => parseInt(id));
 
-    console.log("entityUserIds", entityUserIds)
+    console.log("entityUserIds", integerIds)
     // Filter meetings based on entity user IDs
     const authorizedEntityMeetings = allMeetings.filter(meeting =>
       // entityUserIds.includes(meeting.UserId) ||
       // entityUserIds.includes(meeting.createdBy)
-      // entityUserIds.includes(userId) ||
+      // isUserIdInEntityUserIds ||
+      integerIds.includes(meeting.EntityId) ||
       meeting.UserId === userId ||
       meeting.createdBy === userId || 
       meeting.members.includes(userId)
@@ -496,7 +503,7 @@ const authorizeTaskAccess = async (req, res, next) => {
     // Merge authorized meetings
     const finalAuthorizedMeetings = [...new Set([...authorizedMeetings, ...authorizedEntityMeetings])];
 
-
+    console.log("finalAuthorizedMeetings", finalAuthorizedMeetings)
 
 
 
