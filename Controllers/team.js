@@ -73,7 +73,7 @@ const CreateTeam = async (req, res) => {
     const mailData = {
         from: 'nirajkr00024@gmail.com',
         to: emails[i],
-        subject: 'Team Created',
+        subject: `Welcome to ${TeamName}!`,
         html: `
           <style>
             .container {
@@ -360,7 +360,7 @@ const UpdateTeam = async (req, res) => {
       const mailData = {
         from: 'nirajkr00024@gmail.com',
         to: emails[i],
-        subject: 'Team Updated',
+        subject: `Updated  ${teamName}!`,
         html: `
           <style>
             .container {
