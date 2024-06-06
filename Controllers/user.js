@@ -259,7 +259,7 @@ const List_User_Pub = async (req, res) => {
 
             const totalPages = Math.ceil(totalUsers / pageSize);
 
-            const final = result.map(item => { return { name: item.name, id: item.id, email: item.email, image: item.image } });
+            const final = result.map(item => { return { name: item.name, id: item.id, email: item.email, image: item.image,RoleId: item.RoleId } });
 
 
             res.json({
