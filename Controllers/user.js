@@ -102,7 +102,7 @@ async function sendEmail(email, password,name,Creatorname) {
     const mailData = {
         from: 'nirajkr00024@gmail.com',
         to: email,
-        subject: 'Welcome to ATBT! Your Account has been Created',
+        subject: `${name}, Welcome to ATBT!`,
         html: `
         <style>
         .container {
@@ -534,7 +534,7 @@ const Update_User = async (req, res) => {
             const mailData = {
                 from: 'nirajkr00024@gmail.com',
                 to: email,
-                subject: 'User updated',
+                subject: 'Your Account Details Updated Successfully!',
                 html: `  <style>
                 .container {
                   max-width: 700px;
@@ -678,7 +678,7 @@ const Reset_Password = async (req, res) => {
         const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: email,
-            subject: 'Password Reset Request',
+            subject: 'Your Password Has Been Successfully Updated!',
             html: `
             <style>
               .container {
