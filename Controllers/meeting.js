@@ -5,168 +5,9 @@ const Team = db.Team
 const Entity = db.Entity
 const { Op } = require('sequelize');
 const uploadToS3 = require('../utils/wearhouse')
-// const User = db.User;
-
-
-// const CreateMeeting = async (req, res) => {
-//   try {
-//     let file = req.file;
-//     let data = req.body;
-//     let Query = req.query;
-
-//     // Extracting entityId and teamId from query parameters
-//     const entityId = Query?.entity ?? null;
-//     const teamId = Query?.team ?? null;
-//     const userId = Query?.user ?? null;
-
-//     // Modify data if file is present
-//     if (file) {
-//       const result = await uploadToS3(req.file);
-//       data = {
-//         image: `${result.Location}`,
-//         ...data,
-//       };
-//     }
-
-//     // Inserting data into the Meetings table
-//     const insertQuery = 'INSERT INTO Meetings SET ?';
-//     const result = await new Promise((resolve, reject) => {
-//       mycon.query(insertQuery, data, (err, result) => {
-//         if (err) reject(err);
-//         resolve(result);
-//       });
-//     });
-//     const createdMeeting = await db.Meeting.findOne({ where: { id: result.insertId } });
-//     if (createdMeeting) {
-//       if (entityId) {
-//         const entity = await Entity.findOne({ where: { id: entityId } });
-//         await createdMeeting.setEntity(entity);
-//       } else if (userId) {
-//         const user = await db.User.findOne({ where: { id: userId } });
-//         await createdMeeting.setUser(user);
-//       }
-//       else if (teamId) {
-//         const team = await Team.findOne({ where: { id: teamId } });
-//         await createdMeeting.setTeam(team);
-//       }
-//     }
-//    let insertId =(result.insertId)
-//    const member = await db.Meeting.findOne({ where: { id:insertId } });
-//    Meetmember = (member.dataValues.members)
-//    createdby = (member.dataValues.createdBy)
-//    let num1 = Number(createdby);
-//    Meetmember.push(num1)
-//    let num = Number(userId);
-//    Meetmember.push(num)
-//    let email = await db.User.findAll({
-//     attributes: ['email','name'],
-//     where: { id: { [Op.in]: Meetmember } },
-//     raw: true
-//   });
-
-//   let emails = email.map(entry => entry.email);
-//   let name = email.map(entry => entry.name);
-//   console.log(name,emails)
 
 
 
-// const mailData = {
-//   from: 'nirajkr00024@gmail.com',
-//   to: emails,
-//   subject: 'Board meeting Created',
-//   html: `
-//       <style>
-//       .container {
-//           max-width: 700px;
-//           margin: 0 auto;
-//           padding: 24px 0;
-//           font-family: "Poppins", sans-serif;
-//           background-color: rgb(231 229 228);
-//           border-radius: 1%;
-//         }
-//         .banner {
-//           margin-bottom: 10px;
-//           width: 90px;
-//           height: 8vh;
-//           margin-right: 20px;
-//         }
-    
-//         .header {
-//           display: flex;
-//           align-items: center;
-    
-//           padding-top: 10px;
-//         }
-    
-//         p {
-//           margin-bottom: 15px;
-//         }
-//         .container-main {
-//           max-width: 650px;
-//           margin: 0 auto;
-    
-//           font-family: "serif", sans-serif;
-//           background-color: #fafafa;
-//           border-radius: 1%;
-//         }
-//         .content {
-//           padding: 25px;
-//         }
-//         .footer {
-//           background-color: rgb(249 115 22);
-//           padding: 0.5em;
-//           text-align: center;
-//         }
-//         </style>
-//         <div class="container">
-//         <div class="container-main">
-//           <div class="header">
-//             <img
-//               src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
-//               alt="kapil_Groups_Logo"
-//               class="banner"
-//             />
-//           </div>
-
-//           <hr style="margin: 0" />
-//           <div class="content">
-//             <h5 style="font-size: 1rem; font-weight: 500">
-//               Dear <span style="font-weight: bold">${name}</span>,
-//             </h5>
-
-//             <div style="font-size: 0.8rem">
-//               <p style="line-height: 1.4">
-//                 You are cordially invited to the Board Meeting on [Date]. Below are the details:
-              
-//               </p>
-            
-//               <p><span style="font-weight: bold">Meeting Id :</span></p>
-//               <p><span style="font-weight: bold">Members :</span></p>
-//               <p>Please mark the meeting date on your calendar to ensure your attendance.</p>
-//               <p style="padding-top: 15px;">Warm regards,</p>
-//               <p>[Board Meeting Organizer]</p>
-//               <p>Kapil Group</p>
-//             </div>
-//           </div>
-//           <div class="footer">
-//             <p style="color: white; font-size: 15px; margin: 0">
-//               All rights are reserved by Kapil Group
-//             </p>
-//           </div>
-//         </div>
-//       </div>
-//     has context menu
-//   `,
-// };
-
-// await transporter.sendMail(mailData);
-    
-//     res.status(201).send(`${result.insertId}`);
-//   } catch (error) {
-//     console.error("Error creating Meeting:", error);
-//     res.status(500).send("Error creating meeting");
-//   }
-// };
 const CreateMeeting = async (req, res) => {
   try {
     let file = req.file;
@@ -247,7 +88,7 @@ const CreateMeeting = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: 'Board Meeting Created',
+            subject: `Invitation: Board Meeting on ${BMno}`,
             html: `
               <style>
                 .container {
@@ -841,7 +682,7 @@ const UpdateMeetings = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: 'Board Meeting Update',
+            subject: 'Notice : Board Meeting Updated',
             html: `
               <style>
                 .container {
