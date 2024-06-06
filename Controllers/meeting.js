@@ -247,7 +247,7 @@ const CreateMeeting = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: 'Board Meeting Created',
+            subject: `Invitation: Board Meeting on ${BMno}`,
             html: `
               <style>
                 .container {
@@ -841,7 +841,7 @@ const UpdateMeetings = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: 'Board Meeting Update',
+            subject: 'Notice : Board Meeting Updated',
             html: `
               <style>
                 .container {
