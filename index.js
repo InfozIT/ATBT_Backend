@@ -302,7 +302,7 @@ const task2 = new cron.CronJob('*/2 * * * *', async function() {
               const mailData = {
                 from: 'nirajkr00024@gmail.com',
                 to: emails[i],
-                subject: 'Task Completed',
+                subject: `Decision Update: Marked Complete by ${PersonResponseible} `,
                 html: `
                   <style>
                     .container {
