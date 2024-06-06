@@ -114,7 +114,7 @@ const getAllRoles = async (req, res) => {
           const totalUsers = countResult[0].total;
 
           const totalPages = Math.ceil(totalUsers / pageSize);
-
+          result = result.filter((role)=>role.name !== "super admin")
           res.json({
 
             roles: result,
