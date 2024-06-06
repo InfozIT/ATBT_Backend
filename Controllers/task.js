@@ -928,7 +928,7 @@ const UpdateTask = async (req, res) => {
         const mailData = {
           from: 'nirajkr00024@gmail.com',
           to: emails[i],
-          subject: 'Task Created ',
+          subject: 'Action Required: Task update for you ',
           html: `
          
           <style>
