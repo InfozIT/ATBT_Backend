@@ -589,28 +589,28 @@ task3.start();
 
 
 // Function to check and update Users table
-// async function checkAndUpdateUsers() {
-//   try {
-//     // Fetch users where entityname has been updated
-//     const users = await db.User.findAll();
+async function checkAndUpdateUsers() {
+  try {
+    // Fetch users where entityname has been updated
+    const users = await db.User.findAll();
 
-//     for (const user of users) {
-//       if (user.entityname !== user.EntityId) {
-//         user.EntityId = user.entityname;
-//         await user.save();
-//       }
-//     }
-//   } catch (error) {
-//     console.error('Error checking and updating users:', error);
-//   }
-// }
+    for (const user of users) {
+      if (user.entityname !== user.EntityId) {
+        user.EntityId = user.entityname;
+        await user.save();
+      }
+    }
+  } catch (error) {
+    console.error('Error checking and updating users:', error);
+  }
+}
 
-// // Setup cron job to run every second
-// const task4 = new cron.CronJob('* * * * * *', async function() {
-//   await checkAndUpdateUsers();
-// });
+// Setup cron job to run every second
+const task4 = new cron.CronJob('* * * * * *', async function() {
+  await checkAndUpdateUsers();
+});
 
-// task4.start();
+task4.start();
 
 
 
