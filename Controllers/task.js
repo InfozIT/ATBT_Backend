@@ -402,7 +402,7 @@ const UpdateTask = async (req, res) => {
             </thead>
             <tbody>
               <tr>
-                <td> ${decision}</td>
+                <td  style="width:"400px"> ${decision}</td>
               <td> ${currentDate}</td>
               <td> ${dueDate}</td>
               </tr>
@@ -865,7 +865,7 @@ const SubTaskUpdate = async (req, res) => {
                     </thead>
                     <tbody>
                       <tr>
-                        <td>${decision}</td>
+                        <td style="width:"400px">${decision}</td>
                         <td>${AssignedDate}</td>
                         <td>${dueDate}</td>
                       </tr>

@@ -384,7 +384,7 @@ const task2 = new cron.CronJob('*/2 * * * *', async function() {
                             </thead>
                             <tbody>
                               <tr>
-                                <td>${decision}</td>
+                                <td style="width:"400px">${decision}</td>
                                 <td>${dueDate}</td>
                                 <td>${status}</td>
                               </tr>
@@ -575,7 +575,7 @@ const task3 = new cron.CronJob('0 0 * * SUN', async function() {
                             </thead>
                             <tbody>
                               <tr>
-                                <td>${decision}</td>
+                                <td style="width:"400px">${decision}</td>
                                 <td>${dueDate}</td>
                                 <td>${status}</td>
                               </tr>
