@@ -722,8 +722,8 @@ const SubTaskAdd = async (req, res) => {
           `,
       };
 
-      let tasks = await db.Task.findAll({
-        where: { id: req.params.id },
+      let tasks = await db.SubTask.findAll({
+        where: { TaskId: req.params.id },
         raw: true,
       });
 
@@ -732,10 +732,6 @@ const SubTaskAdd = async (req, res) => {
 
       if (due.every(date => date != null) && dec.every(decision => decision != null)) {
         await transporter.sendMail(mailData);
-        await db.Task.update(
-          { update_count: 1 },  // Set emailSent to true
-          { where: { id: req.params.id }, raw: true }  // Specify the task ID
-        );
 
       }
     }
