@@ -540,210 +540,347 @@ const GetAllTask = async (req, res) => {
     search
   });
 }
+// const SubTaskAdd = async (req, res) => {
+//   try {
+//     var data = req.body;
+//     let file = req.file;
+//     let Collaborators = req.body
+//     const { userId } = req.user;
+//     console.log(userId)
+//     if (file) {
+//       const result = await uploadToS3(req.file);
+//       data = {
+//         image: `${result.Location}`,
+//         ...data,
+//       }
+//     }
+
+//     const task = await db.SubTask.create({ TaskId: req.params.id, Collaborators: Collaborators }, data);
+
+//     let meeting = await db.Task.findOne({ where: { id: req.params.id } });
+//     let meetingid = meeting.dataValues.meetingId;
+//     const MeetDtails = await db.Meeting.findAll({
+//       attributes: ['meetingnumber', 'date'],
+//       where: { id: meetingid } ,
+//       raw: true,
+//     });
+
+//      let MeetingId = MeetDtails.map(entry => entry.meetingnumber);
+//      let MeetDate = MeetDtails.map(entry => entry.date);
+    
+//      let member = await db.SubTask.findOne({ where: { TaskId: req.params.id } })
+
+
+//     meetMembers = []
+//     let decision = member.dataValues.decision;
+//     let dueDate = member.dataValues.dueDate;
+//     let AssignedDate = new Date().toISOString().slice(0, 10);
+//     let PR = member.dataValues.members;
+//     meetMembers.push(userId)
+//     meetMembers.push(PR)
+
+//     // // Fetch emails and names of the members
+//     const emailResults = await db.User.findAll({
+//       attributes: ['email', 'name'],
+//       where: { id: { [Op.in]: meetMembers } },
+//       raw: true,
+//     });
+
+
+//     let Ceatorname = await db.User.findAll({
+//       attributes: ['name'],
+//       where: { id: userId },
+//       raw: true,
+//     });
+//     let Creatorname = Ceatorname.map(entry => entry.name);
+//     const names = emailResults.map(entry => entry.name);
+//     const emails = emailResults.map(entry => entry.email);
+
+//     console.log(names,emails)
+
+
+
+
+//     // Send individual emails to each recipient
+//     for (let i = 0; i < emails.length; i++) {
+//       console.log(emails[i])
+//       const mailData = {
+//         from: 'nirajkr00024@gmail.com',
+//         to: emails[i],
+//         subject: 'Action Required: Decision Assigned to You',
+//         html: `   
+//       <style>
+//       .container {
+//       max-width: 700px;
+//       margin: 0 auto;
+//       padding: 24px 0;
+//       font-family: "Poppins", sans-serif;
+//       background-color: rgb(231 229 228);
+//       border-radius: 1%;
+//     }
+//     .banner {
+//       margin-bottom: 10px;
+//       width: 90px;
+//       height: 8vh;
+//       margin-right: 20px;
+//     }
+ 
+//     .header {
+//       display: flex;
+//       align-items: center;
+//       justify-content: center;
+//       padding-top: 10px;
+//     }
+ 
+//     p {
+//       margin-bottom: 15px;
+//     }
+//     .container-main {
+//       max-width: 650px;
+//       margin: 0 auto;
+ 
+//       font-family: "serif", sans-serif;
+//       background-color: #fafafa;
+//       border-radius: 1%;
+//     }
+//     .content {
+//       padding: 25px;
+//     }
+//     table {
+//       border-collapse: collapse;
+//       width: 100%;
+//       margin-top: 10px;
+//     }
+//     th, td {
+//       border: 1px solid black;
+//       padding: 8px;
+//       text-align: left;
+//     }
+//     tr:nth-child(even) {
+//       background-color: #f2f2f2;
+//     }
+//     .footer {
+//       background-color: rgb(249 115 22);
+//       padding: 0.5em;
+//       text-align: center;
+//     }
+//       </style>
+         
+//   <div class="container">
+//     <div class="container-main">
+//       <div class="header">
+//         <img
+//           src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+//           alt="kapil_Groups_Logo"
+//           class="banner"
+//         />
+//       </div>
+ 
+//       <hr style="margin: 0" />
+//       <div class="content">
+//         <h5 style="font-size: 1rem; font-weight: 500">
+//           Dear <span style="font-weight: bold">${names[i]}</span>,
+//         </h5>
+//         <div style="font-size: 0.8rem">
+//           <p style="line-height: 1.4">
+//             You've been assigned a decision on ${MeetDate}, made during ${MeetingId}. Here are the details:
+//           </p>
+//          <table>
+//           <thead>
+//             <th>Decision Taken</th>
+//             <th>Assigned Date</th>
+//             <th>Due Date</th>
+           
+//           </thead>
+//           <tbody>
+//             <tr>
+//               <td> ${decision}</td>
+//             <td> ${AssignedDate}</td>
+//             <td> ${dueDate}</td>
+           
+//             </tr>
+//           </tbody>
+//          </table>
+//                                <a
+//                       href= "https://www.betaatbt.infozit.com/" 
+//                         class="button"
+                       
+//                         style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
+//                         color: #fff; text-decoration: none; border-radius: 5px; margin-top: 10px"
+//                         >Login</a
+//                       >
+//          <p>Please ensure that the decision assigned to you is completed by the due date.</p>
+//           <p style="padding-top: 15px;">Best regards,</p>
+//           <p>${Creatorname}</p>
+//           <p>Kapil Group</p>
+//         </div>
+//       </div>
+//       <div class="footer">
+//         <p style="color: white; font-size: 15px; margin: 0">
+//           All rights are reserved by Kapil Group
+//         </p>
+//       </div>
+//     </div>
+//   </div>
+//           `,
+//       };
+
+//       let tasks = await db.SubTask.findAll({
+//         where: { TaskId: req.params.id },
+//         raw: true,
+//       });
+
+//       let due = tasks.map(entry => entry.dueDate);
+//       let dec = tasks.map(entry => entry.decision);
+
+//       if (due.every(date => date != null) && dec.every(decision => decision != null)) {
+//         await transporter.sendMail(mailData);
+
+//       }
+//     }
+//     res.status(201).send(task);
+//   } catch (error) {
+//     console.error("Error creating task:", error);
+//     res.status(500).send("Error creating task");
+//   }
+// };
+
 const SubTaskAdd = async (req, res) => {
   try {
-    var data = req.body;
-    let file = req.file;
-    let Collaborators = req.body
+    let data = req.body;
     const { userId } = req.user;
-    console.log(userId)
-    if (file) {
+
+    console.log(`User ID: ${userId}`);
+
+    if (req.file) {
       const result = await uploadToS3(req.file);
-      data = {
-        image: `${result.Location}`,
-        ...data,
-      }
+      data.image = result.Location;
     }
 
-    const task = await db.SubTask.create({ TaskId: req.params.id, Collaborators: Collaborators }, data);
-
-    let meeting = await db.Task.findOne({ where: { id: req.params.id } });
-    let meetingid = meeting.dataValues.meetingId;
-    const MeetDtails = await db.Meeting.findAll({
-      attributes: ['meetingnumber', 'date'],
-      where: { id: meetingid } ,
-      raw: true,
+    const task = await db.SubTask.create({ 
+      ...data, 
+      TaskId: req.params.id, 
+      Collaborators: req.body.Collaborators 
     });
 
-     let MeetingId = MeetDtails.map(entry => entry.meetingnumber);
-     let MeetDate = MeetDtails.map(entry => entry.date);
-    
-     let member = await db.SubTask.findOne({ where: { TaskId: req.params.id } })
+    const meeting = await db.Task.findOne({ where: { id: req.params.id } });
+    if (!meeting) return res.status(404).send("Meeting not found");
 
+    const meetingId = meeting.dataValues.meetingId;
+    const meetingDetails = await db.Meeting.findOne({
+      attributes: ['meetingnumber', 'date'],
+      where: { id: meetingId },
+      raw: true,
+    });
+    if (!meetingDetails) return res.status(404).send("Meeting details not found");
 
-    meetMembers = []
-    let decision = member.dataValues.decision;
-    let dueDate = member.dataValues.dueDate;
-    let AssignedDate = new Date().toISOString().slice(0, 10);
-    let PR = member.dataValues.members;
-    meetMembers.push(userId)
-    meetMembers.push(PR)
+    const { meetingnumber: MeetingId, date: MeetDate } = meetingDetails;
 
-    // // Fetch emails and names of the members
+    const subTask = await db.SubTask.findOne({ where: { TaskId: req.params.id } });
+    if (!subTask) return res.status(404).send("SubTask not found");
+
+    const { decision, dueDate, members: PR } = subTask.dataValues;
+    const AssignedDate = new Date().toISOString().slice(0, 10);
+
+    const meetMembers = [userId, PR];
     const emailResults = await db.User.findAll({
       attributes: ['email', 'name'],
       where: { id: { [Op.in]: meetMembers } },
       raw: true,
     });
 
-
-    let Ceatorname = await db.User.findAll({
+    const creatorNameResult = await db.User.findOne({
       attributes: ['name'],
       where: { id: userId },
       raw: true,
     });
-    let Creatorname = Ceatorname.map(entry => entry.name);
+    if (!creatorNameResult) return res.status(404).send("Creator name not found");
+
+    const Creatorname = creatorNameResult.name;
     const names = emailResults.map(entry => entry.name);
     const emails = emailResults.map(entry => entry.email);
 
-    console.log(names,emails)
+    console.log(`Email recipients: ${emails.join(', ')}`);
 
-
-
-
-    // Send individual emails to each recipient
     for (let i = 0; i < emails.length; i++) {
-      console.log(emails[i])
       const mailData = {
         from: 'nirajkr00024@gmail.com',
         to: emails[i],
         subject: 'Action Required: Decision Assigned to You',
-        html: `   
-      <style>
-      .container {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 24px 0;
-      font-family: "Poppins", sans-serif;
-      background-color: rgb(231 229 228);
-      border-radius: 1%;
-    }
-    .banner {
-      margin-bottom: 10px;
-      width: 90px;
-      height: 8vh;
-      margin-right: 20px;
-    }
- 
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-top: 10px;
-    }
- 
-    p {
-      margin-bottom: 15px;
-    }
-    .container-main {
-      max-width: 650px;
-      margin: 0 auto;
- 
-      font-family: "serif", sans-serif;
-      background-color: #fafafa;
-      border-radius: 1%;
-    }
-    .content {
-      padding: 25px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid black;
-      padding: 8px;
-      text-align: left;
-    }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-    .footer {
-      background-color: rgb(249 115 22);
-      padding: 0.5em;
-      text-align: center;
-    }
-      </style>
-         
-  <div class="container">
-    <div class="container-main">
-      <div class="header">
-        <img
-          src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
-          alt="kapil_Groups_Logo"
-          class="banner"
-        />
-      </div>
- 
-      <hr style="margin: 0" />
-      <div class="content">
-        <h5 style="font-size: 1rem; font-weight: 500">
-          Dear <span style="font-weight: bold">${names[i]}</span>,
-        </h5>
-        <div style="font-size: 0.8rem">
-          <p style="line-height: 1.4">
-            You've been assigned a decision on ${MeetDate}, made during ${MeetingId}. Here are the details:
-          </p>
-         <table>
-          <thead>
-            <th>Decision Taken</th>
-            <th>Assigned Date</th>
-            <th>Due Date</th>
-           
-          </thead>
-          <tbody>
-            <tr>
-              <td> ${decision}</td>
-            <td> ${AssignedDate}</td>
-            <td> ${dueDate}</td>
-           
-            </tr>
-          </tbody>
-         </table>
-                               <a
-                      href= "https://www.betaatbt.infozit.com/" 
-                        class="button"
-                       
-                        style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
-                        color: #fff; text-decoration: none; border-radius: 5px; margin-top: 10px"
-                        >Login</a
-                      >
-         <p>Please ensure that the decision assigned to you is completed by the due date.</p>
-          <p style="padding-top: 15px;">Best regards,</p>
-          <p>${Creatorname}</p>
-          <p>Kapil Group</p>
-        </div>
-      </div>
-      <div class="footer">
-        <p style="color: white; font-size: 15px; margin: 0">
-          All rights are reserved by Kapil Group
-        </p>
-      </div>
-    </div>
-  </div>
-          `,
+        html: `
+          <style>
+            .container { max-width: 700px; margin: 0 auto; padding: 24px 0; font-family: "Poppins", sans-serif; background-color: rgb(231 229 228); border-radius: 1%; }
+            .banner { margin-bottom: 10px; width: 90px; height: 8vh; margin-right: 20px; }
+            .header { display: flex; align-items: center; justify-content: center; padding-top: 10px; }
+            p { margin-bottom: 15px; }
+            .container-main { max-width: 650px; margin: 0 auto; font-family: "serif", sans-serif; background-color: #fafafa; border-radius: 1%; }
+            .content { padding: 25px; }
+            table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+            th, td { border: 1px solid black; padding: 8px; text-align: left; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            .footer { background-color: rgb(249 115 22); padding: 0.5em; text-align: center; }
+          </style>
+          <div class="container">
+            <div class="container-main">
+              <div class="header">
+                <img src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png" alt="kapil_Groups_Logo" class="banner" />
+              </div>
+              <hr style="margin: 0" />
+              <div class="content">
+                <h5 style="font-size: 1rem; font-weight: 500">Dear <span style="font-weight: bold">${names[i]}</span>,</h5>
+                <div style="font-size: 0.8rem">
+                  <p style="line-height: 1.4">You've been assigned a decision on ${MeetDate}, made during ${MeetingId}. Here are the details:</p>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Decision Taken</th>
+                        <th>Assigned Date</th>
+                        <th>Due Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>${decision}</td>
+                        <td>${AssignedDate}</td>
+                        <td>${dueDate}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22); color: #fff; text-decoration: none; border-radius: 5px; margin-top: 10px">Login</a>
+                  <p>Please ensure that the decision assigned to you is completed by the due date.</p>
+                  <p style="padding-top: 15px;">Best regards,</p>
+                  <p>${Creatorname}</p>
+                  <p>Kapil Group</p>
+                </div>
+              </div>
+              <div class="footer">
+                <p style="color: white; font-size: 15px; margin: 0">All rights are reserved by Kapil Group</p>
+              </div>
+            </div>
+          </div>
+        `,
       };
 
-      let tasks = await db.SubTask.findAll({
-        where: { TaskId: req.params.id },
-        raw: true,
-      });
-
+      let tasks = await db.SubTask.findAll({ where: { TaskId: req.params.id }, raw: true });
       let due = tasks.map(entry => entry.dueDate);
       let dec = tasks.map(entry => entry.decision);
 
-      if (due.every(date => date != null) && dec.every(decision => decision != null)) {
-        await transporter.sendMail(mailData);
-
+      if (due.every(date => date) && dec.every(decision => decision)) {
+        console.log(`Email sent to: ${emails[i]}`);
+      } else {
+        console.log(`Conditions not met for sending email to: ${emails[i]}`);
       }
+      await transporter.sendMail(mailData);
+
     }
     res.status(201).send(task);
   } catch (error) {
     console.error("Error creating task:", error);
-    res.status(500).send("Error creating task");
+    res.status(500).send(`Error creating task: ${error.message}`);
   }
 };
+
+
 const SubTaskUpdate = async (req, res) => {
   try {
     const updateData = req.body;
