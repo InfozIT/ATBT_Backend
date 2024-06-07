@@ -2849,74 +2849,20 @@ const ListTaskCount = async (req, res) => {
 // };
 
 
-// const ListTaskCount = async (req, res) => {
-//   try {
-//     // Get statuses from the request body
-//     const { statuses } = req.body;
+const GetTaskbyEntity = async (req, res) => {
+   let = entityId = req.params.id
+   const teamMembers = await db.Meeting.findAll({
+    where: { EntityId: entityId }, // Fetch team based on TeamId from meeting
+    raw: true
+  });
+  const memberIds = teamMembers.map(member => member.id); // Assuming the ID field in teamMembers is 'id'
+  let groupMembers = await db.Task.findAll({
+    where: { meetingId: { [Op.in]: memberIds } },
+    raw: true
+  });
 
-//     if (!Array.isArray(statuses) || statuses.length === 0) {
-//       return res.status(400).json({ error: 'Invalid or missing statuses' });
-//     }
-
-//     // Initialize an object to hold the counts and tasks
-//     const taskCounts = {
-//       allTasksCount: 0,
-//       toDoCount: 0,
-//       inProgressCount: 0,
-//       overdueCount: 0,
-//       completedCount: 0
-//     };
-
-//     const taskDetails = {
-//       toDoTasks: [],
-//       inProgressTasks: [],
-//       overdueTasks: [],
-//       completedTasks: []
-//     };
-
-//     // Count all tasks
-//     taskCounts.allTasksCount = await db.Task.count();
-
-//     // Query tasks by status
-//     for (const status of statuses) {
-//       const tasks = await db.Task.findAll({
-//         where: { status },
-//         raw: true
-//       });
-
-//       const count = tasks.length;
-
-//       switch (status) {
-//         case "To-Do":
-//           taskCounts.toDoCount = count;
-//           taskDetails.toDoTasks = tasks;
-//           break;
-//         case "In-Progress":
-//           taskCounts.inProgressCount = count;
-//           taskDetails.inProgressTasks = tasks;
-//           break;
-//         case "Over-Due":
-//           taskCounts.overdueCount = count;
-//           taskDetails.overdueTasks = tasks;
-//           break;
-//         case "Completed":
-//           taskCounts.completedCount = count;
-//           taskDetails.completedTasks = tasks;
-//           break;
-//       }
-//     }
-
-//     // Send the response
-//     res.json({
-//       taskCounts,
-//       taskDetails
-//     });
-//   } catch (error) {
-//     console.error('Error fetching task counts:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
+  res.status(200).json(groupMembers);
+};
 
 
 module.exports = {
@@ -2935,7 +2881,8 @@ module.exports = {
   CreateTskDoc,
   patchTskDoc,
   ListTaskCount,
-  DeleteTskDoc
+  DeleteTskDoc,
+  GetTaskbyEntity
 };
 
 

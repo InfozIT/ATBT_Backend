@@ -12,6 +12,8 @@ router.patch('/update/:id', hasPermission("task", "canUpdate"), upload.single('i
 router.delete('/delete/:id', hasPermission("task", "canDelete"), task.DeleteTask)
 router.get('/listbyid/:id', hasPermission("task", "canRead"),task.GetTaskbyId)
 router.get('/taskcount',authorizeTaskAccess, hasPermission("task", "canRead"), task.ListTaskCount)
+router.get('/taskList/:id', hasPermission("task", "canRead"),task.GetTaskbyEntity)
+
 
 // sub task
 router.post('/subtaskAdd/:id', hasPermission("task", "canCreate"), upload.single('image'), task.SubTaskAdd)
