@@ -762,7 +762,32 @@ const SubTaskAdd = async (req, res) => {
       TaskId: req.params.id, 
       Collaborators: req.body.Collaborators 
     });
+    res.status(201).send(task);
+  } catch (error) {
+    console.error("Error creating task:", error);
+    res.status(500).send(`Error creating task: ${error.message}`);
+  }
+};
 
+
+const SubTaskUpdate = async (req, res) => {
+  try {
+    const updateData = req.body;
+    let file = req.file;
+    const { userId } = req.user;
+
+
+    if (file) {
+      const result = await uploadToS3(req.file)
+      updateData = {
+        file: `${result.Location}`,
+        ...updateData,
+      }
+    }
+
+    const updatedTask = await db.SubTask.update(updateData, {
+      where: { id: req.params.id }
+    });
     const meeting = await db.Task.findOne({ where: { id: req.params.id } });
     if (!meeting) return res.status(404).send("Meeting not found");
 
@@ -866,42 +891,12 @@ const SubTaskAdd = async (req, res) => {
       let dec = tasks.map(entry => entry.decision);
 
       if (due.every(date => date) && dec.every(decision => decision)) {
+        await transporter.sendMail(mailData);
         console.log(`Email sent to: ${emails[i]}`);
       } else {
         console.log(`Conditions not met for sending email to: ${emails[i]}`);
       }
-      await transporter.sendMail(mailData);
-
     }
-    res.status(201).send(task);
-  } catch (error) {
-    console.error("Error creating task:", error);
-    res.status(500).send(`Error creating task: ${error.message}`);
-  }
-};
-
-
-const SubTaskUpdate = async (req, res) => {
-  try {
-    const updateData = req.body;
-    let file = req.file;
-
-    if (file) {
-      const result = await uploadToS3(req.file)
-      updateData = {
-        file: `${result.Location}`,
-        ...updateData,
-      }
-    }
-
-    const updatedTask = await db.SubTask.update(updateData, {
-      where: { id: req.params.id }
-    });
-    
-
-
-
-
 
 
     res.status(200).json({ message: "successfully updated", updatedTask })
