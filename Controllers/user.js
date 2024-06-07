@@ -678,7 +678,7 @@ const Reset_Password = async (req, res) => {
         const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: email,
-            subject: 'Your Password Has Been Successfully Updated!',
+            subject: 'Reset Your Password!',
             html: `
             <style>
               .container {
