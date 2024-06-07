@@ -338,6 +338,19 @@ const task2 = new cron.CronJob('*/2 * * * *', async function() {
                     .content {
                       padding: 25px;
                     }
+                       table {
+               border-collapse: collapse;
+               width: 100%;
+               margin-top: 10px;
+             }
+             th, td {
+               border: 1px solid black;
+               padding: 8px;
+               text-align: left;
+             }
+             tr:nth-child(even) {
+               background-color: #f2f2f2;
+             }
                     .footer {
                       background-color: rgb(249 115 22);
                       padding: 0.5em;
@@ -377,6 +390,15 @@ const task2 = new cron.CronJob('*/2 * * * *', async function() {
                               </tr>
                             </tbody>
                           </table>
+
+                      <a
+                      href= "https://www.betaatbt.infozit.com/login" 
+                        class="button"
+                       
+                        style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
+                        color: #fff; text-decoration: none; border-radius: 5px;"
+                        >Login</a
+                      >
                           <p style="padding-top: 15px;">Best regards,</p>
                           <p>Kapil Group</p>
                         </div>
@@ -471,7 +493,7 @@ const task3 = new cron.CronJob('0 0 * * SUN', async function() {
               const mailData = {
                 from: 'nirajkr00024@gmail.com',
                 to: emails[i],
-                subject: 'Task OverDue List',
+                subject: 'Action Required: Overdue Decisions',
                 html: `
                   <style>
                     .container {
@@ -507,6 +529,19 @@ const task3 = new cron.CronJob('0 0 * * SUN', async function() {
                     .content {
                       padding: 25px;
                     }
+                       table {
+               border-collapse: collapse;
+               width: 100%;
+               margin-top: 10px;
+             }
+             th, td {
+               border: 1px solid black;
+               padding: 8px;
+               text-align: left;
+             }
+             tr:nth-child(even) {
+               background-color: #f2f2f2;
+             }
                     .footer {
                       background-color: rgb(249 115 22);
                       padding: 0.5em;
@@ -529,9 +564,9 @@ const task3 = new cron.CronJob('0 0 * * SUN', async function() {
                         </h5>
                         <div style="font-size: 0.8rem">
                           <p style="line-height: 1.4">
-                            We wanted to inform you that ${PersonResponseible} has marked a decision taken during Meeting Number:<span style="font-weight:bold">${MeetNo}</span> on ${Meetdate} as completed.
+                           We're writing to remind you about the decision that are currently overdue. Below is the list
                           </p>
-                          <p>Here are the details:</p>
+                    
                           <table>
                             <thead>
                               <th>Decision Taken</th>
@@ -546,6 +581,18 @@ const task3 = new cron.CronJob('0 0 * * SUN', async function() {
                               </tr>
                             </tbody>
                           </table>
+                                                <a
+                      href= "https://www.betaatbt.infozit.com/" 
+                        class="button"
+                       
+                        style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
+                        color: #fff; text-decoration: none; border-radius: 5px;"
+                        >Login</a
+                      >
+
+
+
+                          <p> Please prioritize completing these decisions at your earlist convenience.</p>
                           <p style="padding-top: 15px;">Best regards,</p>
                           <p>Kapil Group</p>
                         </div>
