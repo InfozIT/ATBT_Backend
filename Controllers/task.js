@@ -412,7 +412,7 @@ const UpdateTask = async (req, res) => {
             href= "https://www.betaatbt.infozit.com/login" 
             class="button"
             style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
-            color: #fff; text-decoration: none; border-radius: 5px;"
+            color: #fff; text-decoration: none; border-radius: 5px; margin-top:10px"
             >Login</a
             >
 
@@ -596,11 +596,14 @@ const SubTaskAdd = async (req, res) => {
     const names = emailResults.map(entry => entry.name);
     const emails = emailResults.map(entry => entry.email);
 
+    console.log(names,emails)
+
 
 
 
     // Send individual emails to each recipient
     for (let i = 0; i < emails.length; i++) {
+      console.log(emails[i])
       const mailData = {
         from: 'nirajkr00024@gmail.com',
         to: emails[i],
@@ -703,7 +706,7 @@ const SubTaskAdd = async (req, res) => {
                         class="button"
                        
                         style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
-                        color: #fff; text-decoration: none; border-radius: 5px;"
+                        color: #fff; text-decoration: none; border-radius: 5px; margin-top: 10px"
                         >Login</a
                       >
          <p>Please ensure that the decision assigned to you is completed by the due date.</p>

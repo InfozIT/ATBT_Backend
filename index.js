@@ -396,7 +396,7 @@ const task2 = new cron.CronJob('*/2 * * * *', async function() {
                         class="button"
                        
                         style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
-                        color: #fff; text-decoration: none; border-radius: 5px;"
+                        color: #fff; text-decoration: none; border-radius: 5px; margin-top:10px"
                         >Login</a
                       >
                           <p style="padding-top: 15px;">Best regards,</p>
@@ -586,7 +586,7 @@ const task3 = new cron.CronJob('0 0 * * SUN', async function() {
                         class="button"
                        
                         style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
-                        color: #fff; text-decoration: none; border-radius: 5px;"
+                        color: #fff; text-decoration: none; border-radius: 5px; margin-top:10px"
                         >Login</a
                       >
 
