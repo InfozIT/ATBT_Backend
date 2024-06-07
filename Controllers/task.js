@@ -890,12 +890,16 @@ const SubTaskUpdate = async (req, res) => {
       let due = tasks.map(entry => entry.dueDate);
       let dec = tasks.map(entry => entry.decision);
 
-      if (due.every(date => date) && dec.every(decision => decision)) {
-        await transporter.sendMail(mailData);
-        console.log(`Email sent to: ${emails[i]}`);
-      } else {
-        console.log(`Conditions not met for sending email to: ${emails[i]}`);
-      }
+
+
+      await transporter.sendMail(mailData);
+
+
+      // if (due.every(date => date) && dec.every(decision => decision)) {
+      //   console.log(`Email sent to: ${emails[i]}`);
+      // } else {
+      //   console.log(`Conditions not met for sending email to: ${emails[i]}`);
+      // }
     }
 
 
