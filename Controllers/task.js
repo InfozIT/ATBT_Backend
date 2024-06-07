@@ -770,13 +770,150 @@ const SubTaskAdd = async (req, res) => {
 };
 
 
-const SubTaskUpdate = async (req, res) => {
+// const SubTaskUpdate = async (req, res) => {
+//   try {
+//     const updateData = req.body;
+//     let file = req.file;
+//     const { userId } = req.user;
+
+
+//     if (file) {
+//       const result = await uploadToS3(req.file)
+//       updateData = {
+//         file: `${result.Location}`,
+//         ...updateData,
+//       }
+//     }
+
+//     const updatedTask = await db.SubTask.update(updateData, {
+//       where: { id: req.params.id }
+//     });
+//     const meeting = await db.Task.findOne({ where: { id: req.params.id } });
+//     if (!meeting) return res.status(404).send("Meeting not found");
+
+//     const meetingId = meeting.dataValues.meetingId;
+//     const meetingDetails = await db.Meeting.findOne({
+//       attributes: ['meetingnumber', 'date'],
+//       where: { id: meetingId },
+//       raw: true,
+//     });
+//     if (!meetingDetails) return res.status(404).send("Meeting details not found");
+
+//     const { meetingnumber: MeetingId, date: MeetDate } = meetingDetails;
+
+//     const subTask = await db.SubTask.findOne({ where: { TaskId: req.params.id } });
+//     if (!subTask) return res.status(404).send("SubTask not found");
+
+//     const { decision, dueDate, members: PR } = subTask.dataValues;
+//     const AssignedDate = new Date().toISOString().slice(0, 10);
+
+//     const meetMembers = [userId, PR];
+//     const emailResults = await db.User.findAll({
+//       attributes: ['email', 'name'],
+//       where: { id: { [Op.in]: meetMembers } },
+//       raw: true,
+//     });
+
+//     const creatorNameResult = await db.User.findOne({
+//       attributes: ['name'],
+//       where: { id: userId },
+//       raw: true,
+//     });
+//     if (!creatorNameResult) return res.status(404).send("Creator name not found");
+
+//     const Creatorname = creatorNameResult.name;
+//     const names = emailResults.map(entry => entry.name);
+//     const emails = emailResults.map(entry => entry.email);
+
+//     console.log(`Email recipients: ${emails.join(', ')}`);
+
+//     for (let i = 0; i < emails.length; i++) {
+//       const mailData = {
+//         from: 'nirajkr00024@gmail.com',
+//         to: emails[i],
+//         subject: 'Action Required: Decision Assigned to You',
+//         html: `
+//           <style>
+//             .container { max-width: 700px; margin: 0 auto; padding: 24px 0; font-family: "Poppins", sans-serif; background-color: rgb(231 229 228); border-radius: 1%; }
+//             .banner { margin-bottom: 10px; width: 90px; height: 8vh; margin-right: 20px; }
+//             .header { display: flex; align-items: center; justify-content: center; padding-top: 10px; }
+//             p { margin-bottom: 15px; }
+//             .container-main { max-width: 650px; margin: 0 auto; font-family: "serif", sans-serif; background-color: #fafafa; border-radius: 1%; }
+//             .content { padding: 25px; }
+//             table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+//             th, td { border: 1px solid black; padding: 8px; text-align: left; }
+//             tr:nth-child(even) { background-color: #f2f2f2; }
+//             .footer { background-color: rgb(249 115 22); padding: 0.5em; text-align: center; }
+//           </style>
+//           <div class="container">
+//             <div class="container-main">
+//               <div class="header">
+//                 <img src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png" alt="kapil_Groups_Logo" class="banner" />
+//               </div>
+//               <hr style="margin: 0" />
+//               <div class="content">
+//                 <h5 style="font-size: 1rem; font-weight: 500">Dear <span style="font-weight: bold">${names[i]}</span>,</h5>
+//                 <div style="font-size: 0.8rem">
+//                   <p style="line-height: 1.4">You've been assigned a decision on ${MeetDate}, made during ${MeetingId}. Here are the details:</p>
+//                   <table>
+//                     <thead>
+//                       <tr>
+//                         <th>Decision Taken</th>
+//                         <th>Assigned Date</th>
+//                         <th>Due Date</th>
+//                       </tr>
+//                     </thead>
+//                     <tbody>
+//                       <tr>
+//                         <td style="width:"400px">${decision}</td>
+//                         <td>${AssignedDate}</td>
+//                         <td>${dueDate}</td>
+//                       </tr>
+//                     </tbody>
+//                   </table>
+//                   <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22); color: #fff; text-decoration: none; border-radius: 5px; margin-top: 10px">Login</a>
+//                   <p>Please ensure that the decision assigned to you is completed by the due date.</p>
+//                   <p style="padding-top: 15px;">Best regards,</p>
+//                   <p>${Creatorname}</p>
+//                   <p>Kapil Group</p>
+//                 </div>
+//               </div>
+//               <div class="footer">
+//                 <p style="color: white; font-size: 15px; margin: 0">All rights are reserved by Kapil Group</p>
+//               </div>
+//             </div>
+//           </div>
+//         `,
+//       };
+
+//       let tasks = await db.SubTask.findAll({ where: { TaskId: req.params.id }, raw: true });
+//       let due = tasks.map(entry => entry.dueDate);
+//       let dec = tasks.map(entry => entry.decision);
+
+
+
+//       await transporter.sendMail(mailData);
+
+
+//       // if (due.every(date => date) && dec.every(decision => decision)) {
+//       //   console.log(`Email sent to: ${emails[i]}`);
+//       // } else {
+//       //   console.log(`Conditions not met for sending email to: ${emails[i]}`);
+//       // }
+//     }
+
+
+//     res.status(200).json({ message: "successfully updated", updatedTask })
+//   } catch (error) {
+//     console.error("Error updating task:", error);
+//     res.status(500).send("Error updating task");
+//   }
+// }
+const SubTaskUpdate = async (req, res) =>{
   try {
     const updateData = req.body;
     let file = req.file;
-    const { userId } = req.user;
-
-
+  
     if (file) {
       const result = await uploadToS3(req.file)
       updateData = {
@@ -784,131 +921,16 @@ const SubTaskUpdate = async (req, res) => {
         ...updateData,
       }
     }
-
+  
     const updatedTask = await db.SubTask.update(updateData, {
       where: { id: req.params.id }
     });
-    const meeting = await db.Task.findOne({ where: { id: req.params.id } });
-    if (!meeting) return res.status(404).send("Meeting not found");
-
-    const meetingId = meeting.dataValues.meetingId;
-    const meetingDetails = await db.Meeting.findOne({
-      attributes: ['meetingnumber', 'date'],
-      where: { id: meetingId },
-      raw: true,
-    });
-    if (!meetingDetails) return res.status(404).send("Meeting details not found");
-
-    const { meetingnumber: MeetingId, date: MeetDate } = meetingDetails;
-
-    const subTask = await db.SubTask.findOne({ where: { TaskId: req.params.id } });
-    if (!subTask) return res.status(404).send("SubTask not found");
-
-    const { decision, dueDate, members: PR } = subTask.dataValues;
-    const AssignedDate = new Date().toISOString().slice(0, 10);
-
-    const meetMembers = [userId, PR];
-    const emailResults = await db.User.findAll({
-      attributes: ['email', 'name'],
-      where: { id: { [Op.in]: meetMembers } },
-      raw: true,
-    });
-
-    const creatorNameResult = await db.User.findOne({
-      attributes: ['name'],
-      where: { id: userId },
-      raw: true,
-    });
-    if (!creatorNameResult) return res.status(404).send("Creator name not found");
-
-    const Creatorname = creatorNameResult.name;
-    const names = emailResults.map(entry => entry.name);
-    const emails = emailResults.map(entry => entry.email);
-
-    console.log(`Email recipients: ${emails.join(', ')}`);
-
-    for (let i = 0; i < emails.length; i++) {
-      const mailData = {
-        from: 'nirajkr00024@gmail.com',
-        to: emails[i],
-        subject: 'Action Required: Decision Assigned to You',
-        html: `
-          <style>
-            .container { max-width: 700px; margin: 0 auto; padding: 24px 0; font-family: "Poppins", sans-serif; background-color: rgb(231 229 228); border-radius: 1%; }
-            .banner { margin-bottom: 10px; width: 90px; height: 8vh; margin-right: 20px; }
-            .header { display: flex; align-items: center; justify-content: center; padding-top: 10px; }
-            p { margin-bottom: 15px; }
-            .container-main { max-width: 650px; margin: 0 auto; font-family: "serif", sans-serif; background-color: #fafafa; border-radius: 1%; }
-            .content { padding: 25px; }
-            table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-            th, td { border: 1px solid black; padding: 8px; text-align: left; }
-            tr:nth-child(even) { background-color: #f2f2f2; }
-            .footer { background-color: rgb(249 115 22); padding: 0.5em; text-align: center; }
-          </style>
-          <div class="container">
-            <div class="container-main">
-              <div class="header">
-                <img src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png" alt="kapil_Groups_Logo" class="banner" />
-              </div>
-              <hr style="margin: 0" />
-              <div class="content">
-                <h5 style="font-size: 1rem; font-weight: 500">Dear <span style="font-weight: bold">${names[i]}</span>,</h5>
-                <div style="font-size: 0.8rem">
-                  <p style="line-height: 1.4">You've been assigned a decision on ${MeetDate}, made during ${MeetingId}. Here are the details:</p>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Decision Taken</th>
-                        <th>Assigned Date</th>
-                        <th>Due Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td style="width:"400px">${decision}</td>
-                        <td>${AssignedDate}</td>
-                        <td>${dueDate}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <a href="https://www.betaatbt.infozit.com/" class="button" style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22); color: #fff; text-decoration: none; border-radius: 5px; margin-top: 10px">Login</a>
-                  <p>Please ensure that the decision assigned to you is completed by the due date.</p>
-                  <p style="padding-top: 15px;">Best regards,</p>
-                  <p>${Creatorname}</p>
-                  <p>Kapil Group</p>
-                </div>
-              </div>
-              <div class="footer">
-                <p style="color: white; font-size: 15px; margin: 0">All rights are reserved by Kapil Group</p>
-              </div>
-            </div>
-          </div>
-        `,
-      };
-
-      let tasks = await db.SubTask.findAll({ where: { TaskId: req.params.id }, raw: true });
-      let due = tasks.map(entry => entry.dueDate);
-      let dec = tasks.map(entry => entry.decision);
-
-
-
-      await transporter.sendMail(mailData);
-
-
-      // if (due.every(date => date) && dec.every(decision => decision)) {
-      //   console.log(`Email sent to: ${emails[i]}`);
-      // } else {
-      //   console.log(`Conditions not met for sending email to: ${emails[i]}`);
-      // }
-    }
-
-
-    res.status(200).json({ message: "successfully updated", updatedTask })
+    res.status(200).json({ message: "successfully updated",updatedTask })
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).send("Error updating task");
   }
-}
+  }
 const SubTaskDelete = async (req, res) => {
   try {
     await db.SubTask.destroy({
