@@ -1036,23 +1036,208 @@ const DeleteTeamById = async (req, res) => {
 //   }
 // };
 
+
+// pesend working code
+// const ListTeam = async (req, res) => {
+//   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+//   // Define the search conditions using Sequelize operators
+//   const condition = {
+//     name: { [Op.like]: `%${search}%` }
+//   };
+
+//   // Include additional filters in the condition
+//   Object.entries(restQueries).forEach(([field, value]) => {
+//     if (value !== '') {
+//       condition[field] = { [Op.like]: `%${value}%` };
+//     }
+//   });
+
+//   try {
+//     const options = {
+//       where: {}
+//     };
+//     if (req.teamsauth) {
+//       const teamsauthids = req.teamsauth.map(meet => meet.id);
+//       options.where = { id: { [Op.in]: teamsauthids } };
+//     } else {
+//       console.log("No authorized teams found in req.tasks");
+//       return res.status(403).json({ error: 'Unauthorized access to tasks' });
+//     }
+
+//     const { count, rows } = await db.Team.findAndCountAll(options, {
+//       where: condition,
+//       order: [[sortBy, 'ASC']],
+//       limit: parseInt(pageSize),
+//       offset: offset
+//     });
+
+//     const totalPages = Math.ceil(count / pageSize);
+
+//     // Function to extract unique numeric user IDs from members and createdBy fields
+//     const extractUserIds = (rows) => {
+//       const userIds = new Set();
+//       rows.forEach(row => {
+//         if (Array.isArray(row.members)) {
+//           row.members.forEach(id => userIds.add(Number(id)));
+//         }
+//         if (row.createdBy) {
+//           userIds.add(Number(row.createdBy));
+//         }
+//       });
+//       return Array.from(userIds);
+//     };
+
+//     const getTaskCounts = async (team) => {
+//       const teamMeetings = await db.Meeting.findAll({
+//         where: { TeamId: team.id },
+//         attributes: ['id']
+//       });
+
+//       const meetingIds = teamMeetings.map(meeting => meeting.id);
+
+//       const teamUserIds = extractUserIds([team]);
+//       const collaboratorCondition = db.sequelize.where(
+//         db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
+//         true
+//       );
+
+//       const overDueCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           dueDate: { [Op.lt]: new Date() },
+//           meetingId: { [Op.in]: meetingIds }
+//         }
+//       });
+
+//       const completedCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'Completed',
+//           meetingId: { [Op.in]: meetingIds }
+//         }
+//       });
+
+//       const inProgressCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'In-Progress',
+//           meetingId: { [Op.in]: meetingIds }
+//         }
+//       });
+
+//       const toDoCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'To-Do',
+//           meetingId: { [Op.in]: meetingIds }
+//         }
+//       });
+
+//       const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
+
+//       return {
+//         totalTaskCount,
+//         overDueCount,
+//         completedCount,
+//         inProgressCount,
+//         toDoCount,
+//       };
+//     };
+
+//     const teamsWithTaskCounts = await Promise.all(rows.map(async (team) => {
+//       const taskCounts = await getTaskCounts(team);
+//       return {
+//         ...team.dataValues,
+//         taskCounts,
+//       };
+//     }));
+
+//     res.json({
+//       Teams: teamsWithTaskCounts,
+//       totalPages,
+//       currentPage: parseInt(page),
+//       pageSize: parseInt(pageSize),
+//       totalTeams: count,
+//       startTeam: offset + 1,
+//       endTeam: Math.min(offset + parseInt(pageSize), count),
+//       search
+//     });
+//   } catch (err) {
+//     console.error('Error executing Sequelize query: ' + err.stack);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
+// added filters
 const ListTeam = async (req, res) => {
   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+
+  const filters = {};
+  for (const key in restQueries) {
+    filters[key] = restQueries[key];
+  }
+
   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-  // Define the search conditions using Sequelize operators
-  const condition = {
-    name: { [Op.like]: `%${search}%` }
-  };
+  // // Split and validate sortBy parameter
+  // let sortField = 'id';
+  // let sortOrder = 'DESC';
+  // if (sortBy) {
+  //   const sortParts = sortBy.split(' ');
+  //   if (sortParts.length === 2) {
+  //     [sortField, sortOrder] = sortParts;
+  //   }
+  // }
+  // const validSortOrders = ['ASC', 'DESC'];
+  // sortOrder = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+  // const order = [[sortField, sortOrder]];
 
-  // Include additional filters in the condition
-  Object.entries(restQueries).forEach(([field, value]) => {
-    if (value !== '') {
-      condition[field] = { [Op.like]: `%${value}%` };
-    }
-  });
+
+  // Split and validate sortBy parameter
+  // let sortField = 'id';
+  // let sortOrder = 'DESC';
+  // if (sortBy) {
+  //   const sortParts = sortBy.split(' ');
+  //   if (sortParts.length === 2) {
+  //     [sortField, sortOrder] = sortParts;
+  //   }
+  // }
+  // const validSortOrders = ['ASC', 'DESC'];
+  // sortOrder = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+  // const order = [[sortField, sortOrder]];
 
   try {
+
+    let whereClause = {
+      name: { [Op.like]: `%${search}%` },
+    };
+
+    // Add additional filters
+    for (const [field, value] of Object.entries(filters)) {
+      if (value !== '') {
+        whereClause[field] = { [Op.like]: `%${value}%` };
+      }
+    }
+
     const options = {
       where: {}
     };
@@ -1064,8 +1249,10 @@ const ListTeam = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized access to tasks' });
     }
 
-    const { count, rows } = await db.Team.findAndCountAll(options, {
-      where: condition,
+    const { count, rows } = await db.Team.findAndCountAll({
+      // where: condition,
+      where: whereClause,
+      // order,
       order: [[sortBy, 'ASC']],
       limit: parseInt(pageSize),
       offset: offset
