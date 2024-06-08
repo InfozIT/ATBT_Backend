@@ -978,14 +978,14 @@ const DeleteTskDoc = async (req, res) => {
 }
 
 const GetTask = async (req, res) => {
-  const { userId, meetingId, status, entityId, teamId } = req.query;
+  const {search = '', userId, meetingId, status, entityId, teamId } = req.query;
   const fromDate = req.query.fromDate;
   const toDate = req.query.toDate;
 
   try {
-    let whereClause = {};
-
-    
+    let whereClause = {
+      decision: { [Op.like]: `%${search}%` },
+    };
 
     if (fromDate && toDate) {
       whereClause.dueDate = {
@@ -1246,7 +1246,8 @@ const GetTask = async (req, res) => {
         updatedAt: task.updatedAt,
         subtaskCount: subtaskCount,
         createdby: task.createdby,
-        updatedbyuser: subTaskMessageMap[task.id] || null
+        updatedbyuser: subTaskMessageMap[task.id] || null,
+        search
       };
     });
 
