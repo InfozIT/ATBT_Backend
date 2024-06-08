@@ -1253,33 +1253,160 @@ const GetById = async (req, res) => {
 
 //bala working code   Get method
 
+// const GetMeeting = async (req, res) => {
+//   console.log(req.query.user, "I am from Quarry");
+
+//   try {
+//     const page = parseInt(req.query.page, 10) || 1;
+//     const pageSize = parseInt(req.query.pageSize, 10) || 10;
+//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+//     const searchQuery = req.query.search || '';
+//     const entityId = req.query.entity;
+//     const teamId = req.query.team;
+//     const userId = req.query.user;
+
+    
+
+//     const fromDate = req.query.fromDate;
+//     const toDate = req.query.toDate;
+
+//     const options = {
+//       offset: (page - 1) * pageSize,
+//       limit: pageSize,
+//       order: [[sortBy]],
+//       where: {
+//         [Op.or]: [
+//           { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+//           { description: { [Op.like]: `%${searchQuery}%` } },
+//         ],
+//       },
+//     };
+
+//     // // Add date range filter if both fromDate and toDate are provided
+//     // if (fromDate && toDate) {
+//     //   options.where.date = {
+//     //     [Op.and]: [
+//     //       { [Op.gte]: new Date(fromDate) }, // greater than or equal to fromDate
+//     //       { [Op.lte]: new Date(toDate) }    // less than or equal to toDate
+//     //     ]
+//     //   };
+//     // }
+
+//     if (fromDate && toDate) {
+//       options.where.date = {
+//         [Op.between]: [fromDate, toDate]
+//       };
+//     }
+
+//     if (entityId) {
+//       options.where.EntityId = entityId;
+//     }
+//     if (teamId) {
+//       options.where.TeamId = teamId;
+//     }
+//     if (userId) {
+//       options.where.UserId = userId;
+//     }
+
+//     if (req.meetingmembers) {
+//       const meetingMembersIds = req.meetingmembers.map(meet => meet.id);
+//       console.log("Authorized Task IDs:", meetingMembersIds);
+//       options.where.id = { [Op.in]: meetingMembersIds };
+//     } else {
+//       console.log("No authorized tasks found in req.tasks");
+//       return res.status(403).json({ error: 'Unauthorized access to tasks' });
+//     }
+
+//     const { count, rows: Meetings } = await db.Meeting.findAndCountAll(options);
+
+//     const startMeeting = (page - 1) * pageSize + 1;
+//     const endMeeting = Math.min(page * pageSize, count);
+//     const totalPages = Math.ceil(count / pageSize);
+
+//     for (let meeting of Meetings) {
+//       const [totalTaskCount, overDueCount, completedCount, inProgressCount, toDoCount] = await Promise.all([
+//         db.Task.count({ where: { meetingId: meeting.id } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'Over-Due' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'Completed' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'In-Progress' } }),
+//         db.Task.count({ where: { meetingId: meeting.id, status: 'To-Do' } })
+//       ]);
+
+//       meeting.setDataValue('taskCounts', {
+//         totalTaskCount,
+//         overDueCount,
+//         completedCount,
+//         inProgressCount,
+//         toDoCount
+//       });
+//     }
+
+//     res.status(200).json({
+//       Meetings,
+//       totalMeetings: count,
+//       totalPages,
+//       currentPage: page,
+//       pageSize,
+//       startMeeting,
+//       endMeeting,
+//       search: searchQuery
+//     });
+//   } catch (error) {
+//     console.error("Error fetching Meetings:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
+
 const GetMeeting = async (req, res) => {
   console.log(req.query.user, "I am from Quarry");
 
   try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const pageSize = parseInt(req.query.pageSize, 10) || 10;
-    const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
-    const searchQuery = req.query.search || '';
+    // const page = parseInt(req.query.page, 10) || 1;
+    // const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    // const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+    // const searchQuery = req.query.search || '';
     const entityId = req.query.entity;
     const teamId = req.query.team;
     const userId = req.query.user;
-    
 
+    const { searchQuery = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+
+    const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+    const filters = {};
+    for (const key in restQueries) {
+      filters[key] = restQueries[key];
+    }
+
+    let whereClause = {};
+    // Add additional filters
+    for (const [field, value] of Object.entries(filters)) {
+      if (value !== '') {
+        whereClause[field] = { [Op.like]: `%${value}%` };
+      }
+    }
+    // Split and validate sortBy parameter
+    
     const fromDate = req.query.fromDate;
     const toDate = req.query.toDate;
 
     const options = {
-      offset: (page - 1) * pageSize,
-      limit: pageSize,
-      order: [[sortBy]],
+      // offset: (page - 1) * pageSize,
+      limit: parseInt(pageSize),
+      // order: [[sortBy]],
+      offset,
       where: {
         [Op.or]: [
           { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
           { description: { [Op.like]: `%${searchQuery}%` } },
+          whereClause
         ],
+        
       },
     };
+
+    
 
     // // Add date range filter if both fromDate and toDate are provided
     // if (fromDate && toDate) {
