@@ -1264,6 +1264,10 @@ const GetMeeting = async (req, res) => {
     const entityId = req.query.entity;
     const teamId = req.query.team;
     const userId = req.query.user;
+    
+
+    const fromDate = req.query.fromDate;
+    const toDate = req.query.toDate;
 
     const options = {
       offset: (page - 1) * pageSize,
@@ -1276,6 +1280,22 @@ const GetMeeting = async (req, res) => {
         ],
       },
     };
+
+    // // Add date range filter if both fromDate and toDate are provided
+    // if (fromDate && toDate) {
+    //   options.where.date = {
+    //     [Op.and]: [
+    //       { [Op.gte]: new Date(fromDate) }, // greater than or equal to fromDate
+    //       { [Op.lte]: new Date(toDate) }    // less than or equal to toDate
+    //     ]
+    //   };
+    // }
+
+    if (fromDate && toDate) {
+      options.where.date = {
+        [Op.between]: [fromDate, toDate]
+      };
+    }
 
     if (entityId) {
       options.where.EntityId = entityId;
