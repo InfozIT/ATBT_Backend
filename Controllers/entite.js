@@ -581,6 +581,194 @@ const UpdateEntity = async (req, res) => {
 //   }
 // };
 
+// working code
+// const ListEntity = async (req, res) => {
+//   const { userId } = req.user;
+//   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+
+//   const filters = {};
+//   for (const key in restQueries) {
+//     filters[key] = restQueries[key];
+//   }
+
+//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+//   // Split and validate sortBy parameter
+//   let sortField = 'id';
+//   let sortOrder = 'DESC';
+//   if (sortBy) {
+//     const sortParts = sortBy.split(' ');
+//     if (sortParts.length === 2) {
+//       [sortField, sortOrder] = sortParts;
+//     }
+//   }
+//   const validSortOrders = ['ASC', 'DESC'];
+//   sortOrder = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+//   const order = [[sortField, sortOrder]];
+
+//   try {
+//     const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
+//     const user = await db.User.findOne({ where: { id: userId } });
+//     const EntityId = user.EntityId;
+
+//     let whereClause = {
+//       name: { [Op.like]: `%${search}%` },
+//     };
+
+//     if (accessdata) {
+//       if (!accessdata.selected_users && !accessdata.entity_id) {
+//         // No additional filters
+//       } else if (!accessdata.selected_users && accessdata.entity_id) {
+//         const entityIds = [...JSON.parse(accessdata.entity_id), EntityId];
+//         whereClause.id = { [Op.in]: entityIds };
+//       } else if (accessdata.selected_users && !accessdata.entity_id) {
+//         const users = await db.User.findAll({
+//           attributes: ['EntityId'],
+//           where: { id: { [Op.in]: JSON.parse(accessdata.selected_users) } },
+//           raw: true,
+//         });
+//         const entityIds = users.map(user => user.EntityId);
+//         whereClause.id = { [Op.in]: entityIds };
+//       }
+//     } else {
+//       whereClause.id = EntityId;
+//     }
+
+//     // Add additional filters
+//     for (const [field, value] of Object.entries(filters)) {
+//       if (value !== '') {
+//         whereClause[field] = { [Op.like]: `%${value}%` };
+//       }
+//     }
+
+//     const entities = await db.Entity.findAndCountAll({
+//       where: whereClause,
+//       order,
+//       limit: parseInt(pageSize),
+//       offset,
+//     });
+
+//     // Function to get task counts for an entity
+//     const getTaskCounts = async (entityId) => {
+//       const users = await db.User.findAll({
+//         attributes: ['id'],
+//         where: { entityname: entityId },
+//         raw: true,
+//       });
+
+//       const userIds = users.map(user => user.id);
+
+//       if (userIds.length === 0) {
+//         return {
+//           totalTaskCount: 0,
+//           overDueCount: 0,
+//           completedCount: 0,
+//           inProgressCount: 0,
+//           toDoCount: 0,
+//         };
+//       }
+
+//       const collaboratorCondition = db.sequelize.where(
+//         db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(userIds)),
+//         true
+//       );
+
+//       // console.log("collaboratorCondition", collaboratorCondition)
+
+//       const overDueCountD = await db.Task.findAll({
+//         where: {id: 996},
+//         // attributes: ['collaborators']
+//       });
+
+//       const arrycol = overDueCountD.map(item => item.collaborators)
+//       console.log("overDueCountD", arrycol[0]);
+
+
+//       const overDueCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: userIds },
+//             { createdby: userIds }
+//           ],
+//           dueDate: { [Op.lt]: new Date() },
+//           status: { [Op.ne]: 'Completed' }
+//         }
+//       });
+
+//       const completedCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: userIds },
+//             { createdby: userIds }
+//           ],
+//           status: 'Completed'
+//         }
+//       });
+
+//       const inProgressCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: userIds },
+//             { createdby: userIds }
+//           ],
+//           status: 'In-Progress'
+//         }
+//       });
+
+//       const toDoCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: userIds },
+//             { createdby: userIds }
+//           ],
+//           status: 'To-Do'
+//         }
+//       });
+
+//       const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
+
+//       return {
+//         totalTaskCount,
+//         overDueCount,
+//         completedCount,
+//         inProgressCount,
+//         toDoCount,
+//       };
+//     };
+
+//     // Add task counts to each entity
+//     const entitiesWithTaskCounts = await Promise.all(entities.rows.map(async (entity) => {
+//       const taskCounts = await getTaskCounts(entity.id);
+//       return {
+//         ...entity.dataValues,
+//         taskCounts,
+//       };
+//     }));
+
+//     const totalEntities = entities.count;
+//     const totalPages = Math.ceil(totalEntities / pageSize);
+
+//     res.json({
+//       Entities: entitiesWithTaskCounts,
+//       totalPages,
+//       currentPage: parseInt(page),
+//       pageSize: parseInt(pageSize),
+//       totalEntities,
+//       startEntity: offset + 1,
+//       endEntity: offset + parseInt(pageSize),
+//       search,
+//     });
+//   } catch (err) {
+//     console.error('Error executing Sequelize query: ' + err.stack);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
 const ListEntity = async (req, res) => {
   const { userId } = req.user;
   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
@@ -655,6 +843,16 @@ const ListEntity = async (req, res) => {
         raw: true,
       });
 
+      // console.log("entityId", entityId)
+
+      const entityMeetings = await db.Meeting.findAll({
+        where: { EntityId: entityId },
+        attributes: ['id']
+      });
+
+      const meetingIds = entityMeetings.map(meeting => meeting.id);
+      console.log("meetingIds", meetingIds)
+
       const userIds = users.map(user => user.id);
 
       if (userIds.length === 0) {
@@ -674,13 +872,13 @@ const ListEntity = async (req, res) => {
 
       // console.log("collaboratorCondition", collaboratorCondition)
 
-      const overDueCountD = await db.Task.findAll({
-        where: {id: 996},
-        // attributes: ['collaborators']
-      });
+      // const overDueCountD = await db.Task.findAll({
+      //   where: {id: 996},
+      //   // attributes: ['collaborators']
+      // });
 
-      const arrycol = overDueCountD.map(item => item.collaborators)
-      console.log("overDueCountD", arrycol[0]);
+      // const arrycol = overDueCountD.map(item => item.collaborators)
+      // console.log("overDueCountD", arrycol[0]);
 
 
       const overDueCount = await db.Task.count({
@@ -691,7 +889,8 @@ const ListEntity = async (req, res) => {
             { createdby: userIds }
           ],
           dueDate: { [Op.lt]: new Date() },
-          status: { [Op.ne]: 'Completed' }
+          // status: { [Op.ne]: 'Completed' },
+          meetingId: { [Op.in]: meetingIds }
         }
       });
 
@@ -702,7 +901,8 @@ const ListEntity = async (req, res) => {
             { members: userIds },
             { createdby: userIds }
           ],
-          status: 'Completed'
+          status: 'Completed',
+          meetingId: { [Op.in]: meetingIds }
         }
       });
 
@@ -713,7 +913,8 @@ const ListEntity = async (req, res) => {
             { members: userIds },
             { createdby: userIds }
           ],
-          status: 'In-Progress'
+          status: 'In-Progress',
+          meetingId: { [Op.in]: meetingIds }
         }
       });
 
@@ -724,7 +925,8 @@ const ListEntity = async (req, res) => {
             { members: userIds },
             { createdby: userIds }
           ],
-          status: 'To-Do'
+          status: 'To-Do',
+          meetingId: { [Op.in]: meetingIds }
         }
       });
 
@@ -766,14 +968,6 @@ const ListEntity = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-
-
-
-
-
-
 
 
 
