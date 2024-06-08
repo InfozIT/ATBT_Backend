@@ -1064,7 +1064,7 @@ const ListTeam = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized access to tasks' });
     }
 
-    const { count, rows } = await db.Team.findAndCountAll({
+    const { count, rows } = await db.Team.findAndCountAll(options, {
       where: condition,
       order: [[sortBy, 'ASC']],
       limit: parseInt(pageSize),
