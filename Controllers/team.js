@@ -465,6 +465,188 @@ const DeleteTeamById = async (req, res) => {
   }
 };
 
+
+const ListTeam = async (req, res) => {
+  const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+
+  const filters = {};
+  for (const key in restQueries) {
+    filters[key] = restQueries[key];
+  }
+
+  const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+  try {
+    let whereClause = {
+      name: { [Op.like]: `%${search}%` },
+    };
+
+    for (const [field, value] of Object.entries(filters)) {
+      if (value !== '') {
+        whereClause[field] = { [Op.like]: `%${value}%` };
+      }
+    }
+
+    const options = {
+      where: {}
+    };
+    if (req.teamsauth) {
+      const teamsauthids = req.teamsauth.map(meet => meet.id);
+      options.where = { id: { [Op.in]: teamsauthids } };
+    } else {
+      console.log("No authorized teams found in req.tasks");
+      return res.status(403).json({ error: 'Unauthorized access to tasks' });
+    }
+
+    const { count, rows } = await db.Team.findAndCountAll({
+      where: whereClause,
+      order: [[sortBy, 'ASC']],
+      limit: parseInt(pageSize),
+      offset: offset
+    });
+
+    const totalPages = Math.ceil(count / pageSize);
+
+    const extractUserIds = (rows) => {
+      const userIds = new Set();
+      rows.forEach(row => {
+        if (Array.isArray(row.members)) {
+          row.members.forEach(id => userIds.add(Number(id)));
+        }
+        if (row.createdBy) {
+          userIds.add(Number(row.createdBy));
+        }
+      });
+      return Array.from(userIds);
+    };
+
+    const getTaskCounts = async (team) => {
+      const teamMeetings = await db.Meeting.findAll({
+        where: { TeamId: team.id },
+        attributes: ['id']
+      });
+
+      const meetingIds = teamMeetings.map(meeting => meeting.id);
+
+      const teamUserIds = extractUserIds([team]);
+      const collaboratorCondition = db.sequelize.where(
+        db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
+        true
+      );
+
+      const overDueCount = await db.Task.count({
+        where: {
+          [Op.or]: [
+            collaboratorCondition,
+            { members: teamUserIds },
+            { createdBy: teamUserIds }
+          ],
+          dueDate: { [Op.lt]: new Date() },
+          meetingId: { [Op.in]: meetingIds }
+        }
+      });
+
+      const completedCount = await db.Task.count({
+        where: {
+          [Op.or]: [
+            collaboratorCondition,
+            { members: teamUserIds },
+            { createdBy: teamUserIds }
+          ],
+          status: 'Completed',
+          meetingId: { [Op.in]: meetingIds }
+        }
+      });
+
+      const inProgressCount = await db.Task.count({
+        where: {
+          [Op.or]: [
+            collaboratorCondition,
+            { members: teamUserIds },
+            { createdBy: teamUserIds }
+          ],
+          status: 'In-Progress',
+          meetingId: { [Op.in]: meetingIds }
+        }
+      });
+
+      const toDoCount = await db.Task.count({
+        where: {
+          [Op.or]: [
+            collaboratorCondition,
+            { members: teamUserIds },
+            { createdBy: teamUserIds }
+          ],
+          status: 'To-Do',
+          meetingId: { [Op.in]: meetingIds }
+        }
+      });
+
+      const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
+
+      return {
+        totalTaskCount,
+        overDueCount,
+        completedCount,
+        inProgressCount,
+        toDoCount,
+      };
+    };
+
+    const teamsWithTaskCounts = await Promise.all(rows.map(async (team) => {
+      const taskCounts = await getTaskCounts(team);
+      return {
+        ...team.dataValues,
+        taskCounts,
+      };
+    }));
+
+    const ids = teamsWithTaskCounts.map(item => item.id);
+    const placeholders = ids.map(() => '?').join(',');
+
+    mycon.query(`SELECT * FROM Teams WHERE id IN (${placeholders})`, ids, (err, resultmy) => {
+      if (err) {
+        console.error('Error retrieving data: ' + err.stack);
+        res.status(500).send('Error retrieving data');
+        return;
+      }
+
+      // Create a map for quick lookup by id
+      const resultMap = new Map(resultmy.map(item => [item.id, item]));
+
+      // Merge additional columns
+      const mergedTeams = teamsWithTaskCounts.map(team => {
+        const additionalData = resultMap.get(team.id);
+        if (additionalData) {
+          // Add any new columns from resultmy to the team object
+          for (const key in additionalData) {
+            if (!team.hasOwnProperty(key)) {
+              team[key] = additionalData[key];
+            }
+          }
+        }
+        return team;
+      });
+
+      res.json({
+        Teams: mergedTeams,
+        totalPages,
+        currentPage: parseInt(page),
+        pageSize: parseInt(pageSize),
+        totalTeams: count,
+        startTeam: offset + 1,
+        endTeam: Math.min(offset + parseInt(pageSize), count),
+        search
+      });
+    });
+
+  } catch (err) {
+    console.error('Error executing Sequelize query: ' + err.stack);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
 // const ListTeam = async (req, res) => {
 //   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
 //   const filters = {};
@@ -1188,188 +1370,206 @@ const DeleteTeamById = async (req, res) => {
 
 
 // added filters
-const ListTeam = async (req, res) => {
-  const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
+// const ListTeam = async (req, res) => {
+//   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
 
-  const filters = {};
-  for (const key in restQueries) {
-    filters[key] = restQueries[key];
-  }
+//   const filters = {};
+//   for (const key in restQueries) {
+//     filters[key] = restQueries[key];
+//   }
 
-  const offset = (parseInt(page) - 1) * parseInt(pageSize);
+//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
-  // // Split and validate sortBy parameter
-  // let sortField = 'id';
-  // let sortOrder = 'DESC';
-  // if (sortBy) {
-  //   const sortParts = sortBy.split(' ');
-  //   if (sortParts.length === 2) {
-  //     [sortField, sortOrder] = sortParts;
-  //   }
-  // }
-  // const validSortOrders = ['ASC', 'DESC'];
-  // sortOrder = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
-  // const order = [[sortField, sortOrder]];
+//   // // Split and validate sortBy parameter
+//   // let sortField = 'id';
+//   // let sortOrder = 'DESC';
+//   // if (sortBy) {
+//   //   const sortParts = sortBy.split(' ');
+//   //   if (sortParts.length === 2) {
+//   //     [sortField, sortOrder] = sortParts;
+//   //   }
+//   // }
+//   // const validSortOrders = ['ASC', 'DESC'];
+//   // sortOrder = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+//   // const order = [[sortField, sortOrder]];
 
 
-  // Split and validate sortBy parameter
-  // let sortField = 'id';
-  // let sortOrder = 'DESC';
-  // if (sortBy) {
-  //   const sortParts = sortBy.split(' ');
-  //   if (sortParts.length === 2) {
-  //     [sortField, sortOrder] = sortParts;
-  //   }
-  // }
-  // const validSortOrders = ['ASC', 'DESC'];
-  // sortOrder = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
-  // const order = [[sortField, sortOrder]];
+//   // Split and validate sortBy parameter
+//   // let sortField = 'id';
+//   // let sortOrder = 'DESC';
+//   // if (sortBy) {
+//   //   const sortParts = sortBy.split(' ');
+//   //   if (sortParts.length === 2) {
+//   //     [sortField, sortOrder] = sortParts;
+//   //   }
+//   // }
+//   // const validSortOrders = ['ASC', 'DESC'];
+//   // sortOrder = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+//   // const order = [[sortField, sortOrder]];
 
-  try {
+//   try {
 
-    let whereClause = {
-      name: { [Op.like]: `%${search}%` },
-    };
+//     let whereClause = {
+//       name: { [Op.like]: `%${search}%` },
+//     };
 
-    // Add additional filters
-    for (const [field, value] of Object.entries(filters)) {
-      if (value !== '') {
-        whereClause[field] = { [Op.like]: `%${value}%` };
-      }
-    }
+//     // Add additional filters
+//     for (const [field, value] of Object.entries(filters)) {
+//       if (value !== '') {
+//         whereClause[field] = { [Op.like]: `%${value}%` };
+//       }
+//     }
 
-    const options = {
-      where: {}
-    };
-    if (req.teamsauth) {
-      const teamsauthids = req.teamsauth.map(meet => meet.id);
-      options.where = { id: { [Op.in]: teamsauthids } };
-    } else {
-      console.log("No authorized teams found in req.tasks");
-      return res.status(403).json({ error: 'Unauthorized access to tasks' });
-    }
+//     const options = {
+//       where: {}
+//     };
+//     if (req.teamsauth) {
+//       const teamsauthids = req.teamsauth.map(meet => meet.id);
+//       options.where = { id: { [Op.in]: teamsauthids } };
+//     } else {
+//       console.log("No authorized teams found in req.tasks");
+//       return res.status(403).json({ error: 'Unauthorized access to tasks' });
+//     }
 
-    const { count, rows } = await db.Team.findAndCountAll({
-      // where: condition,
-      where: whereClause,
-      // order,
-      order: [[sortBy, 'ASC']],
-      limit: parseInt(pageSize),
-      offset: offset
-    });
+//     const { count, rows } = await db.Team.findAndCountAll({
+//       // where: condition,
+//       where: whereClause,
+//       // order,
+//       order: [[sortBy, 'ASC']],
+//       limit: parseInt(pageSize),
+//       offset: offset
+//     });
 
-    const totalPages = Math.ceil(count / pageSize);
+//     const totalPages = Math.ceil(count / pageSize);
 
-    // Function to extract unique numeric user IDs from members and createdBy fields
-    const extractUserIds = (rows) => {
-      const userIds = new Set();
-      rows.forEach(row => {
-        if (Array.isArray(row.members)) {
-          row.members.forEach(id => userIds.add(Number(id)));
-        }
-        if (row.createdBy) {
-          userIds.add(Number(row.createdBy));
-        }
-      });
-      return Array.from(userIds);
-    };
+//     // Function to extract unique numeric user IDs from members and createdBy fields
+//     const extractUserIds = (rows) => {
+//       const userIds = new Set();
+//       rows.forEach(row => {
+//         if (Array.isArray(row.members)) {
+//           row.members.forEach(id => userIds.add(Number(id)));
+//         }
+//         if (row.createdBy) {
+//           userIds.add(Number(row.createdBy));
+//         }
+//       });
+//       return Array.from(userIds);
+//     };
 
-    const getTaskCounts = async (team) => {
-      const teamMeetings = await db.Meeting.findAll({
-        where: { TeamId: team.id },
-        attributes: ['id']
-      });
+//     const getTaskCounts = async (team) => {
+//       const teamMeetings = await db.Meeting.findAll({
+//         where: { TeamId: team.id },
+//         attributes: ['id']
+//       });
 
-      const meetingIds = teamMeetings.map(meeting => meeting.id);
+//       const meetingIds = teamMeetings.map(meeting => meeting.id);
 
-      const teamUserIds = extractUserIds([team]);
-      const collaboratorCondition = db.sequelize.where(
-        db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
-        true
-      );
+//       const teamUserIds = extractUserIds([team]);
+//       const collaboratorCondition = db.sequelize.where(
+//         db.sequelize.fn('JSON_CONTAINS', db.sequelize.col('collaborators'), JSON.stringify(teamUserIds)),
+//         true
+//       );
 
-      const overDueCount = await db.Task.count({
-        where: {
-          [Op.or]: [
-            collaboratorCondition,
-            { members: teamUserIds },
-            { createdBy: teamUserIds }
-          ],
-          dueDate: { [Op.lt]: new Date() },
-          meetingId: { [Op.in]: meetingIds }
-        }
-      });
+//       const overDueCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           dueDate: { [Op.lt]: new Date() },
+//           meetingId: { [Op.in]: meetingIds }
+//         }
+//       });
 
-      const completedCount = await db.Task.count({
-        where: {
-          [Op.or]: [
-            collaboratorCondition,
-            { members: teamUserIds },
-            { createdBy: teamUserIds }
-          ],
-          status: 'Completed',
-          meetingId: { [Op.in]: meetingIds }
-        }
-      });
+//       const completedCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'Completed',
+//           meetingId: { [Op.in]: meetingIds }
+//         }
+//       });
 
-      const inProgressCount = await db.Task.count({
-        where: {
-          [Op.or]: [
-            collaboratorCondition,
-            { members: teamUserIds },
-            { createdBy: teamUserIds }
-          ],
-          status: 'In-Progress',
-          meetingId: { [Op.in]: meetingIds }
-        }
-      });
+//       const inProgressCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'In-Progress',
+//           meetingId: { [Op.in]: meetingIds }
+//         }
+//       });
 
-      const toDoCount = await db.Task.count({
-        where: {
-          [Op.or]: [
-            collaboratorCondition,
-            { members: teamUserIds },
-            { createdBy: teamUserIds }
-          ],
-          status: 'To-Do',
-          meetingId: { [Op.in]: meetingIds }
-        }
-      });
+//       const toDoCount = await db.Task.count({
+//         where: {
+//           [Op.or]: [
+//             collaboratorCondition,
+//             { members: teamUserIds },
+//             { createdBy: teamUserIds }
+//           ],
+//           status: 'To-Do',
+//           meetingId: { [Op.in]: meetingIds }
+//         }
+//       });
 
-      const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
+//       const totalTaskCount = overDueCount + completedCount + inProgressCount + toDoCount;
 
-      return {
-        totalTaskCount,
-        overDueCount,
-        completedCount,
-        inProgressCount,
-        toDoCount,
-      };
-    };
+//       return {
+//         totalTaskCount,
+//         overDueCount,
+//         completedCount,
+//         inProgressCount,
+//         toDoCount,
+//       };
+//     };
 
-    const teamsWithTaskCounts = await Promise.all(rows.map(async (team) => {
-      const taskCounts = await getTaskCounts(team);
-      return {
-        ...team.dataValues,
-        taskCounts,
-      };
-    }));
+//     const teamsWithTaskCounts = await Promise.all(rows.map(async (team) => {
+//       const taskCounts = await getTaskCounts(team);
+//       return {
+//         ...team.dataValues,
+//         taskCounts,
+//       };
+//     }));
 
-    res.json({
-      Teams: teamsWithTaskCounts,
-      totalPages,
-      currentPage: parseInt(page),
-      pageSize: parseInt(pageSize),
-      totalTeams: count,
-      startTeam: offset + 1,
-      endTeam: Math.min(offset + parseInt(pageSize), count),
-      search
-    });
-  } catch (err) {
-    console.error('Error executing Sequelize query: ' + err.stack);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
+//     const ids = teamsWithTaskCounts.map(item => item.id);
+
+// // Convert array of IDs into a string of placeholders for the SQL query
+//    const placeholders = ids.map(() => '?').join(',');
+
+//    mycon.query(`SELECT * FROM Teams WHERE id IN (${placeholders})`, ids, (err, resultmy) => {
+//   if (err) {
+//     console.error('Error retrieving data: ' + err.stack);
+//     res.status(500).send('Error retrieving data');
+//     return;
+//   }
+
+//   // Process the result as needed
+//   console.log(resultmy);
+// });
+
+
+
+//     res.json({
+//       Teams: teamsWithTaskCounts,
+//       totalPages,
+//       currentPage: parseInt(page),
+//       pageSize: parseInt(pageSize),
+//       totalTeams: count,
+//       startTeam: offset + 1,
+//       endTeam: Math.min(offset + parseInt(pageSize), count),
+//       search
+//     });
+//   } catch (err) {
+//     console.error('Error executing Sequelize query: ' + err.stack);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
 
 
 
