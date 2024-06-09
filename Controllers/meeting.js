@@ -1243,7 +1243,7 @@ const GetMeeting = async (req, res) => {
         pageSize,
         startMeeting,
         endMeeting,
-        search: searchQuery
+        search: search
       });
     }
   } catch (error) {
