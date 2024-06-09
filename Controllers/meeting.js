@@ -880,284 +880,7 @@ const GetById = async (req, res) => {
   }
 };
 
-// revarted code 
-// const ListMeetings = async (req, res) => {
-//   const { userId } = req.user;
-//   console.log("working on this ", userId)
 
-//   const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
-//   const filters = {};
-//   for (const key in restQueries) {
-//       filters[key] = restQueries[key];
-//   }
-
-//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
-//   const accessdata = await db.UserAccess.findOne({ where: { user_id: userId } });
-//   const Data = await db.User.findOne({ where: { id: userId } });
-//   let EntityId =Data.EntityId
-
-//   // console.log(accessdata?.user_id ?? null, accessdata?.entity_id ?? null, accessdata?.selected_users ?? null, "accessdata", accessdata)
-
-//   // MySQL query to fetch paginated entities
-//   let sql;
-
-//   if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-//     // console.log("hello _ 1")
-//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`
-//   } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-//     // console.log("hello _ 2")
-//       let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-//       // console.log(entityIds, typeof (entityIds), "entityIds")
-//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//     } 
-//     else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-//       // console.log("hello _ 3", accessdata.selected_users)
-//       //get array of user entity ids
-//       // userEntityIds = [56]
-//       const users = await db.User.findAll({
-//         attributes: ['EntityId'], // Only fetch the entityId column
-//         where: {
-//           id: [...JSON.parse(accessdata.selected_users)] // Filter users based on userIds array
-//         },
-//         raw: true // Get raw data instead of Sequelize model instances
-//       });
-//       const entityIds = users.map(user => user.EntityId);
-//       // console.log(entityIds,"ndcnwocbowbcowboubwou beowubobwobwow")
-//       sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//       // sql = `SELECT * FROM Entities WHERE (name LIKE '%${search}%')`
-//   } 
-//   else if (!accessdata) {
-//     // console.log("hello _ 4")
-//       sql = `SELECT * FROM Meetings WHERE UserId = '${userId}'`;
-//   }
-
-//   // Add conditions for additional filter fields
-//   for (const [field, value] of Object.entries(filters)) {
-//       if (value !== '') {
-//           sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-//       }
-//   }
-
-//   // Add LIMIT and OFFSET clauses to the SQL query
-//   sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
-
-//   mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
-//       if (err) {
-//           console.error('Error executing MySQL query: ' + err.stack);
-//           res.status(500).json({ error: 'Internal server error' });
-//           return;
-//       }
-//       console.log(result,"dwffqf")
-
-//       // Execute the count query to get the total number of entities
-//       let sqlCount;
-//       if (!!accessdata && !accessdata.selected_users && !accessdata.entity_id) {
-//         // console.log("first _ 1")
-//           sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
-//       } else if (!!accessdata && !accessdata.selected_users && accessdata.entity_id) {
-//         // console.log("first _ 2")
-//           let entityIds = [...JSON.parse(accessdata.entity_id), EntityId]
-//           // console.log(entityIds, "entityIds")
-//           sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${entityIds.join(',')})`;
-//       } 
-//       else if (!!accessdata && accessdata.selected_users && !accessdata.entity_id) {
-//         // console.log("first _ 3")
-//         //get array of user entity ids
-//         userEntityIds = [81]
-//         sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%') AND id IN (${userEntityIds.join(',')})`;
-//         // sqlCount = `SELECT COUNT(*) as total FROM Entities WHERE (name LIKE '%${search}%')`
-//     }
-//        else if (!accessdata) {
-//         // console.log("first _ 4")
-//           sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE UserId = '${userId}'`;
-//       }
-
-//       // Add conditions for additional filter fields
-//       for (const [field, value] of Object.entries(filters)) {
-//           if (value !== '') {
-//               sqlCount += ` AND ${field} LIKE '%${value}%'`;
-//           }
-//       }
-
-//       mycon.query(sqlCount, async (err, countResult) => {
-//           if (err) {
-//               console.error('Error executing MySQL count query: ' + err.stack);
-//               res.status(500).json({ error: 'Internal server error' });
-//               return;
-//           }
-
-//           const totalEntities = countResult[0].total;
-//           const totalPages = Math.ceil(totalEntities / pageSize);
-
-//           res.json({
-//               Meetings: result,
-//               totalPages: parseInt(totalPages),
-//               currentPage: parseInt(page),
-//               pageSize: parseInt(pageSize),
-//               totalMeeting: parseInt(totalEntities),
-//               startMeeting: parseInt(offset) + 1, // Correct the start entity index
-//               endMeeting: parseInt(offset) + parseInt(pageSize), // Correct the end entity index
-//               search
-//           });
-//       });
-//   });
-// };
-
-// const ListMeetings = async (req, res) => {
-//   const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', ...restQueries } = req.query;
-//   const filters = {};
-//   for (const key in restQueries) {
-//     filters[key] = restQueries[key];
-//   }
-//   const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
-//   // MySQL query to fetch paginated meetings
-//   let sql = `SELECT * FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
-
-//   // Add conditions for additional filter fields
-//   for (const [field, value] of Object.entries(filters)) {
-//     if (value !== '') {
-//       sql += ` AND ${field} LIKE '%${value}%'`; // Add the condition
-//     }
-//   }
-
-//   // Add LIMIT and OFFSET clauses to the SQL query
-//   sql += ` ORDER BY ${sortBy} LIMIT ? OFFSET ?`;
-
-//   mycon.query(sql, [parseInt(pageSize), offset], (err, result) => {
-//     if (err) {
-//       console.error('Error executing MySQL query: ' + err.stack);
-//       res.status(500).json({ error: 'Internal server error' });
-//       return;
-//     }
-
-//     // Execute the count query to get the total number of meetings
-//     let sqlCount = `SELECT COUNT(*) as total FROM Meetings WHERE (meetingnumber LIKE '%${search}%')`;
-
-//     // Add conditions for additional filter fields
-//     for (const [field, value] of Object.entries(filters)) {
-//       if (value !== '') {
-//         sqlCount += ` AND ${field} LIKE '%${value}%'`;
-//       }
-//     }
-
-//     mycon.query(sqlCount, (err, countResult) => {
-//       if (err) {
-//         console.error('Error executing MySQL count query: ' + err.stack);
-//         res.status(500).json({ error: 'Internal server error' });
-//         return;
-//       }
-
-//       const totalMeetings = countResult[0].total;
-//       const totalPages = Math.ceil(totalMeetings / pageSize);
-
-//       res.json({
-//         Meetings: result,
-//         totalPages: parseInt(totalPages),
-//         currentPage: parseInt(page),
-//         pageSize: parseInt(pageSize),
-//         totalMeetings: parseInt(totalMeetings),
-//         startMeeting: parseInt(offset) + 1, // Correct the start meeting index
-//         endMeeting: parseInt(offset) + parseInt(pageSize), // Correct the end meeting index
-//         search
-//       });
-//     });
-//   });
-// };
-
-
-//revarted
-// const GetMeeting = async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page, 10) || 1;
-//     const pageSize = parseInt(req.query.pageSize, 10) || 10;
-//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
-//     const searchQuery = req.query.search || '';
-//     const startDate = req.query.startDate;
-//     const endDate = req.query.endDate;
-
-//     // Initialize the options object
-//     const options = {
-//       offset: (page - 1) * pageSize,
-//       limit: pageSize,
-//       order: [[sortBy]],
-//       where: {}
-//     };
-
-//     // Add search filters
-//     if (searchQuery) {
-//       options.where[Op.or] = [
-//         { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
-//         { description: { [Op.like]: `%${searchQuery}%` } }
-//       ];
-//     }
-
-//     // Add date range filters
-//     if (startDate && endDate) {
-//       options.where.date = {
-//         [Op.between]: [new Date(startDate), new Date(endDate)]
-//       };
-//     }
-
-//     // Add other filters dynamically from the query parameters
-//     const filterFields = ['entityId', 'teamId', 'userId'];
-//     filterFields.forEach(field => {
-//       if (req.query[field]) {
-//         const dbField = field.charAt(0).toUpperCase() + field.slice(1); // Assuming model fields are EntityId, TeamId, UserId
-//         options.where[dbField] = req.query[field];
-//       }
-//     });
-
-//     // Extract additional dynamic filters if any
-//     Object.keys(req.query).forEach(key => {
-//       if (!['page', 'pageSize', 'sortBy', 'search', 'startDate', 'endDate', ...filterFields].includes(key)) {
-//         options.where[key] = req.query[key];
-//       }
-//     });
-
-//     const { count, rows: Meetings } = await db.Meeting.findAndCountAll(options);
-
-//     // Calculate the range of meetings being displayed
-//     const startMeeting = (page - 1) * pageSize + 1;
-//     const endMeeting = Math.min(page * pageSize, count);
-
-//     const totalPages = Math.ceil(count / pageSize);
-
-//     // Get task counts for each meeting
-//     for (let meeting of Meetings) {
-//       const [totalTaskCount, overDueCount, completedCount, inProgressCount, toDoCount] = await Promise.all([
-//         db.Task.count({ where: { meetingId: meeting.id } }),
-//         db.Task.count({ where: { meetingId: meeting.id, status: 'Over-Due' } }),
-//         db.Task.count({ where: { meetingId: meeting.id, status: 'Completed' } }),
-//         db.Task.count({ where: { meetingId: meeting.id, status: 'In-Progress' } }),
-//         db.Task.count({ where: { meetingId: meeting.id, status: 'To-Do' } })
-//       ]);
-
-//       meeting.setDataValue('taskCounts', {
-//         totalTaskCount,
-//         overDueCount,
-//         completedCount,
-//         inProgressCount,
-//         toDoCount
-//       });
-//     }
-
-//     res.status(200).json({
-//       Meetings: Meetings,
-//       totalMeetings: count,
-//       totalPages: totalPages,
-//       currentPage: page,
-//       pageSize: pageSize,
-//       startMeeting: startMeeting,
-//       endMeeting: endMeeting,
-//       search: searchQuery
-//     });
-//   } catch (error) {
-//     console.error("Error fetching Meetings:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
 
 
 // old and working code
@@ -1251,47 +974,54 @@ const GetById = async (req, res) => {
 //   }
 // };
 
-//bala working code   Get method
 
+// Current code bala
 // const GetMeeting = async (req, res) => {
-//   console.log(req.query.user, "I am from Quarry");
+//   console.log(req.query.user, "I am from ");
 
 //   try {
-//     const page = parseInt(req.query.page, 10) || 1;
-//     const pageSize = parseInt(req.query.pageSize, 10) || 10;
-//     const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
-//     const searchQuery = req.query.search || '';
-//     const entityId = req.query.entity;
-//     const teamId = req.query.team;
-//     const userId = req.query.user;
+//     // const page = parseInt(req.query.page, 10) || 1;
+//     // const pageSize = parseInt(req.query.pageSize, 10) || 10;
+//     // const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
+//     // const searchQuery = req.query.search || '';
+//     // const entityId = req.query.entity;
+//     // const teamId = req.query.team;
+//     // const userId = req.query.user;
 
-    
+//     const { searchQuery = '', page = 1, pageSize = 5, sortBy = 'createdAt',entity: entityId, team: teamId, user: userId,  ...restQueries } = req.query;
+
+//     const offset = (parseInt(page) - 1) * parseInt(pageSize);
+
+//     const filters = {};
+//     for (const key in restQueries) {
+//       filters[key] = restQueries[key];
+//     }
+
+//     const whereClause = {
+//       [Op.or]: [
+//         { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
+//         { description: { [Op.like]: `%${searchQuery}%` } }
+//       ]
+//     }
+
+//     for (const [field, value] of Object.entries(filters)) {
+//       if (value !== '') {
+//         whereClause[field] = { [Op.like]: `%${value}%` };
+//       }
+//     }
 
 //     const fromDate = req.query.fromDate;
 //     const toDate = req.query.toDate;
 
 //     const options = {
-//       offset: (page - 1) * pageSize,
-//       limit: pageSize,
+//       offset: offset,
+//       limit: parseInt(pageSize),
 //       order: [[sortBy]],
-//       where: {
-//         [Op.or]: [
-//           { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
-//           { description: { [Op.like]: `%${searchQuery}%` } },
-//         ],
-//       },
+//       where: whereClause,
 //     };
 
-//     // // Add date range filter if both fromDate and toDate are provided
-//     // if (fromDate && toDate) {
-//     //   options.where.date = {
-//     //     [Op.and]: [
-//     //       { [Op.gte]: new Date(fromDate) }, // greater than or equal to fromDate
-//     //       { [Op.lte]: new Date(toDate) }    // less than or equal to toDate
-//     //     ]
-//     //   };
-//     // }
-
+   
+    
 //     if (fromDate && toDate) {
 //       options.where.date = {
 //         [Op.between]: [fromDate, toDate]
@@ -1319,6 +1049,8 @@ const GetById = async (req, res) => {
 
 //     const { count, rows: Meetings } = await db.Meeting.findAndCountAll(options);
 
+    
+
 //     const startMeeting = (page - 1) * pageSize + 1;
 //     const endMeeting = Math.min(page * pageSize, count);
 //     const totalPages = Math.ceil(count / pageSize);
@@ -1341,6 +1073,29 @@ const GetById = async (req, res) => {
 //       });
 //     }
 
+//     const ids = Meetings.map(item => item.id);
+//     const placeholders = ids.map(() => '?').join(',');
+
+//     mycon.query(`SELECT * FROM Meetings WHERE id IN (${placeholders})`, ids, (err, resultmy) => {
+//       console.log(resultmy)
+//       return;
+//     })
+
+//           // Merge additional columns
+//           const mergedTeams = teamsWithTaskCounts.map(team => {
+//             const additionalData = resultMap.get(team.id);
+//             if (additionalData) {
+//               // Add any new columns from resultmy to the team object
+//               for (const key in additionalData) {
+//                 if (!team.hasOwnProperty(key)) {
+//                   team[key] = additionalData[key];
+//                 }
+//               }
+//             }
+//             return team;
+//           });
+
+
 //     res.status(200).json({
 //       Meetings,
 //       totalMeetings: count,
@@ -1358,23 +1113,14 @@ const GetById = async (req, res) => {
 // };
 
 
-// niraj added filter code
+
 const GetMeeting = async (req, res) => {
-  console.log(req.query.user, "I am from Quarry");
+  console.log(req.query.user, "I am from ");
 
   try {
-    // const page = parseInt(req.query.page, 10) || 1;
-    // const pageSize = parseInt(req.query.pageSize, 10) || 10;
-    // const sortBy = req.query.sortBy || 'createdAt'; // Default sorting by createdAt if not provided
-    // const searchQuery = req.query.search || '';
-    // const entityId = req.query.entity;
-    // const teamId = req.query.team;
-    // const userId = req.query.user;
-
-    const { searchQuery = '', page = 1, pageSize = 5, sortBy = 'createdAt',entity: entityId, team: teamId, user: userId,  ...restQueries } = req.query;
+    const { search = '', page = 1, pageSize = 5, sortBy = 'createdAt', entity: entityId, team: teamId, user: userId, fromDate, toDate, ...restQueries } = req.query;
 
     const offset = (parseInt(page) - 1) * parseInt(pageSize);
-
     const filters = {};
     for (const key in restQueries) {
       filters[key] = restQueries[key];
@@ -1382,19 +1128,16 @@ const GetMeeting = async (req, res) => {
 
     const whereClause = {
       [Op.or]: [
-        { meetingnumber: { [Op.like]: `%${searchQuery}%` } },
-        { description: { [Op.like]: `%${searchQuery}%` } }
+        { meetingnumber: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } }
       ]
-    }
+    };
 
     for (const [field, value] of Object.entries(filters)) {
       if (value !== '') {
         whereClause[field] = { [Op.like]: `%${value}%` };
       }
     }
-
-    const fromDate = req.query.fromDate;
-    const toDate = req.query.toDate;
 
     const options = {
       offset: offset,
@@ -1403,8 +1146,6 @@ const GetMeeting = async (req, res) => {
       where: whereClause,
     };
 
-   
-    
     if (fromDate && toDate) {
       options.where.date = {
         [Op.between]: [fromDate, toDate]
@@ -1432,8 +1173,6 @@ const GetMeeting = async (req, res) => {
 
     const { count, rows: Meetings } = await db.Meeting.findAndCountAll(options);
 
-    
-
     const startMeeting = (page - 1) * pageSize + 1;
     const endMeeting = Math.min(page * pageSize, count);
     const totalPages = Math.ceil(count / pageSize);
@@ -1456,23 +1195,65 @@ const GetMeeting = async (req, res) => {
       });
     }
 
-    
+    const ids = Meetings.map(item => item.id);
+    if (ids.length > 0) {
+      const placeholders = ids.map(() => '?').join(',');
 
-    res.status(200).json({
-      Meetings,
-      totalMeetings: count,
-      totalPages,
-      currentPage: page,
-      pageSize,
-      startMeeting,
-      endMeeting,
-      search: searchQuery
-    });
+      mycon.query(`SELECT * FROM Meetings WHERE id IN (${placeholders})`, ids, (err, resultmy) => {
+        if (err) {
+          console.error("Error fetching resultmy:", err);
+          return res.status(500).json({ error: "Internal Server Error" });
+        }
+
+        const resultMap = new Map();
+        resultmy.forEach(row => {
+          resultMap.set(row.id, row);
+        });
+
+        const mergedMeetings = Meetings.map(meeting => {
+          const additionalData = resultMap.get(meeting.id);
+          if (additionalData) {
+            for (const key in additionalData) {
+              if (!meeting.dataValues.hasOwnProperty(key)) {
+                meeting.setDataValue(key, additionalData[key]);
+              }
+            }
+          }
+          return meeting;
+        });
+
+        res.status(200).json({
+          Meetings: mergedMeetings,
+          totalMeetings: count,
+          totalPages,
+          currentPage: page,
+          pageSize,
+          startMeeting,
+          endMeeting,
+          search: search
+        });
+      });
+    } else {
+      // No IDs to query, return the meetings as is
+      res.status(200).json({
+        Meetings,
+        totalMeetings: count,
+        totalPages,
+        currentPage: page,
+        pageSize,
+        startMeeting,
+        endMeeting,
+        search: searchQuery
+      });
+    }
   } catch (error) {
     console.error("Error fetching Meetings:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+
+
 
 
 // const GetMeeting = async (req, res) => {
