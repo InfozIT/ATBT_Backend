@@ -35,6 +35,7 @@ const Public_router = require('./Routes/Public')
 const Task_router = require('./Routes/Task')
 const Team_router = require('./Routes/Team')
 const Meeting_router = require('./Routes/Meeting')
+const Reports_router = require('./Routes/reports')
 const CreateForm_router = require("./Routes/CreateForm")
 const errorHander = require('./middlewares/errorHandler.middleware')
 const routeNotFound = require('./middlewares/routeNotfound.middleware')
@@ -54,6 +55,7 @@ app.use('/user', authVerify, User_router);
 app.use('/team', authVerify, Team_router);
 app.use('/auth', Auth_router);
 app.use('/access', DataShairing_router);
+app.use('/report', authVerify, Reports_router);
 
 app.use('/form', CreateForm_router);
 app.use('/boardmeeting', authVerify, Meeting_router);
