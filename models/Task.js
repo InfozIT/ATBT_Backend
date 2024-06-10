@@ -64,6 +64,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    taskCreatedBy: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
     priority: {
       type: DataTypes.STRING,
       allowNull: true
@@ -96,6 +100,21 @@ module.exports = (sequelize, DataTypes) => {
     collaborators: {
       type: DataTypes.JSON, // Assuming collaborators is stored as JSON array
       allowNull: true
+    },
+    update_count: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    emailSent: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    taskCreatedBy: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
     }
   });
 
