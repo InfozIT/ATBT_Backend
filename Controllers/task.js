@@ -1198,7 +1198,7 @@ const GetTask = async (req, res) => {
     const combinedResult = tasks.map(task => {
       const subtaskCount = subTaskCounts[task.id] || 0;
       const members = meetingMembersMap[task.meetingId] || [];
-      const memberdata = members
+      const memberdata = members[0]
 
       const uniqueMemberIds = new Set();
       const uniqueMembers = [];
