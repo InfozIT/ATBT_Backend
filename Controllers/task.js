@@ -976,22 +976,11 @@ const DeleteTskDoc = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 }
-
 const GetTask = async (req, res) => {
-  const {search = '', userId, meetingId, status, entityId, teamId } = req.query;
-  const fromDate = req.query.fromDate;
-  const toDate = req.query.toDate;
+  const { userId, meetingId, status, entityId, teamId } = req.query;
 
   try {
-    let whereClause = {
-      decision: { [Op.like]: `%${search}%` },
-    };
-
-    if (fromDate && toDate) {
-      whereClause.dueDate = {
-        [Op.between]: [fromDate, toDate]
-      };
-    }
+    let whereClause = {};
 
     if (req.tasks) {
       const taskIds = req.tasks.map(task => task.id);
@@ -1246,8 +1235,7 @@ const GetTask = async (req, res) => {
         updatedAt: task.updatedAt,
         subtaskCount: subtaskCount,
         createdby: task.createdby,
-        updatedbyuser: subTaskMessageMap[task.id] || null,
-        search
+        updatedbyuser: subTaskMessageMap[task.id] || null
       };
     });
 
@@ -1257,8 +1245,6 @@ const GetTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
-
-
 const ListTaskCount = async (req, res) => {
   try {
     let whereClause = {};
