@@ -112,7 +112,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
     },
     taskCreatedBy: {
-      type: DataTypes.JSON,
+      type: DataTypes.STRING,
       allowNull: true,
       defaultValue: null,
     }

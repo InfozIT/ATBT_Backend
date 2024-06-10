@@ -241,8 +241,8 @@ const GetTaskbyId = async (req, res) => {
 const UpdateTask = async (req, res) => {
   try {
     const taskId = req.params.id; // Assuming taskId is part of the URL
-    const updateData = req.body;
-    let { members } = req.body;
+    let updateData = req.body;
+    let { members,taskCreatedBy } = req.body;
     let data = req.body;
     const { userId } = req.user;
 
@@ -250,15 +250,20 @@ const UpdateTask = async (req, res) => {
     let file = req.file;
     const selectedmember = JSON.stringify(members);
 
+
     if (file) {
       const result = await uploadToS3(req.file);
       updateData = {
         image: `${result.Location}`,
         members: selectedmember,
+        taskCreatedBy: taskCreatedBy,
         createdby: userId,
         ...data,
       }
+
     }
+
+    updateData.taskCreateby =taskCreatedBy;
     const updatedTask = await db.Task.update(updateData, {
       where: { id: req.params.id }
     });
