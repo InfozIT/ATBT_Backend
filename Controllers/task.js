@@ -10,20 +10,28 @@ const CreateTask = async (req, res) => {
   try {
     let file = req.file;
     var data = req.body;
-    let { createdby, collaborators, taskCreatedBy } = req.body
+    let { createdby, collaborators, taskCreatedBy } = req.body;
     let bmId = req.params.id;
 
-    // const CollaboratorsString = JSON.stringify(Collaborators);
-
+    // Convert taskCreatedBy to a JSON string
+    const taskCreatedByString = JSON.stringify(taskCreatedBy);
 
     if (file) {
       const result = await uploadToS3(req.file);
       data = {
         image: `${result.Location}`,
+        taskCreatedBy: taskCreatedByString, // Save as string
+
         ...data
-      }
+      };
+    } else {
+      data = {
+        ...data,
+        taskCreatedBy: taskCreatedByString // Save as string
+      };
     }
-    let task = await db.Task.create({ meetingId: bmId, createdby: createdby, collaborators: collaborators, taskCreateby: taskCreatedBy }, data);
+
+    let task = await db.Task.create({ meetingId: bmId, createdby: createdby, collaborators: collaborators, taskCreatedBy: taskCreatedByString });
 
     res.status(201).send(task);
   } catch (error) {
@@ -31,6 +39,36 @@ const CreateTask = async (req, res) => {
     res.status(500).send("Error creating task");
   }
 };
+
+
+// const CreateTask = async (req, res) => {
+//   try {
+//     let file = req.file;
+//     var data = req.body;
+//     let { createdby, collaborators, taskCreatedBy } = req.body
+//     let bmId = req.params.id;
+//     console.log(typeof(taskCreatedBy),"-----------------")
+
+//     // const CollaboratorsString = JSON.stringify(Collaborators);
+
+
+//     if (file) {
+//       const result = await uploadToS3(req.file);
+//       data = {
+//         image: `${result.Location}`,
+//         taskCreatedBy:taskCreatedBy,
+
+//         ...data
+//       }
+//     }
+//     let task = await db.Task.create({ meetingId: bmId, createdby: createdby, collaborators: collaborators, taskCreatedBy:taskCreatedBy }, data);
+
+//     res.status(201).send(task);
+//   } catch (error) {
+//     console.error("Error creating task:", error);
+//     res.status(500).send("Error creating task");
+//   }
+// };
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
   try {
