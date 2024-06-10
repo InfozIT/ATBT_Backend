@@ -978,9 +978,17 @@ const DeleteTskDoc = async (req, res) => {
 }
 const GetTask = async (req, res) => {
   const { userId, meetingId, status, entityId, teamId } = req.query;
+  const fromDate = req.query.fromDate;
+  const toDate = req.query.toDate;
 
   try {
     let whereClause = {};
+
+    if (fromDate && toDate) {
+      whereClause.dueDate = {
+        [Op.between]: [fromDate, toDate]
+      };
+    }
 
     if (req.tasks) {
       const taskIds = req.tasks.map(task => task.id);
