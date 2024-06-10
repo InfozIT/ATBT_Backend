@@ -1198,6 +1198,7 @@ const GetTask = async (req, res) => {
     const combinedResult = tasks.map(task => {
       const subtaskCount = subTaskCounts[task.id] || 0;
       const members = meetingMembersMap[task.meetingId] || [];
+      const memberdata = members
 
       const uniqueMemberIds = new Set();
       const uniqueMembers = [];
@@ -1229,15 +1230,18 @@ const GetTask = async (req, res) => {
         decision: task.decision,
         meetingId: task.meetingId,
         date: meetingdate,
-        meetingNumber: meetingNumber,
         priority: task.priority,
         group: uniqueMembers,
         dueDate: task.dueDate,
         members: task.members,
         status: task.status,
         stat: task.stat,
+        memberdata:memberdata,
+
         collaborators: task.collaborators || [],
         taskCreateby: task.taskCreateby,
+        meetingNumber: meetingNumber,
+
         file: task.file,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
@@ -1253,6 +1257,11 @@ const GetTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
+
+
+
+
+
 const ListTaskCount = async (req, res) => {
   try {
     let whereClause = {};
