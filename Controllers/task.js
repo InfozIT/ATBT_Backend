@@ -35,13 +35,13 @@ const CreateTask = async (req, res) => {
 
     let createdid =task.dataValues.id;
 
-    if (createdid){
+    // if (createdid){
       
-    await db.Task.update(
-      { update_count: 1 },  // Set emailSent to true
-      { where: { id: createdid }, raw: true }  // Specify the task ID
-    );
-    }
+    // await db.Task.update(
+    //   { update_count: 1 },  // Set emailSent to true
+    //   { where: { id: createdid }, raw: true }  // Specify the task ID
+    // );
+    // }
     res.status(201).send(task);
   } catch (error) {
     console.error("Error creating task:", error);
@@ -87,6 +87,7 @@ const UpdateTask = async (req, res) => {
     meetMembers = []
     let decision = member.dataValues.decision;
     let dueDate = member.dataValues.dueDate;
+    let Stat = member.dataValues.status;
 
     let PR = member.dataValues.members;
     let meetingId = member.dataValues.meetingId;
@@ -129,7 +130,7 @@ const UpdateTask = async (req, res) => {
       const mailData = {
         from: 'nirajkr00024@gmail.com',
         to: emails[i],
-        subject: 'Action Required: Task update for you ',
+        subject: 'Action Required: Decision Assigned to You ',
         html: `
          
           <style>
@@ -247,6 +248,126 @@ const UpdateTask = async (req, res) => {
     </div>
           `,
       };
+      const mailData1 = {
+        from: 'nirajkr00024@gmail.com',
+        to: emails[i],
+        subject: `Task update by ${Creatorname}`,
+        html: `
+         
+          <style>
+             .container {
+               max-width: 700px;
+               margin: 0 auto;
+               padding: 24px 0;
+               font-family: "Poppins", sans-serif;
+               background-color: rgb(231 229 228);
+               border-radius: 1%;
+             }
+             .banner {
+               margin-bottom: 10px;
+               width: 90px;
+               height: 8vh;
+               margin-right: 20px;
+             }
+          
+             .header {
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               padding-top: 10px;
+             }
+          
+             p {
+               margin-bottom: 15px;
+             }
+             .container-main {
+               max-width: 650px;
+               margin: 0 auto;
+          
+               font-family: "serif", sans-serif;
+               background-color: #fafafa;
+               border-radius: 1%;
+             }
+             .content {
+               padding: 25px;
+             }
+             table {
+               border-collapse: collapse;
+               width: 100%;
+               margin-top: 10px;
+             }
+             th, td {
+               border: 1px solid black;
+               padding: 8px;
+               text-align: left;
+             }
+             tr:nth-child(even) {
+               background-color: #f2f2f2;
+             }
+             .footer {
+               background-color: rgb(249 115 22);
+               padding: 0.5em;
+               text-align: center;
+             }
+          
+           </style>
+           <div class="container">
+      <div class="container-main">
+        <div class="header">
+          <img
+            src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+            alt="kapil_Groups_Logo"
+            class="banner"
+          />
+        </div>
+ 
+        <hr style="margin: 0" />
+        <div class="content">
+          <h5 style="font-size: 1rem; font-weight: 500">
+            Dear <span style="font-weight: bold">${names[i]}</span>,
+          </h5>
+          <div style="font-size: 0.8rem">
+            <p style="line-height: 1.4">
+We wanted to inform you of an update regarding the decision in ${meetingnumber}, which was assigned to ${Stat}. Here are the details of the decision update:
+            </p>
+           <table>
+            <thead>
+            <th> Meeting ID </th>
+              <th>Decision Taken</th>
+              <th>Status</th>
+          
+            </thead>
+            <tbody>
+              <tr>
+              <td>${meetingnumber}</td>
+                <td  style="width:"400px"> ${decision}</td>
+              <td> ${Creatorname}</td>
+              </tr>
+            </tbody>
+           </table>
+           <a
+            href= "https://www.betaatbt.infozit.com/login" 
+            class="button"
+            style="display: inline-block; padding: 10px 20px; background-color: rgb(249 115 22);
+            color: #fff; text-decoration: none; border-radius: 5px; margin-top:10px"
+            >Login</a
+            >
+
+
+           <p>Please ensure that the decision assigned to you is completed by the due date.</p>
+            <p style="padding-top: 15px;">Best regards,</p>
+            <p>Kapil Group</p>
+          </div>
+        </div>
+        <div class="footer">
+          <p style="color: white; font-size: 15px; margin: 0">
+            All rights are reserved by Kapil Group
+          </p>
+        </div>
+      </div>
+    </div>
+          `,
+      };
 
       let tasks = await db.Task.findAll({
         where: { id: req.params.id },
@@ -256,8 +377,20 @@ const UpdateTask = async (req, res) => {
       let due = tasks.map(entry => entry.dueDate);
       let dec = tasks.map(entry => entry.decision);
 
+
+      if (update_count=>update_count == 1){
+        await transporter.sendMail(mailData1);
+        console.log("mail updated")
+
       if (due.every(date => date != null) && dec.every(decision => decision != null)) {
         await transporter.sendMail(mailData);
+        await db.Task.update(
+          { update_count: 1 },  // Set emailSent to true
+          { where: { id: req.params.id }, raw: true }  // Specify the task ID
+        );
+      }
+
+
       }
     }
 
