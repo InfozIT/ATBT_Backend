@@ -40,7 +40,6 @@ const CreateTask = async (req, res) => {
   }
 };
 
-
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
   try {
