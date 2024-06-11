@@ -425,7 +425,7 @@ const GetTaskbyId = async (req, res) => {
     };
 
     // Fetch task creator entity name
-    const taskCreator = task.taskCreateby;
+    const taskCreator = task.taskCreatedBy;
     if (taskCreator && taskCreator.name === "users") {
       const userEntity = await db.User.findOne({
         attributes: ['entityname'],
