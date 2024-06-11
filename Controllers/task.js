@@ -1658,7 +1658,6 @@ const ListTaskCount = async (req, res) => {
   }
 };
 
-
 const GetTaskbyEntity = async (req, res) => {
    let = entityId = req.params.id
    const teamMembers = await db.Meeting.findAll({
