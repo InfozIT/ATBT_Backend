@@ -1301,8 +1301,6 @@ const GetTask = async (req, res) => {
   }
 };
 
-
-
 //working code
 
 // const GetTask = async (req, res) => {
@@ -1586,10 +1584,6 @@ const GetTask = async (req, res) => {
 //     res.status(500).json({ error: 'Failed to fetch tasks' });
 //   }
 // };
-
-
-
-
 
 const ListTaskCount = async (req, res) => {
   try {
