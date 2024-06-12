@@ -1365,6 +1365,271 @@ const DeleteTskDoc = async (req, res) => {
   }
 }
 
+// working for pr
+// const GetTask = async (req, res) => {
+//   const { userId, meetingId, status, entityId, teamId, PersonResponsible } = req.query;
+//   const fromDate = req.query.fromDate;
+//   const toDate = req.query.toDate;
+//   const page = parseInt(req.query.page) || 1; // Default to page 1
+//   const pageSize = parseInt(req.query.pageSize) || 10; // Default to 10 items per page
+//   let PR = +PersonResponsible;
+
+//   try {
+//     let whereClause = {};
+
+//     // Date Range Filter
+//     if (fromDate && toDate) {
+//       whereClause.dueDate = {
+//         [Op.between]: [fromDate, toDate]
+//       };
+//     }
+
+//     // Authorized Tasks Check
+//     if (req.tasks) {
+//       const taskIds = req.tasks.map(task => task.id);
+//       whereClause.id = { [Op.in]: taskIds };
+//     } else {
+//       return res.status(403).json({ error: 'Unauthorized access to tasks' });
+//     }
+
+//     // Entity Filter
+//     if (entityId) {
+//       const userEntities = await db.Meeting.findAll({
+//         where: { EntityId: entityId },
+//         raw: true,
+//         attributes: ['id']
+//       });
+//       const userEntityIds = userEntities.map(item => item.id);
+//       whereClause.meetingId = { [Op.in]: userEntityIds };
+//     }
+
+//     // User Filter
+//     if (userId) {
+//       const userMeetings = await db.Meeting.findAll({
+//         where: { UserId: userId },
+//         raw: true,
+//         attributes: ['id']
+//       });
+//       const userMeetingIds = userMeetings.map(item => item.id);
+//       whereClause.meetingId = whereClause.meetingId
+//         ? { [Op.and]: [whereClause.meetingId, { [Op.in]: userMeetingIds }] }
+//         : { [Op.in]: userMeetingIds };
+//     }
+
+//     // Meeting Filter
+//     if (meetingId) {
+//       whereClause.meetingId = whereClause.meetingId
+//         ? { [Op.and]: [whereClause.meetingId, { [Op.eq]: meetingId }] }
+//         : meetingId;
+//     }
+
+//     // Team Filter
+//     if (teamId) {
+//       const teamMeetings = await db.Meeting.findAll({
+//         where: { TeamId: teamId },
+//         raw: true,
+//         attributes: ['id']
+//       });
+//       const teamMeetingIds = teamMeetings.map(item => item.id);
+//       whereClause.meetingId = whereClause.meetingId
+//         ? { [Op.and]: [whereClause.meetingId, { [Op.in]: teamMeetingIds }] }
+//         : { [Op.in]: teamMeetingIds };
+//     }
+
+//     // Status Filter
+//     if (status) {
+//       if (status === "Over-Due") {
+//         const currentDate = new Date().toISOString().slice(0, 10);
+//         whereClause.status = "Over-Due";
+//         whereClause.dueDate = { [Op.lt]: currentDate };
+//       } else {
+//         whereClause.status = status;
+//       }
+//     }
+
+//     // Person Responsible Filter
+//     if (PersonResponsible) {
+//       whereClause.members = PR;
+//     }
+
+//     // Pagination and Offset
+//     const offset = (page - 1) * pageSize;
+
+//     // Fetch Tasks
+//     const { count: totalTasks, rows: tasks } = await db.Task.findAndCountAll({
+//       where: whereClause,
+//       limit: pageSize,
+//       offset: offset,
+//       order: [['createdAt', 'DESC']]
+//     });
+
+//     const currentDate = new Date().toISOString().slice(0, 10);
+
+//     // Update tasks to "Over-Due" status if past due and not "Completed"
+//     await Promise.all(tasks.map(async (task) => {
+//       if (task.dueDate && task.dueDate < currentDate && task.status !== "Completed") {
+//         task.status = "Over-Due";
+//         await db.Task.update({ status: "Over-Due" }, { where: { id: task.id } });
+//       }
+//     }));
+
+//     // Refetch Tasks after update
+//     const refetchedTasks = await db.Task.findAll({
+//       where: whereClause,
+//       order: [['createdAt', 'DESC']],
+//       limit: pageSize,
+//       offset: offset
+//     });
+
+//     const totalPages = Math.ceil(totalTasks / pageSize);
+
+//     const meetingIds = tasks.map(task => task.meetingId);
+//     const meetings = await db.Meeting.findAll({
+//       attributes: ['id', 'date', 'meetingnumber', 'members', 'UserId', 'EntityId', 'TeamId'],
+//       where: { id: { [Op.in]: meetingIds } },
+//       raw: true
+//     });
+
+//     const taskIds = tasks.map(task => task.id);
+//     const subTaskResults = await db.SubTask.findAll({
+//       attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
+//       where: { TaskId: { [Op.in]: taskIds } },
+//       group: ['TaskId'],
+//       raw: true
+//     });
+
+//     const subTaskCounts = subTaskResults.reduce((acc, result) => {
+//       acc[result.TaskId] = result.subtaskCount;
+//       return acc;
+//     }, {});
+
+//     const userResults = await db.User.findAll({
+//       attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//       raw: true
+//     });
+
+//     const userMap = userResults.reduce((acc, user) => {
+//       acc[user.id] = user;
+//       return acc;
+//     }, {});
+
+//     const entityUserMap = userResults.reduce((acc, user) => {
+//       if (!acc[user.entityname]) {
+//         acc[user.entityname] = [];
+//       }
+//       acc[user.entityname].push(user);
+//       return acc;
+//     }, {});
+
+//     const teamIds = [...new Set(meetings.map(meeting => meeting.TeamId))];
+//     if (teamId) teamIds.push(teamId);
+
+//     const teams = await db.Team.findAll({
+//       where: { id: { [Op.in]: teamIds } },
+//       raw: true
+//     });
+
+//     const teamMap = teams.reduce((acc, team) => {
+//       acc[team.id] = team;
+//       return acc;
+//     }, {});
+
+//     if (teamId && teamMap[teamId] && teamMap[teamId].members) {
+//       const teamMembers = teamMap[teamId].members;
+//       const teamMemberIds = Array.isArray(teamMembers) ? teamMembers : [];
+
+//       const additionalUsers = await db.User.findAll({
+//         where: { id: { [Op.in]: teamMemberIds } },
+//         attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//         raw: true
+//       });
+
+//       additionalUsers.forEach(user => {
+//         if (!userMap[user.id]) {
+//           userMap[user.id] = user;
+//         }
+//       });
+//     }
+
+//     const meetingMembersMap = meetings.reduce((acc, meeting) => {
+//       let members = meeting.members || [];
+//       let memberDetails = [];
+
+//       if (meeting.UserId && userMap[meeting.UserId]) {
+//         memberDetails.push(userMap[meeting.UserId]);
+//       }
+//       if (meeting.EntityId && entityUserMap[meeting.EntityId]) {
+//         memberDetails.push(...entityUserMap[meeting.EntityId]);
+//       }
+//       if (meeting.TeamId && teamMap[meeting.TeamId] && teamMap[meeting.TeamId].members) {
+//         let teamMembers = teamMap[meeting.TeamId].members;
+//         if (Array.isArray(teamMembers) && teamMembers.length > 0 && typeof teamMembers[0] === 'number') {
+//           memberDetails.push(...teamMembers.map(id => userMap[id]).filter(user => user));
+//         } else {
+//           memberDetails.push(...teamMembers);
+//         }
+//       }
+
+//       if (Array.isArray(members) && members.length > 0 && typeof members[0] === 'number') {
+//         memberDetails.push(...members.map(id => userMap[id]).filter(user => user));
+//       } else {
+//         memberDetails.push(...members);
+//       }
+
+//       acc[meeting.id] = memberDetails;
+//       return acc;
+//     }, {});
+
+//     let self = null;
+//     if (userId) {
+//       self = await db.User.findOne({
+//         attributes: ['id', 'image', 'name', 'email', 'entityname'],
+//         where: { id: userId },
+//         raw: true,
+//       });
+//     }
+
+//     // Fetch the latest message for each task
+//     const subTaskDocs = await db.SubTaskDoc.findAll({
+//       attributes: ['TaskId', [db.sequelize.fn('MAX', db.sequelize.col('createdAt')), 'latestMessageDate']],
+//       where: { TaskId: { [Op.in]: taskIds } },
+//       group: ['TaskId'],
+//       raw: true
+//     });
+
+//     const subTaskMessages = await db.SubTaskDoc.findAll({
+//       where: {
+//         TaskId: { [Op.in]: taskIds },
+//         createdAt: {
+//           [Op.in]: subTaskDocs.map(doc => doc.latestMessageDate)
+//         }
+//       },
+//       raw: true
+//     });
+
+//     const latestMessages = subTaskMessages.reduce((acc, message) => {
+//       if (!acc[message.TaskId] || new Date(message.createdAt) > new Date(acc[message.TaskId].createdAt)) {
+//         acc[message.TaskId] = message;
+//       }
+//       return acc;
+//     }, {});
+
+//     return res.status(200).json({
+//       tasks: refetchedTasks,
+//       totalPages,
+//       meetings,
+//       meetingMembersMap,
+//       subTaskCounts,
+//       latestMessages,
+//       user: self
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'An error occurred while fetching tasks' });
+//   }
+// };
+
+
 const GetTask = async (req, res) => {
   const { userId, meetingId, status, entityId, teamId } = req.query;
   const fromDate = req.query.fromDate;
@@ -1632,8 +1897,9 @@ const GetTask = async (req, res) => {
       // Fetch user corresponding to `members` value
       let memberdataFinal = null;
       if (task.members) {
-        memberdataFinal = userMap[task.members] || null;
+        memberdataFinal = userMap[task.members].name || null;
       }
+      
     
       return {
         id: task.id,
