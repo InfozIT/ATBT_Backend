@@ -1609,32 +1609,32 @@ const GetTask = async (req, res) => {
       const subtaskCount = subTaskCounts[task.id] || 0;
       const members = meetingMembersMap[task.meetingId] || [];
       const memberdata = members[0];
-
+    
       const uniqueMemberIds = new Set();
       const uniqueMembers = [];
-
+    
       if (self && !uniqueMemberIds.has(self.id)) {
         uniqueMemberIds.add(self.id);
         uniqueMembers.push(self);
       }
-
+    
       members.forEach(member => {
         if (!uniqueMemberIds.has(member.id)) {
           uniqueMemberIds.add(member.id);
           uniqueMembers.push(member);
         }
       });
-
+    
       const meeting = meetings.find(m => String(m.id) === String(task.meetingId));
       const meetingNumber = meeting ? meeting.meetingnumber : null;
       const meetingdate = meeting ? meeting.date : null;
-
-      if (!meeting) {
-        // console.log(`Meeting not found for Task ID: ${task.id}, Meeting ID: ${task.meetingId}`);
-      } else if (meetingNumber === null) {
-        // console.log(`Meeting number is null for Meeting ID: ${meeting.id}`);
+    
+      // Fetch user corresponding to `members` value
+      let memberdataFinal = null;
+      if (task.members) {
+        memberdataFinal = userMap[task.members] || null;
       }
-
+    
       return {
         id: task.id,
         decision: task.decision,
@@ -1646,7 +1646,7 @@ const GetTask = async (req, res) => {
         members: task.members,
         status: task.status,
         stat: task.stat,
-        memberdata: memberdata,
+        memberdata: memberdataFinal,
         collaborators: task.collaborators || [],
         taskCreateby: task.taskCreateby,
         meetingNumber: meetingNumber,
@@ -1658,6 +1658,7 @@ const GetTask = async (req, res) => {
         updatedbyuser: subTaskMessageMap[task.id] || null
       };
     });
+    
 
     res.status(200).json({
       tasks: combinedResult,
