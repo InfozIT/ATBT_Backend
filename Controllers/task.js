@@ -49,7 +49,7 @@ const CreateTask = async (req, res) => {
   }
 };
 
-// working Code
+
 const UpdateTask = async (req, res) => {
   try {
     const taskId = req.params.id; // Assuming taskId is part of the URL
@@ -801,16 +801,38 @@ const GetTaskbyId = async (req, res) => {
         attributes: ['name'],
         where: { id: taskCreator.id }
       });
+      if (task.collaborators) {
+        var colabs = await db.User.findAll({
+          attributes: ['id', 'name', 'image', 'email', 'entityname'],
+          where: {
+            id: { [Op.in]: task.collaborators }
+          },
+          raw: true
+        });
+      }
       combinedResult.taskCreateby = entity ? entity.name : "";
-      combinedResult.collaborators = task ? task.collaborators : "";
+      // combinedResult.collaborators = task ? task.collaborators : "";
+      combinedResult.collaborators = colabs;
 
     } else if (taskCreator && taskCreator.name === "teams") {
       const entity = await db.Team.findOne({
         attributes: ['name'],
         where: { id: taskCreator.id }
       });
+      if (task.collaborators) {
+        var colabs = await db.User.findAll({
+          attributes: ['id', 'name', 'image', 'email', 'entityname'],
+          where: {
+            id: { [Op.in]: [62] }
+          },
+          raw: true
+  
+        });
+        console.log(colabs)
+      }
       combinedResult.taskCreateby = entity ? entity.name : "";
-      combinedResult.collaborators = task ? task.collaborators : "";
+      // combinedResult.collaborators = task ? task.collaborators : "";
+      combinedResult.collaborators = colabs;
 
     }
 
