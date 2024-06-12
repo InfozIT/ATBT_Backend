@@ -771,6 +771,7 @@ const GetTaskbyId = async (req, res) => {
 
     // Fetch task creator entity name
     const taskCreator = task.taskCreatedBy;
+    console.log(taskCreator)
     if (taskCreator && taskCreator.name === "users") {
       const userEntity = await db.User.findOne({
         attributes: ['entityname'],
@@ -795,7 +796,7 @@ const GetTaskbyId = async (req, res) => {
         combinedResult.collaborators = colabs;
 
       }
-    } else if (taskCreator && taskCreator.name === "entity") {
+    } else if (taskCreator && taskCreator.name === "entities") {
       const entity = await db.Entity.findOne({
         attributes: ['name'],
         where: { id: taskCreator.id }
@@ -803,7 +804,7 @@ const GetTaskbyId = async (req, res) => {
       combinedResult.taskCreateby = entity ? entity.name : "";
       combinedResult.collaborators = task ? task.collaborators : "";
 
-    } else if (taskCreator && taskCreator.name === "team") {
+    } else if (taskCreator && taskCreator.name === "teams") {
       const entity = await db.Team.findOne({
         attributes: ['name'],
         where: { id: taskCreator.id }
