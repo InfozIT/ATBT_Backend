@@ -2225,6 +2225,91 @@ const GetTask = async (req, res) => {
 //   }
 // };
 
+// back up
+// const ListTaskCount = async (req, res) => {
+//   try {
+//     let whereClause = {};
+
+//     // Use authorized tasks from req.tasks
+//     if (req.tasks && req.tasks.length > 0) {
+//       const taskIds = req.tasks.map(task => task.id);
+//       // console.log("Authorized Task IDs:", taskIds);
+//       whereClause.id = { [Op.in]: taskIds };
+//     } else {
+//       // console.log("No authorized tasks found in req.tasks");
+//       return res.status(403).json({ error: 'Unauthorized access to tasks' });
+//     }
+
+//     // Define the possible statuses
+//     const statuses = ["To-Do", "In-Progress", "Over-Due", "Completed"];
+
+//     // Initialize an object to hold the counts
+//     const taskCounts = {
+//       allTasksCount: 0,
+//       toDoCount: 0,
+//       inProgressCount: 0,
+//       overdueCount: 0,
+//       completedCount: 0
+//     };
+
+//     // Count all tasks
+//     taskCounts.allTasksCount = await db.Task.count({
+//       where: whereClause
+//     });
+
+//     // // Count Over-Due tasks separately
+//     // taskCounts.overdueCount = await db.Task.count({
+//     //   where: {
+//     //     ...whereClause,
+//     //     dueDate: { [Op.lt]: moment().startOf('day').toDate() }, // Check if due date is before today
+//     //     status: { [Op.ne]: "Completed" } // Ensure it's not completed
+//     //   }
+//     // });
+//     // Count Over-Due tasks separately
+//     taskCounts.overdueCount = await db.Task.count({
+//       where: {
+//         ...whereClause,
+//         dueDate: { [Op.lt]: moment().startOf('day').toDate() }, // Check if due date is before today
+//         // status: { [Op.ne]: "Completed" } // Ensure it's not completed
+//         stat: { [Op.ne]: "Over-Due" } // Ensure it's not completed
+//       }
+//     });
+
+//     // Count tasks by status excluding Over-Due tasks
+//     for (const status of statuses) {
+//       if (status !== "Over-Due") {
+//         const count = await db.Task.count({
+//           where: {
+//             ...whereClause,
+//             status,
+//             dueDate: { [Op.gte]: moment().startOf('day').toDate() }, // Ensure due date is not before today
+//             dueDate: null,
+//           }
+//         });
+
+//         switch (status) {
+//           case "To-Do":
+//             taskCounts.toDoCount = count;
+//             break;
+//           case "In-Progress":
+//             taskCounts.inProgressCount = count;
+//             break;
+//           case "Completed":
+//             taskCounts.completedCount = count;
+//             break;
+//         }
+//       }
+//     }
+
+//     // Send the response
+//     res.json(taskCounts);
+//   } catch (error) {
+//     console.error('Error fetching task counts:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
 const ListTaskCount = async (req, res) => {
   try {
     let whereClause = {};
@@ -2232,15 +2317,13 @@ const ListTaskCount = async (req, res) => {
     // Use authorized tasks from req.tasks
     if (req.tasks && req.tasks.length > 0) {
       const taskIds = req.tasks.map(task => task.id);
-      // console.log("Authorized Task IDs:", taskIds);
       whereClause.id = { [Op.in]: taskIds };
     } else {
-      // console.log("No authorized tasks found in req.tasks");
       return res.status(403).json({ error: 'Unauthorized access to tasks' });
     }
 
     // Define the possible statuses
-    const statuses = ["To-Do", "In-Progress", "Over-Due", "Completed"];
+    const statuses = ["To-Do", "In-Progress", "Completed"];
 
     // Initialize an object to hold the counts
     const taskCounts = {
@@ -2260,34 +2343,31 @@ const ListTaskCount = async (req, res) => {
     taskCounts.overdueCount = await db.Task.count({
       where: {
         ...whereClause,
-        dueDate: { [Op.lt]: moment().startOf('day').toDate() }, // Check if due date is before today
-        status: { [Op.ne]: "Completed" } // Ensure it's not completed
+        dueDate: { [Op.lt]: moment().startOf('day').toDate() },
+        // status: { [Op.ne]: "Completed" }
       }
     });
 
     // Count tasks by status excluding Over-Due tasks
     for (const status of statuses) {
-      if (status !== "Over-Due") {
-        const count = await db.Task.count({
-          where: {
-            ...whereClause,
-            status,
-            dueDate: { [Op.gte]: moment().startOf('day').toDate() }, // Ensure due date is not before today
-            dueDate: null,
-          }
-        });
-
-        switch (status) {
-          case "To-Do":
-            taskCounts.toDoCount = count;
-            break;
-          case "In-Progress":
-            taskCounts.inProgressCount = count;
-            break;
-          case "Completed":
-            taskCounts.completedCount = count;
-            break;
+      const count = await db.Task.count({
+        where: {
+          ...whereClause,
+          status,
+          dueDate: { [Op.gte]: moment().startOf('day').toDate() }
         }
+      });
+
+      switch (status) {
+        case "To-Do":
+          taskCounts.toDoCount = count;
+          break;
+        case "In-Progress":
+          taskCounts.inProgressCount = count;
+          break;
+        case "Completed":
+          taskCounts.completedCount = count;
+          break;
       }
     }
 
@@ -2298,6 +2378,7 @@ const ListTaskCount = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 const GetTaskbyEntity = async (req, res) => {
    let = entityId = req.params.id
