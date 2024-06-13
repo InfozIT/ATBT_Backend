@@ -202,7 +202,7 @@ const UpdateTask = async (req, res) => {
           </h5>
           <div style="font-size: 0.8rem">
             <p style="line-height: 1.4">
-              You've been assigned a decision  made during meeting number:
+              You've been assigned a decision  made during meeting:
               <span style="font-weight:bold"> ${meetingnumber}</span>. Here are the details:
             </p>
            <table>
