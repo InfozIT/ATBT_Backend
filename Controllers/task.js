@@ -202,8 +202,8 @@ const UpdateTask = async (req, res) => {
           </h5>
           <div style="font-size: 0.8rem">
             <p style="line-height: 1.4">
-              You've been assigned a decision  made during meeting number:
-              <span style="font-weight:bold"> ${meetingnumber}</span>. Here are the details:
+            We wanted to inform you of an update regarding the decision which was assigned in Meeting:
+              <span style="font-weight:bold"> ${meetingnumber}</span>Here are the details of the decision update:
             </p>
            <table>
             <thead>
@@ -755,6 +755,7 @@ const GetTaskbyId = async (req, res) => {
       SubTaskCount: count,
       date: meeting ? meeting.date : null,
       taskCreateby: "", // Initialize taskCreateby as empty string
+      taskCreateBY: task.taskCreatedBy,
       meetingnumber: meeting ? meeting.meetingnumber : null,
       priority: task.priority || null, // Use task priority or null if undefined
       members: task.members,

@@ -960,7 +960,7 @@ const ListEntity = async (req, res) => {
       pageSize: parseInt(pageSize),
       totalEntities,
       startEntity: offset + 1,
-      endEntity: offset + parseInt(pageSize),
+      endEntity: Math.min(offset + parseInt(pageSize),totalEntities),
       search,
     });
   } catch (err) {
