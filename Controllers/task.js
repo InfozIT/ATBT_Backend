@@ -2315,12 +2315,27 @@ const ListTaskCount = async (req, res) => {
   try {
     let whereClause = {};
 
+    // // Use authorized tasks from req.tasks
+    // if (req.tasks && req.tasks.length > 0) {
+    //   const taskIds = req.tasks.map(task => task.id);
+    //   whereClause.id = { [Op.in]: taskIds };
+    // } else {
+    //   return res.status(403).json({ error: 'Unauthorized access to tasks' });
+    // }
+
     // Use authorized tasks from req.tasks
     if (req.tasks && req.tasks.length > 0) {
       const taskIds = req.tasks.map(task => task.id);
       whereClause.id = { [Op.in]: taskIds };
     } else {
-      return res.status(403).json({ error: 'Unauthorized access to tasks' });
+      // If the user has no authorized tasks, return zero counts for all task categories
+      return res.json({
+        allTasksCount: 0,
+        toDoCount: 0,
+        inProgressCount: 0,
+        overdueCount: 0,
+        completedCount: 0
+      });
     }
 
     // Define the possible statuses
