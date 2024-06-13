@@ -755,6 +755,7 @@ const GetTaskbyId = async (req, res) => {
       SubTaskCount: count,
       date: meeting ? meeting.date : null,
       taskCreateby: "", // Initialize taskCreateby as empty string
+      taskCreateBY: task.taskCreatedBy,
       meetingnumber: meeting ? meeting.meetingnumber : null,
       priority: task.priority || null, // Use task priority or null if undefined
       members: task.members,
