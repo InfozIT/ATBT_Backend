@@ -387,7 +387,7 @@ const Get_User = async (req, res) => {
 const List_User = async (req, res) => {
     const { userId } = req.user;
 
-    const { search = '', page = 1, pageSize = 5, sortBy = 'id DESC', ...restQueries } = req.query;
+    const { search = '', page = 1, pageSize = 10, sortBy = 'id DESC', ...restQueries } = req.query;
 
     const filters = {};
 
@@ -475,7 +475,7 @@ const List_User = async (req, res) => {
                 pageSize: parseInt(pageSize),
                 totalUsers: parseInt(totalUsers),
                 startUser: parseInt(offset) + 1, // Correct the start user index
-                endUser: parseInt(offset) + parseInt(pageSize), // Correct the end user index
+                endUser: Math.min(offset + parseInt(pageSize), totalUsers), // Correct the end user index
                 search
             });
         });
