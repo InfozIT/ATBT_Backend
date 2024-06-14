@@ -801,6 +801,7 @@ const GetById = async (req, res) => {
     if (!meeting) {
       return res.status(404).json({ error: 'Meeting not found' });
     }
+    console.log(meeting,"-------------------")
 
   
     let members = meeting.members;
