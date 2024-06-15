@@ -1,7 +1,11 @@
 const dotenv = require("dotenv");
 dotenv.config();
 const AWS = require("aws-sdk");
-const uuid = require("uuid").v4;
+// const uuid = require("uuid").v4;
+var db = require('../models/index');
+
+
+
 
 
 
@@ -14,37 +18,15 @@ const awsConfig = {
 const S3 = new AWS.S3(awsConfig);
 
 
-// const uploadToS3 = (fileData) => {
-//   // console.log(fileData.originalname,"file data is here")
-//   return new Promise((resolve, reject) => {
-//     const params = {
-//       Bucket: process.env.AWS_BUCKET_NAME,
-//       Key: `${Date.now().toString()}`,
-//       Body: fileData,
-//     };
-//     S3.upload(params, (err, data) => {
-//       if (err) {
-//         console.log(err);
-//         return reject(err);
-//       }
-//       console.log(data);
-//       return resolve(data);
-//     });
-//   });
-// };
+const uploadToS3 = async (fileData) => {
 
-
-const uploadToS3 = (fileData) => {
-  
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: process.env.AWS_BUCKET_NAME,
       // Key: `${uuid()}-${fileData.originalname}`,
       Key: `${fileData.originalname}`,
-
       Body: fileData.buffer,
     };
-
     S3.upload(params, (err, data) => {
       if (err) {
         console.log(err);
@@ -54,8 +36,37 @@ const uploadToS3 = (fileData) => {
       return resolve(data);
     });
   });
-  
+
+};
+const uploadToS4 = async (fileData, filebody) => {
+  return new Promise((resolve, reject) => {
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: `${fileData.originalname}`,
+      Body: fileData.buffer,
+    };
+
+    S3.upload(params, async (err, data) => {
+      if (err) {
+        console.log(err);
+        return reject(err);
+      }
+      try {
+        let loc = `"${data.Location}"`
+        await db.Attchments.create({
+          Attchments: loc,
+          Name: filebody.name,
+          ids: filebody.ids
+        });
+        resolve(data);
+      } catch (dbErr) {
+        console.log(dbErr);
+        reject(dbErr);
+      }
+    });
+  });
 };
 
 
-module.exports = uploadToS3;
+
+module.exports = { uploadToS3, uploadToS4 }

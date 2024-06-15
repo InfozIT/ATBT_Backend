@@ -15,7 +15,7 @@ const transporter = require('./utils/nodemailer')
 
 const path = require('path');
 const upload = require('./utils/store')
-const uploadToS3= require('./utils/wearhouse');  // for s3
+const {uploadToS4}= require('./utils/wearhouse');  // for s3
 const nodemailer = require('nodemailer');
 
 // const multer = require('multer');
@@ -71,19 +71,12 @@ const imagesFolder = path.join(__dirname, 'Public');
 app.use('/images', express.static(imagesFolder));
 
 
-app.post("/upload", upload.single("image"), async (req, res) => {
-  // console.log(req.file);
+app.post("/upload", upload.single("files"), async (req, res) => {
   if (req.file) {
-    await uploadToS3(req.file);
+  let result = await uploadToS4(req.file,req.body)
+  res.status(201).send(result.Location);
   }
-
-  res.send({
-    msg: "Image uploaded succesfully",
-  });
 });
-
-
-
 
 app.get('/', (req, res) => {
   res.send(`

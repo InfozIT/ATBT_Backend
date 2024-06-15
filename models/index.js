@@ -18,7 +18,7 @@ db.Task = require('./Task')(sequelize, DataTypes);
 db.SubTask = require('./Subtask')(sequelize, DataTypes);
 db.SubTaskDoc = require('./TaskSubDoc')(sequelize, DataTypes);
 db.Reports = require('./reports')(sequelize, DataTypes);
-
+db.Attchments = require('./Attachment')(sequelize, DataTypes);
 db.UserAccess = require('./UserAccess')(sequelize, DataTypes);
 
 // module associations with user module
