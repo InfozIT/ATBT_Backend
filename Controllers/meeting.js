@@ -776,6 +776,43 @@ const UpdateMeetings = async (req, res) => {
   }
 };
 
+const PatchMeetings = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let data = req.body;
+    let file = req.file;
+
+    // If a file is uploaded, process it
+    if (file) {
+      try {
+        const result = await uploadToS3(file);
+        data = {
+          image: result.Location,
+          ...data,
+        };
+      } catch (fileError) {
+        console.error("Error uploading file to S3:", fileError);
+        return res.status(500).json({ error: "File upload error" });
+      }
+    }
+
+    // Define the SQL query to update the meeting
+    const updateQuery = `UPDATE Meetings SET ? WHERE id = ?`;
+
+    // Execute the update query
+    mycon.query(updateQuery, [data, id], async (error, updateResults) => {
+      if (error) {
+        console.error("Error updating Meeting:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      res.status(201).send(`${id}`);
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 
 const DeleteMeeting = async (req, res) => {
   try {
@@ -791,7 +828,6 @@ const DeleteMeeting = async (req, res) => {
   }
 };
 
-
 const GetById = async (req, res) => {
   try {
     // Step 1: Fetch the meeting by its ID
@@ -800,10 +836,7 @@ const GetById = async (req, res) => {
     });
     if (!meeting) {
       return res.status(404).json({ error: 'Meeting not found' });
-    }
-    console.log(meeting,"-------------------")
-
-  
+    }  
     let members = meeting.members;
     const memberIds = Array.isArray(members) ? members : [];
 
@@ -1605,5 +1638,6 @@ module.exports = {
   // ListEntiyGroup,
   // ListTeamGroup,
   // ListUserGroup,
-  GetById
+  GetById,
+  PatchMeetings
 };
