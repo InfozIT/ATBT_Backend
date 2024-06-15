@@ -39,7 +39,9 @@ const uploadToS3 = (fileData) => {
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: `${uuid()}-${fileData.originalname}`,
+      // Key: `${uuid()}-${fileData.originalname}`,
+      Key: `${fileData.originalname}`,
+
       Body: fileData.buffer,
     };
 
