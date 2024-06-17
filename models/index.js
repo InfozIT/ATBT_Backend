@@ -78,11 +78,11 @@ SubTask.belongsTo(Task);
 
 // Comment and Uplods
 
-Task.hasMany(Attchment,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
-Attchment.belongsTo(Task);
+// Task.hasMany(Attchment,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
+// Attchment.belongsTo(Task);
 
-Meeting.hasMany(Attchment,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
-Attchment.belongsTo(Meeting);
+// Meeting.hasMany(Attchment,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
+// Attchment.belongsTo(Meeting);
 
 
 

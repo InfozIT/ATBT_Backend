@@ -39,6 +39,8 @@ const uploadToS3 = async (fileData) => {
 
 };
 const uploadToS4 = async (fileData, filebody) => {
+  let Query = filebody;
+
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: process.env.AWS_BUCKET_NAME,
@@ -51,18 +53,37 @@ const uploadToS4 = async (fileData, filebody) => {
         console.log(err);
         return reject(err);
       }
-      try {
-        let loc = `"${data.Location}"`
-        await db.Attchments.create({
-          Attchments: loc,
-          Name: filebody.name,
-          ids: filebody.ids
-        });
-        resolve(data);
-      } catch (dbErr) {
-        console.log(dbErr);
-        reject(dbErr);
+      const MeetingId = Query?.meeting ?? null;
+      const TaskId = Query?.task ?? null;
+      if(MeetingId){
+        try {
+          let loc = `"${data.Location}"`
+          await db.Attchments.create({
+            Attchments: loc,
+            MeetingId: MeetingId
+          });
+          resolve(data);
+        } catch (dbErr) {
+          console.log(dbErr);
+          reject(dbErr);
+        }
+
       }
+      if(TaskId){
+        try {
+          let loc = `"${data.Location}"`
+          await db.Attchments.create({
+            Attchments: loc,
+            TaskId: TaskId
+          });
+          resolve(data);
+        } catch (dbErr) {
+          console.log(dbErr);
+          reject(dbErr);
+        }
+
+      }
+
     });
   });
 };
