@@ -274,10 +274,6 @@ const GetTaskbyId = async (req, res) => {
     }
     let ids = task.dataValues.taskCreatedBy
     let jsonObject = JSON.parse(ids);
-      const name = jsonObject.name;
-      const id = jsonObject.id;
-
-
 
     // Extracting meetingId from task
     const meetingId = parseInt(task.meetingId, 10);
@@ -416,7 +412,7 @@ const GetTaskbyId = async (req, res) => {
       SubTaskCount: await db.SubTask.count({ where: { TaskId: taskId } }),
       date: meeting ? meeting.date : null,
       taskCreateby:taskCreatorName,
-      taskCreateBY: task.taskCreatedBy,
+      taskCreateBY: jsonObject,
       meetingnumber: meeting ? meeting.meetingnumber : null,
       priority: task.priority || null,
       members: task.members,
