@@ -42,6 +42,7 @@ const User = db.User
 const Task = db.Task
 const SubTask = db.SubTask
 const SubTaskDoc = db.SubTaskDoc
+const Attchment = db.Attchments
 
 
 // Define associations
@@ -77,11 +78,11 @@ SubTask.belongsTo(Task);
 
 // Comment and Uplods
 
-// Task.hasMany(SubTaskDoc,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
-// SubTaskDoc.belongsTo(Task);
+Task.hasMany(Attchment,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
+Attchment.belongsTo(Task);
 
-// SubTask.hasMany(SubTaskDoc,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
-// SubTaskDoc.belongsTo(SubTask);
+Meeting.hasMany(Attchment,{ onDelete: 'CASCADE' }); // One Task can have many Subtask
+Attchment.belongsTo(Meeting);
 
 
 
