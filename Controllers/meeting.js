@@ -1622,36 +1622,37 @@ const GetMeetingList = async (req, res) => {
 //   }
 // };
 
+
+
 const getAttachments = async (req, res) => {
+  const { TaskId, MeetingId } = req.query;
+
   try {
-    // Extract filter parameters from the query
-    const { columnName } = req.query;
+    if(TaskId){
+      let data = await db.Attchments.findAll({
+        where: {
+          TaskId: TaskId,
+        }
+      });
+      res.status(200).json(data);
+    }else if(MeetingId) {
+      let data = await db.Attchments.findAll({
+        where: {
+          MeetingId: MeetingId,
+        }
+      });
+      res.status(200).json(data);
+    }else{
+      let data = await db.Attchments.findAll({})
+      res.status(200).json(data);
 
-    // Initialize whereClause as an empty object
-    let whereClause = {};
-
-    // Add the dynamic filter condition if columnName is provided
-    if (columnName) {
-      whereClause[columnName] = {
-        [Sequelize.Op.ne]: null // Ensure the column value is not null
-      };
     }
 
-    // Query the database with the dynamic where clause
-    let data = await db.Attchments.findAll({
-      where: whereClause
-    });
 
-    res.status(200).send(data);
   } catch (error) {
-    console.error('Error retrieving attachments:', error);
-    res.status(500).send({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'An error occurred while retrieving data' });
   }
 };
-
-module.exports = { getAttachments };
-
-
 
 
 
