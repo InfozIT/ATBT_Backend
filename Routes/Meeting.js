@@ -21,5 +21,7 @@ router.get('/list', authorizeTaskAccess, hasPermission("meeting", "canRead"), Me
 router.put('/update/:id', hasPermission("meeting", "canUpdate"),upload.single('image'), Meeting.UpdateMeetings)
 router.delete('/delete/:id', hasPermission("meeting", "canDelete"), Meeting.DeleteMeeting)
 
+router.get('/getAttachment', hasPermission("meeting", "canRead"), Meeting.getAttachments)
+
 
 module.exports = router;

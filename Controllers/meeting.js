@@ -1,5 +1,7 @@
 var db = require('../models/index');
 const Meet = db.Meeting;
+const { Sequelize } = require('sequelize');
+
 const mycon = require('../DB/mycon');
 const Team = db.Team
 const Entity = db.Entity
@@ -1620,7 +1622,34 @@ const GetMeetingList = async (req, res) => {
 //   }
 // };
 
+const getAttachments = async (req, res) => {
+  try {
+    // Extract filter parameters from the query
+    const { columnName } = req.query;
 
+    // Initialize whereClause as an empty object
+    let whereClause = {};
+
+    // Add the dynamic filter condition if columnName is provided
+    if (columnName) {
+      whereClause[columnName] = {
+        [Sequelize.Op.ne]: null // Ensure the column value is not null
+      };
+    }
+
+    // Query the database with the dynamic where clause
+    let data = await db.Attchments.findAll({
+      where: whereClause
+    });
+
+    res.status(200).send(data);
+  } catch (error) {
+    console.error('Error retrieving attachments:', error);
+    res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+module.exports = { getAttachments };
 
 
 
@@ -1639,5 +1668,6 @@ module.exports = {
   // ListTeamGroup,
   // ListUserGroup,
   GetById,
-  PatchMeetings
+  PatchMeetings,
+  getAttachments
 };

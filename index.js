@@ -1,5 +1,7 @@
 const express = require('express')
 const { Sequelize } = require('sequelize');
+const { Op } = require('sequelize');
+
 
 require('dotenv').config();
 const mycon = require('./DB/mycon')
@@ -241,8 +243,6 @@ const task = new cron.CronJob('0 10 * * *', function() {
 
 // Start the cron job
 task.start();
-
-
 
 const task2 = new cron.CronJob('*/2 * * * *', async function() {
   mycon.query('SELECT * FROM Tasks WHERE status = "Completed" AND emailSent = FALSE', async (err, result) => {

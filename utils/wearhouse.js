@@ -67,7 +67,6 @@ const uploadToS4 = async (fileData, filebody) => {
           console.log(dbErr);
           reject(dbErr);
         }
-
       }
       if(TaskId){
         try {
@@ -81,9 +80,7 @@ const uploadToS4 = async (fileData, filebody) => {
           console.log(dbErr);
           reject(dbErr);
         }
-
       }
-
     });
   });
 };
