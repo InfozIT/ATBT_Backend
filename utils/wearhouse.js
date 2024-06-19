@@ -58,8 +58,8 @@ const uploadToS4 = async (fileData, filebody) => {
       if(MeetingId){
         try {
           let loc = `"${data.Location}"`
-          await db.Attchments.create({
-            Attchments: loc,
+          await db.Attachments.create({
+            Attachments: loc,
             MeetingId: MeetingId
           });
           resolve(data);
@@ -71,8 +71,8 @@ const uploadToS4 = async (fileData, filebody) => {
       if(TaskId){
         try {
           let loc = `"${data.Location}"`
-          await db.Attchments.create({
-            Attchments: loc,
+          await db.Attachments.create({
+            Attachments: loc,
             TaskId: TaskId
           });
           resolve(data);

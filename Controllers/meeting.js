@@ -1630,25 +1630,25 @@ const getAttachments = async (req, res) => {
   try {
     let data;
     if (TaskId) {
-      data = await db.Attchments.findAll({
+      data = await db.Attachments.findAll({
         where: {
           TaskId: TaskId,
         }
       });
     } else if (MeetingId) {
-      data = await db.Attchments.findAll({
+      data = await db.Attachments.findAll({
         where: {
           MeetingId: MeetingId,
         }
       });
     } else {
-      data = await db.Attchments.findAll();
+      data = await db.Attachments.findAll();
     }
 
     // Remove extra backslashes from "Attchments" field
     const cleanedData = data.map(item => ({
       ...item.dataValues,
-      Attchments: item.dataValues.Attchments.replace(/^"|"$/g, '')
+      Attachments: item.dataValues.Attachments.replace(/^"|"$/g, '')
     }));
 
     res.status(200).json(cleanedData);

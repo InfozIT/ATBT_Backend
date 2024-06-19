@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
-    const Attchments = sequelize.define('Attchments', {
+    const Attachments = sequelize.define('Attachments', {
 
-      Attchments: {
+      Attachments: {
         type: DataTypes.STRING,
         allowNull: true
       },
@@ -16,5 +16,5 @@ module.exports = (sequelize, DataTypes) => {
   
     },);
   
-    return Attchments;
+    return Attachments;
   }
