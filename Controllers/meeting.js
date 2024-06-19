@@ -1628,31 +1628,35 @@ const getAttachments = async (req, res) => {
   const { TaskId, MeetingId } = req.query;
 
   try {
-    if(TaskId){
-      let data = await db.Attchments.findAll({
+    let data;
+    if (TaskId) {
+      data = await db.Attchments.findAll({
         where: {
           TaskId: TaskId,
         }
       });
-      res.status(200).json(data);
-    }else if(MeetingId) {
-      let data = await db.Attchments.findAll({
+    } else if (MeetingId) {
+      data = await db.Attchments.findAll({
         where: {
           MeetingId: MeetingId,
         }
       });
-      res.status(200).json(data);
-    }else{
-      let data = await db.Attchments.findAll({})
-      res.status(200).json(data);
-
+    } else {
+      data = await db.Attchments.findAll();
     }
 
+    // Remove extra backslashes from "Attchments" field
+    const cleanedData = data.map(item => ({
+      ...item.dataValues,
+      Attchments: item.dataValues.Attchments.replace(/^"|"$/g, '')
+    }));
 
+    res.status(200).json(cleanedData);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while retrieving data' });
   }
 };
+
 
 
 
