@@ -1432,7 +1432,7 @@ const GetTask = async (req, res) => {
     }
 
     // Include runningdecisions parameter
-    if (runningdecisions === 'true') {
+    if (status === 'runningdecisions') {
       whereClause.status = {
         [Op.in]: ["To-Do", "On-Hold", "In-Progress", "Over-Due"]
       };
