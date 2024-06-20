@@ -1424,7 +1424,7 @@ const GetTask = async (req, res) => {
     if (status) {
       if (status === "Over-Due") {
         const currentDate = new Date().toISOString().slice(0, 10);
-        whereClause.stat = "Over-Due";
+        // whereClause.stat = "Over-Due";
         whereClause.dueDate = { [Op.lt]: currentDate };
       } else {
         whereClause.status = status;
@@ -1432,9 +1432,23 @@ const GetTask = async (req, res) => {
     }
 
     // Include runningdecisions parameter
+    // if (status === 'runningdecisions') {
+    //   const currentDate = new Date().toISOString().slice(0, 10);
+    //   whereClause.status = {
+    //     [Op.in]: ["To-Do", "In-Progress"],
+        
+    //   }
+    //   whereClause.dueDate = { [Op.lt]: currentDate };
+    //   ;
+    // }
+
     if (status === 'runningdecisions') {
-      whereClause.status = {
-        [Op.in]: ["To-Do", "In-Progress", "Over-Due"]
+      const currentDate = new Date().toISOString().slice(0, 10);
+      whereClause = {
+        [Op.or]: [
+          { status: { [Op.in]: ["To-Do", "In-Progress"] } },
+          { dueDate: { [Op.lt]: currentDate } }
+        ]
       };
     }
 
