@@ -1625,7 +1625,7 @@ const GetMeetingList = async (req, res) => {
 
 
 const getAttachments = async (req, res) => {
-  const { TaskId, MeetingId } = req.query;
+  const { TaskId, MeetingId,EntityId,TeamId } = req.query;
 
   try {
     let data;
@@ -1641,7 +1641,40 @@ const getAttachments = async (req, res) => {
           MeetingId: MeetingId,
         }
       });
-    } else {
+    } 
+    else if (EntityId) {
+      const project = await db.Meeting.findAll({          
+        attributes: ['id'],
+        where: { EntityId: EntityId } });
+
+      let MeetID = project.map(entry => entry.id);
+      let data = await db.Attachments.findAll({
+        where: { MeetingId: { [Op.in]: MeetID } },
+      });
+      console.log(data)
+      const cleanedData = data.map(item => ({
+        ...item.dataValues,
+        Attachments: item.dataValues.Attachments.replace(/^"|"$/g, '')
+      }));
+      res.status(200).json(cleanedData);
+    }
+    else if (TeamId) {
+      const project = await db.Meeting.findAll({          
+        attributes: ['id'],
+        where: { TeamId: TeamId } });
+
+      let MeetID = project.map(entry => entry.id);
+      let data = await db.Attachments.findAll({
+        where: { MeetingId: { [Op.in]: MeetID } },
+      });
+      console.log(data)
+      const cleanedData = data.map(item => ({
+        ...item.dataValues,
+        Attachments: item.dataValues.Attachments.replace(/^"|"$/g, '')
+      }));
+      res.status(200).json(cleanedData);
+
+    }else {
       data = await db.Attachments.findAll();
     }
 
