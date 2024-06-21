@@ -392,7 +392,6 @@ const GetTaskbyId = async (req, res) => {
       });
       console.log(entity)
       taskCreatorName = entity ? entity.name : '';
-      console.log(taskCreatorName,"==============")
     } else if (jsonObject && jsonObject.name == "teams") {
       const team = await db.Team.findOne({
         attributes: ['name'],
@@ -401,9 +400,14 @@ const GetTaskbyId = async (req, res) => {
       });
       console.log(team)
       taskCreatorName = team ? team.name : '';
-      console.log(taskCreatorName,"==========")
 
     }
+
+    let createdAtTime = new Date(task.createdAt);
+    let cTime = new Date();
+    let timeDiff = cTime.getTime() - createdAtTime.getTime();
+    let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    task.age =diffDays
 
     // Prepare the response data
     const combinedResult = {
@@ -412,6 +416,7 @@ const GetTaskbyId = async (req, res) => {
       SubTaskCount: await db.SubTask.count({ where: { TaskId: taskId } }),
       date: meeting ? meeting.date : null,
       taskCreateby:taskCreatorName,
+      age: task.age,
       taskCreateBY: jsonObject,
       meetingnumber: meeting ? meeting.meetingnumber : null,
       priority: task.priority || null,
@@ -1640,6 +1645,10 @@ const GetTask = async (req, res) => {
       let timeDiff = cTime.getTime() - createdAtTime.getTime();
       let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
       task.age =diffDays
+
+
+
+
       const meeting = meetings.find(m => String(m.id) === String(task.meetingId));
       const meetingNumber = meeting ? meeting.meetingnumber : null;
       const meetingdate = meeting ? meeting.date : null;
