@@ -1429,23 +1429,11 @@ const GetTask = async (req, res) => {
     if (status) {
       if (status === "Over-Due") {
         const currentDate = new Date().toISOString().slice(0, 10);
-        // whereClause.stat = "Over-Due";
         whereClause.dueDate = { [Op.lt]: currentDate };
       } else {
         whereClause.status = status;
       }
     }
-
-    // Include runningdecisions parameter
-    // if (status === 'runningdecisions') {
-    //   const currentDate = new Date().toISOString().slice(0, 10);
-    //   whereClause.status = {
-    //     [Op.in]: ["To-Do", "In-Progress"],
-        
-    //   }
-    //   whereClause.dueDate = { [Op.lt]: currentDate };
-    //   ;
-    // }
 
     if (status === 'runningdecisions') {
       const currentDate = new Date().toISOString().slice(0, 10);
@@ -1457,7 +1445,6 @@ const GetTask = async (req, res) => {
       };
     }
 
-    // Get the total count of tasks matching the main filters
     let totalTasks = await db.Task.count({ where: whereClause });
     const offset = (page - 1) * pageSize;
 
@@ -1470,7 +1457,6 @@ const GetTask = async (req, res) => {
 
     const currentDate = new Date().toISOString().slice(0, 10);
 
-    // Update tasks to "Over-Due" status if they are past due and not "Completed"
     await Promise.all(tasks.map(async task => {
       if (task.dueDate && task.dueDate < currentDate && task.status !== "Completed") {
         task.stat = "Over-Due";
@@ -1480,7 +1466,6 @@ const GetTask = async (req, res) => {
       }
     }));
 
-    // Refetch tasks to ensure updated status is included
     tasks = await db.Task.findAll({
       where: whereClause,
       order: [['createdAt', 'DESC']],
@@ -1596,7 +1581,6 @@ const GetTask = async (req, res) => {
       });
     }
 
-    // Fetch the latest message for each task
     const subTaskDocs = await db.SubTaskDoc.findAll({
       attributes: ['TaskId', [db.sequelize.fn('MAX', db.sequelize.col('createdAt')), 'latestMessageDate']],
       where: { TaskId: { [Op.in]: taskIds } },
@@ -1620,7 +1604,7 @@ const GetTask = async (req, res) => {
       return acc;
     }, {});
 
-    const combinedResult = tasks.map(task => {
+    const combinedResult = await Promise.all(tasks.map(async task => {
       const subtaskCount = subTaskCounts[task.id] || 0;
       const members = meetingMembersMap[task.meetingId] || [];
       const memberdata = members[0];
@@ -1639,15 +1623,12 @@ const GetTask = async (req, res) => {
           uniqueMembers.push(member);
         }
       });
-      
+
       let createdAtTime = new Date(task.createdAt);
       let cTime = new Date();
       let timeDiff = cTime.getTime() - createdAtTime.getTime();
       let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      task.age =diffDays
-
-
-
+      task.age = diffDays;
 
       const meeting = meetings.find(m => String(m.id) === String(task.meetingId));
       const meetingNumber = meeting ? meeting.meetingnumber : null;
@@ -1658,15 +1639,35 @@ const GetTask = async (req, res) => {
         memberdataFinal = userMap[task.members].name || null;
       }
 
+      let jsonObject = JSON.parse(task.taskCreatedBy);
+      let taskCreatorName = '';
+      if (task.taskCreatedBy && jsonObject.name == "teams") {
+        const team = await db.Team.findOne({
+          attributes: ['name'],
+          where: { id: jsonObject.id },
+          raw: true
+        });
+        taskCreatorName = team ? team.name : '';
+      } else if (task.taskCreatedBy && jsonObject.name == "entities") {
+        const entity = await db.Entity.findOne({
+          attributes: ['name'],
+          where: { id: jsonObject.id },
+          raw: true
+        });
+        taskCreatorName = entity ? entity.name : '';
+      }
+
       return {
         id: task.id,
         decision: task.decision,
+        age: task.age,
+        blongsTo: taskCreatorName,
+        createdBy: jsonObject,
         meetingId: task.meetingId,
         date: meetingdate,
         priority: task.priority,
         group: uniqueMembers,
         dueDate: task.dueDate,
-        age : task.age,
         members: task.members,
         status: task.status,
         stat: task.stat,
@@ -1681,7 +1682,7 @@ const GetTask = async (req, res) => {
         createdby: task.createdby,
         updatedbyuser: subTaskMessageMap[task.id] || null
       };
-    });
+    }));
 
     res.status(200).json({
       tasks: combinedResult,
@@ -1699,6 +1700,342 @@ const GetTask = async (req, res) => {
 };
 
 
+
+// Added Age on this
+
+// const GetTask = async (req, res) => {
+//   const { userId, meetingId, status, entityId, teamId, runningdecisions } = req.query;
+//   const fromDate = req.query.fromDate;
+//   const toDate = req.query.toDate;
+//   const page = parseInt(req.query.page) || 1; // Default to page 1
+//   const pageSize = parseInt(req.query.pageSize) || 10; // Default to 10 items per page
+
+//   try {
+//     let whereClause = {};
+
+//     if (fromDate && toDate) {
+//       whereClause.dueDate = {
+//         [Op.between]: [fromDate, toDate]
+//       };
+//     }
+
+//     if (req.tasks) {
+//       const taskIds = req.tasks.map(task => task.id);
+//       whereClause.id = { [Op.in]: taskIds };
+//     } else {
+//       return res.status(403).json({ error: 'Unauthorized access to tasks' });
+//     }
+
+//     if (entityId) {
+//       let userEntities = await db.Meeting.findAll({
+//         where: { EntityId: entityId },
+//         raw: true,
+//         attributes: ['id']
+//       });
+//       const userEntityIds = userEntities.map(item => item.id);
+//       whereClause.meetingId = { [Op.in]: userEntityIds };
+//     }
+
+//     if (userId) {
+//       const userMeetings = await db.Meeting.findAll({
+//         where: { UserId: userId },
+//         raw: true,
+//       });
+//       const userMeetingIds = userMeetings.map(item => item.id);
+//       whereClause.meetingId = whereClause.meetingId
+//         ? { [Op.and]: [whereClause.meetingId, { [Op.in]: userMeetingIds }] }
+//         : { [Op.in]: userMeetingIds };
+//     }
+
+//     if (meetingId) {
+//       whereClause.meetingId = whereClause.meetingId
+//         ? { [Op.and]: [whereClause.meetingId, { [Op.eq]: meetingId }] }
+//         : meetingId;
+//     }
+
+//     if (teamId) {
+//       const teamMeetings = await db.Meeting.findAll({
+//         where: { TeamId: teamId },
+//         raw: true,
+//         attributes: ['id']
+//       });
+//       const teamMeetingIds = teamMeetings.map(item => item.id);
+//       whereClause.meetingId = whereClause.meetingId
+//         ? { [Op.and]: [whereClause.meetingId, { [Op.in]: teamMeetingIds }] }
+//         : { [Op.in]: teamMeetingIds };
+//     }
+
+//     if (status) {
+//       if (status === "Over-Due") {
+//         const currentDate = new Date().toISOString().slice(0, 10);
+//         // whereClause.stat = "Over-Due";
+//         whereClause.dueDate = { [Op.lt]: currentDate };
+//       } else {
+//         whereClause.status = status;
+//       }
+//     }
+
+//     // Include runningdecisions parameter
+//     // if (status === 'runningdecisions') {
+//     //   const currentDate = new Date().toISOString().slice(0, 10);
+//     //   whereClause.status = {
+//     //     [Op.in]: ["To-Do", "In-Progress"],
+        
+//     //   }
+//     //   whereClause.dueDate = { [Op.lt]: currentDate };
+//     //   ;
+//     // }
+
+//     if (status === 'runningdecisions') {
+//       const currentDate = new Date().toISOString().slice(0, 10);
+//       whereClause = {
+//         [Op.or]: [
+//           { status: { [Op.in]: ["To-Do", "In-Progress"] } },
+//           { dueDate: { [Op.lt]: currentDate } }
+//         ]
+//       };
+//     }
+
+//     // Get the total count of tasks matching the main filters
+//     let totalTasks = await db.Task.count({ where: whereClause });
+//     const offset = (page - 1) * pageSize;
+
+//     let tasks = await db.Task.findAll({
+//       where: whereClause,
+//       order: [['createdAt', 'DESC']],
+//       limit: pageSize,
+//       offset: offset
+//     });
+
+//     const currentDate = new Date().toISOString().slice(0, 10);
+
+//     // Update tasks to "Over-Due" status if they are past due and not "Completed"
+//     await Promise.all(tasks.map(async task => {
+//       if (task.dueDate && task.dueDate < currentDate && task.status !== "Completed") {
+//         task.stat = "Over-Due";
+//         await db.Task.update({ stat: "Over-Due" }, {
+//           where: { id: task.id }
+//         });
+//       }
+//     }));
+
+//     // Refetch tasks to ensure updated status is included
+//     tasks = await db.Task.findAll({
+//       where: whereClause,
+//       order: [['createdAt', 'DESC']],
+//       limit: pageSize,
+//       offset: offset
+//     });
+
+//     const totalPages = Math.ceil(totalTasks / pageSize);
+
+//     const meetingIds = tasks.map(task => task.meetingId);
+//     const meetings = await db.Meeting.findAll({
+//       attributes: ['id', 'date', 'meetingnumber', 'members', 'UserId', 'EntityId', 'TeamId'],
+//       where: { id: { [Op.in]: meetingIds } },
+//       raw: true
+//     });
+
+//     const taskIds = tasks.map(task => task.id);
+//     const subTaskResults = await db.SubTask.findAll({
+//       attributes: ['TaskId', [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'subtaskCount']],
+//       where: { TaskId: { [Op.in]: taskIds } },
+//       group: ['TaskId'],
+//       raw: true
+//     });
+
+//     const subTaskCounts = subTaskResults.reduce((acc, result) => {
+//       acc[result.TaskId] = result.subtaskCount;
+//       return acc;
+//     }, {});
+
+//     const userResults = await db.User.findAll({
+//       attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//       raw: true
+//     });
+
+//     const userMap = userResults.reduce((acc, user) => {
+//       acc[user.id] = user;
+//       return acc;
+//     }, {});
+
+//     const entityUserMap = userResults.reduce((acc, user) => {
+//       if (!acc[user.entityname]) {
+//         acc[user.entityname] = [];
+//       }
+//       acc[user.entityname].push(user);
+//       return acc;
+//     }, {});
+
+//     const teamIds = [...new Set(meetings.map(meeting => meeting.TeamId))];
+//     if (teamId) teamIds.push(teamId);
+
+//     const teams = await db.Team.findAll({
+//       where: { id: { [Op.in]: teamIds } },
+//       raw: true
+//     });
+
+//     const teamMap = teams.reduce((acc, team) => {
+//       acc[team.id] = team;
+//       return acc;
+//     }, {});
+
+//     if (teamId && teamMap[teamId] && teamMap[teamId].members) {
+//       const teamMembers = teamMap[teamId].members;
+//       const teamMemberIds = Array.isArray(teamMembers) ? teamMembers : [];
+
+//       const additionalUsers = await db.User.findAll({
+//         where: { id: { [Op.in]: teamMemberIds } },
+//         attributes: ['id', 'name', 'email', 'image', 'entityname'],
+//         raw: true
+//       });
+
+//       additionalUsers.forEach(user => {
+//         if (!userMap[user.id]) {
+//           userMap[user.id] = user;
+//         }
+//       });
+//     }
+
+//     const meetingMembersMap = meetings.reduce((acc, meeting) => {
+//       let members = meeting.members || [];
+//       let memberDetails = [];
+
+//       if (meeting.UserId && userMap[meeting.UserId]) {
+//         memberDetails.push(userMap[meeting.UserId]);
+//       }
+//       if (meeting.EntityId && entityUserMap[meeting.EntityId]) {
+//         memberDetails.push(...entityUserMap[meeting.EntityId]);
+//       }
+//       if (meeting.TeamId && teamMap[meeting.TeamId] && teamMap[meeting.TeamId].members) {
+//         let teamMembers = teamMap[meeting.TeamId].members;
+//         if (Array.isArray(teamMembers) && teamMembers.length > 0 && typeof teamMembers[0] === 'number') {
+//           memberDetails.push(...teamMembers.map(id => userMap[id]).filter(user => user));
+//         } else {
+//           memberDetails.push(...teamMembers);
+//         }
+//       }
+
+//       if (Array.isArray(members) && members.length > 0 && typeof members[0] === 'number') {
+//         memberDetails.push(...members.map(id => userMap[id]).filter(user => user));
+//       } else {
+//         memberDetails.push(...members);
+//       }
+
+//       acc[meeting.id] = memberDetails;
+//       return acc;
+//     }, {});
+
+//     let self = null;
+//     if (userId) {
+//       self = await db.User.findOne({
+//         attributes: ['id', 'image', 'name', 'email', 'entityname'],
+//         where: { id: userId },
+//         raw: true,
+//       });
+//     }
+
+//     // Fetch the latest message for each task
+//     const subTaskDocs = await db.SubTaskDoc.findAll({
+//       attributes: ['TaskId', [db.sequelize.fn('MAX', db.sequelize.col('createdAt')), 'latestMessageDate']],
+//       where: { TaskId: { [Op.in]: taskIds } },
+//       group: ['TaskId'],
+//       raw: true
+//     });
+
+//     const subTaskMessages = await db.SubTaskDoc.findAll({
+//       where: {
+//         [Op.or]: subTaskDocs.map(doc => ({
+//           TaskId: doc.TaskId,
+//           createdAt: doc.latestMessageDate
+//         }))
+//       },
+//       attributes: ['TaskId', 'message'],
+//       raw: true
+//     });
+
+//     const subTaskMessageMap = subTaskMessages.reduce((acc, message) => {
+//       acc[message.TaskId] = message.message;
+//       return acc;
+//     }, {});
+
+//     const combinedResult = tasks.map(task => {
+//       const subtaskCount = subTaskCounts[task.id] || 0;
+//       const members = meetingMembersMap[task.meetingId] || [];
+//       const memberdata = members[0];
+
+//       const uniqueMemberIds = new Set();
+//       const uniqueMembers = [];
+
+//       if (self && !uniqueMemberIds.has(self.id)) {
+//         uniqueMemberIds.add(self.id);
+//         uniqueMembers.push(self);
+//       }
+
+//       members.forEach(member => {
+//         if (!uniqueMemberIds.has(member.id)) {
+//           uniqueMemberIds.add(member.id);
+//           uniqueMembers.push(member);
+//         }
+//       });
+      
+//       let createdAtTime = new Date(task.createdAt);
+//       let cTime = new Date();
+//       let timeDiff = cTime.getTime() - createdAtTime.getTime();
+//       let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+//       task.age =diffDays
+
+
+
+
+//       const meeting = meetings.find(m => String(m.id) === String(task.meetingId));
+//       const meetingNumber = meeting ? meeting.meetingnumber : null;
+//       const meetingdate = meeting ? meeting.date : null;
+
+//       let memberdataFinal = null;
+//       if (task.members) {
+//         memberdataFinal = userMap[task.members].name || null;
+//       }
+
+//       return {
+//         id: task.id,
+//         decision: task.decision,
+//         meetingId: task.meetingId,
+//         date: meetingdate,
+//         priority: task.priority,
+//         group: uniqueMembers,
+//         dueDate: task.dueDate,
+//         age : task.age,
+//         members: task.members,
+//         status: task.status,
+//         stat: task.stat,
+//         memberdata: memberdataFinal,
+//         collaborators: task.collaborators || [],
+//         taskCreateby: task.taskCreateby,
+//         meetingNumber: meetingNumber,
+//         file: task.file,
+//         createdAt: task.createdAt,
+//         updatedAt: task.updatedAt,
+//         subtaskCount: subtaskCount,
+//         createdby: task.createdby,
+//         updatedbyuser: subTaskMessageMap[task.id] || null
+//       };
+//     });
+
+//     res.status(200).json({
+//       tasks: combinedResult,
+//       totalPages: totalPages,
+//       currentPage: page,
+//       pageSize: pageSize,
+//       totalTasks: totalTasks,
+//       startTasks: offset + 1,
+//       endTasks: Math.min(offset + pageSize, totalTasks)
+//     });
+//   } catch (error) {
+//     console.error('Error fetching tasks:', error);
+//     res.status(500).json({ error: 'Failed to fetch tasks' });
+//   }
+// };
 
 // const GetTask = async (req, res) => {
 //   const { userId, meetingId, status, entityId, teamId } = req.query;
