@@ -14,9 +14,9 @@ const path = require("path");
 
 
 let upload = multer({
-    limits: {
-        fileSize: 10000000000000
-    }
+    // limits: {
+    //     fileSize: 1000000000000
+    // }
 })
 
 module.exports = upload 
