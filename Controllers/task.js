@@ -1656,7 +1656,6 @@ const GetTask = async (req, res) => {
         });
         taskCreatorName = entity ? entity.name : '';
       }
-
       return {
         id: task.id,
         decision: task.decision,
