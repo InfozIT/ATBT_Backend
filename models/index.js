@@ -78,9 +78,6 @@ SubTask.belongsTo(Task);
 
 // Comment and Uplods
 
-
-
-
 db.sequelize.sync();
 console.log("All models were alter successfully.");
 module.exports = db;
