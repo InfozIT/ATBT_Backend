@@ -1634,7 +1634,12 @@ const GetTask = async (req, res) => {
           uniqueMembers.push(member);
         }
       });
-
+      
+      let createdAtTime = new Date(task.createdAt);
+      let cTime = new Date();
+      let timeDiff = cTime.getTime() - createdAtTime.getTime();
+      let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      task.age =diffDays
       const meeting = meetings.find(m => String(m.id) === String(task.meetingId));
       const meetingNumber = meeting ? meeting.meetingnumber : null;
       const meetingdate = meeting ? meeting.date : null;
@@ -1652,6 +1657,7 @@ const GetTask = async (req, res) => {
         priority: task.priority,
         group: uniqueMembers,
         dueDate: task.dueDate,
+        age : task.age,
         members: task.members,
         status: task.status,
         stat: task.stat,
