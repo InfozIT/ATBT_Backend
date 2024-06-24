@@ -1624,8 +1624,9 @@ const GetMeetingList = async (req, res) => {
 
 
 
+
 const getAttachments = async (req, res) => {
-  const { TaskId, MeetingId,EntityId,TeamId } = req.query;
+  const { TaskId, MeetingId, EntityId, TeamId } = req.query;
 
   try {
     let data;
@@ -1633,55 +1634,49 @@ const getAttachments = async (req, res) => {
       data = await db.Attachments.findAll({
         where: {
           TaskId: TaskId,
-        }
+        },
+        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
       });
     } else if (MeetingId) {
       data = await db.Attachments.findAll({
         where: {
           MeetingId: MeetingId,
-        }
+        },
+        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
       });
     } 
     else if (EntityId) {
-      const project = await db.Meeting.findAll({          
+      const project = await db.Meeting.findAll({
         attributes: ['id'],
-        where: { EntityId: EntityId } });
+        where: { EntityId: EntityId },
+      });
 
       let MeetID = project.map(entry => entry.id);
-      let data = await db.Attachments.findAll({
+      data = await db.Attachments.findAll({
         where: { MeetingId: { [Op.in]: MeetID } },
+        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
       });
-      console.log(data)
-      const cleanedData = data.map(item => ({
-        ...item.dataValues,
-        Attachments: item.dataValues.Attachments.replace(/^"|"$/g, '')
-      }));
-      res.status(200).json(cleanedData);
-    }
-    else if (TeamId) {
-      const project = await db.Meeting.findAll({          
+    } else if (TeamId) {
+      const project = await db.Meeting.findAll({
         attributes: ['id'],
-        where: { TeamId: TeamId } });
+        where: { TeamId: TeamId },
+      });
 
       let MeetID = project.map(entry => entry.id);
-      let data = await db.Attachments.findAll({
+      data = await db.Attachments.findAll({
         where: { MeetingId: { [Op.in]: MeetID } },
+        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
       });
-      console.log(data)
-      const cleanedData = data.map(item => ({
-        ...item.dataValues,
-        Attachments: item.dataValues.Attachments.replace(/^"|"$/g, '')
-      }));
-      res.status(200).json(cleanedData);
-
-    }else {
-      data = await db.Attachments.findAll();
+    } else {
+      data = await db.Attachments.findAll({
+        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+      });
     }
 
-    // Remove extra backslashes from "Attchments" field
+    // Remove extra backslashes from "Attachments" field
     const cleanedData = data.map(item => ({
       ...item.dataValues,
-      Attachments: item.dataValues.Attachments.replace(/^"|"$/g, '')
+      Attachments: item.dataValues.Attachments.replace(/^"|"$/g, ''),
     }));
 
     res.status(200).json(cleanedData);
