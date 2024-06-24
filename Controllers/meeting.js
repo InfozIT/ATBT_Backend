@@ -1510,6 +1510,65 @@ const GetMeetingList = async (req, res) => {
 
 
 
+const getAttachments = async (req, res) => {
+  const { TaskId, MeetingId, EntityId, TeamId,AllTaskbyMeeting } = req.query;
+
+  try {
+    let data;
+
+    const fetchAttachments = async (condition) => {
+      return await db.Attachments.findAll({
+        where: condition,
+        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+      });
+    };
+
+    if (TaskId) {
+      data = await fetchAttachments({ TaskId });
+    } else if (MeetingId) {
+      data = await fetchAttachments({ MeetingId });
+    } 
+    else if (AllTaskbyMeeting) {
+      const project = await db.Task.findAll({ attributes: ['id'],where: { meetingId: AllTaskbyMeeting } });
+      let taskIds = project.map(entry => entry.id);
+      data = await db.Attachments.findAll({
+        where: { TaskId: { [Op.in]: taskIds } },
+      }); 
+    }
+    else if (EntityId || TeamId) {
+      const whereClause = EntityId ? { EntityId } : { TeamId };
+      const projects = await db.Meeting.findAll({
+        attributes: ['id'],
+        where: whereClause,
+      });
+
+      const meetingIds = projects.map(entry => entry.id);
+      if (meetingIds.length > 0) {
+        data = await fetchAttachments({ MeetingId: { [Op.in]: meetingIds } });
+      } else {
+        data = [];
+      }
+    } else {
+      data = await fetchAttachments({});
+    }
+
+    // Remove extra backslashes from "Attachments" field if data is not empty
+    const cleanedData = data.length
+      ? data.map(item => ({
+          ...item.dataValues,
+          Attachments: item.dataValues.Attachments.replace(/^"|"$/g, ''),
+        }))
+      : [];
+
+    res.status(200).json(cleanedData);
+  } catch (error) {
+    console.error('Error retrieving data:', error);
+    res.status(500).json({ error: 'An error occurred while retrieving data' });
+  }
+};
+
+module.exports = getAttachments;
+
 
 
 // const GetMeeting = async (req, res) => {
@@ -1625,65 +1684,65 @@ const GetMeetingList = async (req, res) => {
 
 
 
-const getAttachments = async (req, res) => {
-  const { TaskId, MeetingId, EntityId, TeamId } = req.query;
+// const getAttachments = async (req, res) => {
+//   const { TaskId, MeetingId, EntityId, TeamId,AllTaskbyMeeting } = req.query;
 
-  try {
-    let data;
-    if (TaskId) {
-      data = await db.Attachments.findAll({
-        where: {
-          TaskId: TaskId,
-        },
-        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
-      });
-    } else if (MeetingId) {
-      data = await db.Attachments.findAll({
-        where: {
-          MeetingId: MeetingId,
-        },
-        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
-      });
-    } 
-    else if (EntityId) {
-      const project = await db.Meeting.findAll({
-        attributes: ['id'],
-        where: { EntityId: EntityId },
-      });
+//   try {
+//     let data;
+//     if (TaskId) {
+//       data = await db.Attachments.findAll({
+//         where: {
+//           TaskId: TaskId,
+//         },
+//         order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+//       });
+//     } else if (MeetingId) {
+//       data = await db.Attachments.findAll({
+//         where: {
+//           MeetingId: MeetingId,
+//         },
+//         order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+//       });
+//     } 
+//     else if (EntityId) {
+//       const project = await db.Meeting.findAll({
+//         attributes: ['id'],
+//         where: { EntityId: EntityId },
+//       });
 
-      let MeetID = project.map(entry => entry.id);
-      data = await db.Attachments.findAll({
-        where: { MeetingId: { [Op.in]: MeetID } },
-        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
-      });
-    } else if (TeamId) {
-      const project = await db.Meeting.findAll({
-        attributes: ['id'],
-        where: { TeamId: TeamId },
-      });
+//       let MeetID = project.map(entry => entry.id);
+//       data = await db.Attachments.findAll({
+//         where: { MeetingId: { [Op.in]: MeetID } },
+//         order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+//       });
+//     } else if (TeamId) {
+//       const project = await db.Meeting.findAll({
+//         attributes: ['id'],
+//         where: { TeamId: TeamId },
+//       });
 
-      let MeetID = project.map(entry => entry.id);
-      data = await db.Attachments.findAll({
-        where: { MeetingId: { [Op.in]: MeetID } },
-        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
-      });
-    } else {
-      data = await db.Attachments.findAll({
-        order: [['createdAt', 'DESC']], // Order by createdAt in descending order
-      });
-    }
+//       let MeetID = project.map(entry => entry.id);
+//       data = await db.Attachments.findAll({
+//         where: { MeetingId: { [Op.in]: MeetID } },
+//         order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+//       });
+//     } else {
+//       data = await db.Attachments.findAll({
+//         order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+//       });
+//     }
 
-    // Remove extra backslashes from "Attachments" field
-    const cleanedData = data.map(item => ({
-      ...item.dataValues,
-      Attachments: item.dataValues.Attachments.replace(/^"|"$/g, ''),
-    }));
+//     // Remove extra backslashes from "Attachments" field
+//     const cleanedData = data.map(item => ({
+//       ...item.dataValues,
+//       Attachments: item.dataValues.Attachments.replace(/^"|"$/g, ''),
+//     }));
 
-    res.status(200).json(cleanedData);
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred while retrieving data' });
-  }
-};
+//     res.status(200).json(cleanedData);
+//   } catch (error) {
+//     res.status(500).json({ error: 'An error occurred while retrieving data' });
+//   }
+// };
 
 
 const delAttachmentId = async (req, res) => {
@@ -1699,9 +1758,6 @@ const delAttachmentId = async (req, res) => {
       res.status(500).json({ error: "Internal Server Error" });
     }
   };  
-
-
-
 
 
 
