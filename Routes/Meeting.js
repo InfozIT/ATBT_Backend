@@ -22,6 +22,10 @@ router.put('/update/:id', hasPermission("meeting", "canUpdate"),upload.single('i
 router.delete('/delete/:id', hasPermission("meeting", "canDelete"), Meeting.DeleteMeeting)
 
 router.get('/getAttachment', hasPermission("meeting", "canRead"), Meeting.getAttachments)
+router.delete('/deleteAttachment/:id', hasPermission("meeting", "canDelete"), Meeting.delAttachmentId)
+
+
+
 
 
 module.exports = router;
