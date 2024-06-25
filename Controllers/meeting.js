@@ -1511,7 +1511,7 @@ const GetMeetingList = async (req, res) => {
 
 
 const getAttachments = async (req, res) => {
-  const { TaskId, MeetingId, EntityId, TeamId,AllTaskbyMeeting } = req.query;
+  const { TaskId, MeetingId, EntityId, TeamId,AllTaskbyMeeting,AllTaskbyTeam } = req.query;
 
 
   try {
@@ -1534,6 +1534,19 @@ const getAttachments = async (req, res) => {
       let taskIds = project.map(entry => entry.id);
       data = await db.Attachments.findAll({
         where: { TaskId: { [Op.in]: taskIds } },
+      }); 
+    }
+    else if (AllTaskbyTeam) {
+      console.log(AllTaskbyTeam)
+      const Meet = await db.Meeting.findAll({ attributes: ['id'],where: { TeamId: AllTaskbyTeam } });
+      let MeetIds = Meet.map(entry => entry.id);
+      let Data = await db.Task.findAll({
+        where: { meetingId: { [Op.in]: MeetIds } },
+      });
+      let TaskIds = Data.map(entry => entry.id);
+      console.log(TaskIds)
+      data = await db.Attachments.findAll({
+        where: { TaskId: { [Op.in]: TaskIds } },
       }); 
     }
     else if (EntityId || TeamId) {
