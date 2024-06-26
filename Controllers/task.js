@@ -50,6 +50,16 @@ const CreateTask = async (req, res) => {
 };
 
 
+function convertDateFormat(dateString) {
+  // Split the date string by the hyphen
+  const dateParts = dateString.split("-");
+  
+  // Reorder the parts to dd/mm/yyyy
+  const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+  
+  return formattedDate;
+}
+
 const UpdateTask = async (req, res) => {
   try {
     const taskId = req.params.id; // Assuming taskId is part of the URL
@@ -83,6 +93,8 @@ const UpdateTask = async (req, res) => {
       meetMembers =[]
       let decision = member.dataValues.decision;
       let dueDate = member.dataValues.dueDate;
+      let formattedDate = convertDateFormat(dueDate);
+      console.log(formattedDate);
       
       let PR = member.dataValues.members;
       let meetingId = member.dataValues.meetingId;
@@ -215,7 +227,7 @@ const UpdateTask = async (req, res) => {
               <tr>
                 <td> ${decision}</td>
               <td> ${currentDate}</td>
-              <td> ${dueDate}</td>
+              <td> ${formattedDate}</td>
               </tr>
             </tbody>
            </table>
