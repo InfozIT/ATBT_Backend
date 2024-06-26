@@ -2,7 +2,7 @@ require('dotenv').config();
 var db = require('../models/index');
 const bcrypt = require('bcrypt');
 const User = db.User;
-const uploadToS3 = require('../utils/wearhouse')
+const {uploadToS3}= require('../utils/wearhouse'); 
 
 const mycon = require('../DB/mycon')
 const transporter = require('../utils/nodemailer')
