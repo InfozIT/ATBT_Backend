@@ -11,6 +11,18 @@ const {uploadToS3}= require('../utils/wearhouse');
 
 
 
+function convertDateFormat(dateString) {
+    // Split the date string by the hyphen
+    const dateParts = dateString.split("-");
+    
+    // Reorder the parts to dd/mm/yyyy
+    const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+    
+    return formattedDate;
+}
+
+
+
 const CreateMeeting = async (req, res) => {
   try {
     let file = req.file;
@@ -53,6 +65,11 @@ const CreateMeeting = async (req, res) => {
         let Meetmember = member.dataValues.members;
         let createdby = member.dataValues.createdBy;
         let date = member.dataValues.date;
+        let formattedDate = convertDateFormat(date);
+        console.log(formattedDate,"Dateformate")
+
+
+
         let BMno = member.dataValues.meetingnumber;
     
         let num1 = Number(createdby);
@@ -91,7 +108,7 @@ const CreateMeeting = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: `Invitation: Board Meeting on ${date}`,
+            subject: `Invitation: Board Meeting on ${formattedDate}`,
             html: `
               <style>
                 .container {
@@ -149,7 +166,7 @@ const CreateMeeting = async (req, res) => {
                     </h5>
                     <div style="font-size: 0.8rem">
                       <p style="line-height: 1.4">
-                        You are cordially invited to the Board Meeting on ${date}. Below are the details:
+                        You are cordially invited to the Board Meeting on ${formattedDate}. Below are the details:
                       </p>
                       <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
@@ -210,7 +227,7 @@ const CreateMeeting = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: `Invitation: Board Meeting on ${date}`,
+            subject: `Invitation: Board Meeting on ${formattedDate}`,
             html: `
               <style>
                 .container {
@@ -268,7 +285,7 @@ const CreateMeeting = async (req, res) => {
                     </h5>
                     <div style="font-size: 0.8rem">
                       <p style="line-height: 1.4">
-                        You are cordially invited to the Board Meeting on ${date}. Below are the details:
+                        You are cordially invited to the Board Meeting on ${formattedDate}. Below are the details:
                       </p>
                       <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
@@ -343,7 +360,7 @@ const CreateMeeting = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: `Invitation: Board Meeting on ${date}`,
+            subject: `Invitation: Board Meeting on ${formattedDate}`,
             html: `
               <style>
                 .container {
@@ -401,7 +418,7 @@ const CreateMeeting = async (req, res) => {
                     </h5>
                     <div style="font-size: 0.8rem">
                       <p style="line-height: 1.4">
-                        You are cordially invited to the Board Meeting on ${date}. Below are the details:
+                        You are cordially invited to the Board Meeting on ${formattedDate}. Below are the details:
                       </p>
                       <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
