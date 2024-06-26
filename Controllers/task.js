@@ -299,6 +299,7 @@ const UpdateTask = async (req, res) => {
     if (!updatedTask[0]) {
       return res.status(404).json({ error: "Task not found" });
     }
+    let member = await db.Task.findOne({ where: { id: taskId } });
       meetMembers =[]
       let decision = member.dataValues.decision;
       let dueDate = member.dataValues.dueDate;
@@ -316,7 +317,7 @@ const UpdateTask = async (req, res) => {
         raw: true,
       });
 
-    let member = await db.Task.findOne({ where: { id: taskId } });
+    
     if (!member) {
       return res.status(404).json({ error: "Meeting not found" });
     }
@@ -442,7 +443,7 @@ const UpdateTask = async (req, res) => {
            </table>
            <p>Please ensure that the decision assigned to you is completed by the due date.</p>
             <p style="padding-top: 15px;">Best regards,</p>
-            <p>${Creatorname}</p>
+            <p>${creatorName}</p>
             <p>Kapil Group</p>
           </div>
         `,
