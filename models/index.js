@@ -15,6 +15,7 @@ db.Meeting = require('./Meeting')(sequelize, DataTypes);
 db.Team = require('./Team')(sequelize, DataTypes);
 db.User = require('./User')(sequelize, DataTypes);
 db.Task = require('./Task')(sequelize, DataTypes);
+db.TaskLog = require('./TaskLog')(sequelize, DataTypes);
 db.SubTask = require('./Subtask')(sequelize, DataTypes);
 db.SubTaskDoc = require('./TaskSubDoc')(sequelize, DataTypes);
 db.Reports = require('./reports')(sequelize, DataTypes);
