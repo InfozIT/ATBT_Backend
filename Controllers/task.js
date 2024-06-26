@@ -302,8 +302,6 @@ const UpdateTask = async (req, res) => {
       meetMembers =[]
       let decision = member.dataValues.decision;
       let dueDate = member.dataValues.dueDate;
-      let formattedDate = convertDateFormat(dueDate);
-      console.log(formattedDate);
       
       let PR = member.dataValues.members;
       let meetingId = member.dataValues.meetingId;
@@ -438,7 +436,7 @@ const UpdateTask = async (req, res) => {
               <tr>
                 <td> ${decision}</td>
               <td> ${currentDate}</td>
-              <td> ${formattedDate}</td>
+              <td> ${dueDate}</td>
               </tr>
             </tbody>
            </table>
