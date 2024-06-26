@@ -200,6 +200,8 @@ const CreateMeeting = async (req, res) => {
         let Meetmember = member.dataValues.members;
         let createdby = member.dataValues.createdBy;
         let date = member.dataValues.date;
+        let formattedDate = convertDateFormat(date);
+
         let BMno = member.dataValues.meetingnumber;
     
         let num1 = Number(createdby);
@@ -319,6 +321,8 @@ const CreateMeeting = async (req, res) => {
         let Meetmember = member.dataValues.members;
         let createdby = member.dataValues.createdBy;
         let date = member.dataValues.date;
+        let formattedDate = convertDateFormat(date);
+
         let BMno = member.dataValues.meetingnumber;
     
         let num1 = Number(createdby);
@@ -658,8 +662,21 @@ const UpdateMeetings = async (req, res) => {
           return res.status(404).json({ error: "Meeting not found" });
         }
 
-        let meetMembers = member.dataValues.members;
+        let meetMem = member.dataValues.members;
         const userId = member.dataValues.UserId;
+        const EntityId = member.dataValues.EntityId;
+        const TeamId = member.dataValues.TeamId;
+        if (EntityId){
+          let MemEnity = await db.User.findAll({
+            attributes: ['id'],
+            where: {entityname: EntityId },
+          });
+          var Emails = MemEnity.map(entry => entry.id);
+        }
+        if(TeamId){
+
+        }
+
         const createdBy = member.dataValues.createdBy;
         const meetingDate = member.dataValues.date;
         let BMno = member.dataValues.meetingnumber;
@@ -670,8 +687,8 @@ const UpdateMeetings = async (req, res) => {
         const numCreatedBy = Number(createdBy);
 
         // Add userId to meetMembers if not already present
-        if (!meetMembers.includes(numUserId)) {
-          meetMembers.push(numUserId);
+        if (!meetMem.includes(numUserId)) {
+          meetMem.push(numUserId);
         }
 
         // Fetch creator's name
@@ -687,6 +704,9 @@ const UpdateMeetings = async (req, res) => {
 
         const creatorName = creator.name;
 
+        let meetMembers = meetMem.concat(Emails);
+        console.log(meetMembers,"........................")
+
         // Fetch emails and names of the members
         const emailResults = await db.User.findAll({
           attributes: ['email', 'name'],
@@ -695,6 +715,7 @@ const UpdateMeetings = async (req, res) => {
         });
 
         const emails = emailResults.map(entry => entry.email);
+        console.log(emails,"Emo")
         const names = emailResults.map(entry => entry.name);
 
         // Send individual emails to each recipient
