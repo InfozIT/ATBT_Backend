@@ -40,6 +40,8 @@ const uploadToS3 = async (fileData) => {
 };
 const uploadToS4 = async (fileData, filebody) => {
   let Query = filebody;
+  console.log(filebody,"ertyuio")
+
 
   return new Promise((resolve, reject) => {
     const params = {
@@ -54,7 +56,9 @@ const uploadToS4 = async (fileData, filebody) => {
         return reject(err);
       }
       const MeetingId = Query?.meeting ?? null;
-      const TaskId = Query?.task ?? null;
+      const TaskId = Query?.TaskId ?? null;
+
+      console.log(TaskId,MeetingId,"wertyuiop")
       if(MeetingId){
         try {
           let loc = `"${data.Location}"`
