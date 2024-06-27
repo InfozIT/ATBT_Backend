@@ -1893,7 +1893,7 @@ const GetTask = async (req, res) => {
       const meetingdate = meeting ? meeting.date : null;
 
       let memberdataFinal = null;
-      if (task.members) {
+      if (task.members && userMap[task.members]) {
         memberdataFinal = userMap[task.members].name || null;
       }
 
