@@ -3,7 +3,24 @@ const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
 const { Op, where, Sequelize } = require('sequelize');
 const moment = require('moment');
-const {uploadToS3}= require('../utils/wearhouse'); 
+const { uploadToS3 } = require('../utils/wearhouse');
+const winston = require('winston');
+
+
+
+
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.json()
+  ),
+  transports: [
+      new winston.transports.Console(),
+      new winston.transports.File({ filename: 'email.log' })
+  ]
+});
 
 
 const CreateTask = async (req, res) => {
@@ -33,10 +50,10 @@ const CreateTask = async (req, res) => {
 
     let task = await db.Task.create({ meetingId: bmId, createdby: createdby, collaborators: collaborators, taskCreatedBy: taskCreatedByString });
 
-    let createdid =task.dataValues.id;
+    let createdid = task.dataValues.id;
 
     // if (createdid){
-      
+
     // await db.Task.update(
     //   { update_count: 1 },  // Set emailSent to true
     //   { where: { id: createdid }, raw: true }  // Specify the task ID
@@ -83,13 +100,13 @@ const CreateTask = async (req, res) => {
 //       meetMembers =[]
 //       let decision = member.dataValues.decision;
 //       let dueDate = member.dataValues.dueDate;
-      
+
 //       let PR = member.dataValues.members;
 //       let meetingId = member.dataValues.meetingId;
-      
+
 //       meetMembers.push(userId)
 //       meetMembers.push(PR)
-      
+
 //       // Fetch creator's name
 //       const creator = await db.Meeting.findOne({
 //         attributes: ['meetingnumber'],
@@ -117,7 +134,7 @@ const CreateTask = async (req, res) => {
 //       });
 //       let Creatorname = Ceatorname.map(entry => entry.name);
 
-      
+
 //       const names = emailResults.map(entry => entry.name);
 
 //       // Send individual emails to each recipient
@@ -127,7 +144,7 @@ const CreateTask = async (req, res) => {
 //           to: emails[i],
 //           subject: 'Action Required: Task update for you ',
 //           html: `
-         
+
 //           <style>
 //              .container {
 //                max-width: 700px;
@@ -143,21 +160,21 @@ const CreateTask = async (req, res) => {
 //                height: 8vh;
 //                margin-right: 20px;
 //              }
-          
+
 //              .header {
 //                display: flex;
 //                align-items: center;
 //                justify-content: center;
 //                padding-top: 10px;
 //              }
-          
+
 //              p {
 //                margin-bottom: 15px;
 //              }
 //              .container-main {
 //                max-width: 650px;
 //                margin: 0 auto;
-          
+
 //                font-family: "serif", sans-serif;
 //                background-color: #fafafa;
 //                border-radius: 1%;
@@ -183,7 +200,7 @@ const CreateTask = async (req, res) => {
 //                padding: 0.5em;
 //                text-align: center;
 //              }
-          
+
 //            </style>
 //            <div class="container">
 //       <div class="container-main">
@@ -194,7 +211,7 @@ const CreateTask = async (req, res) => {
 //             class="banner"
 //           />
 //         </div>
- 
+
 //         <hr style="margin: 0" />
 //         <div class="content">
 //           <h5 style="font-size: 1rem; font-weight: 500">
@@ -234,12 +251,12 @@ const CreateTask = async (req, res) => {
 //     </div>
 //           `,
 //         };
-        
+
 //         let tasks = await db.Task.findAll({
 //           where: { id: req.params.id },
 //           raw: true,
 //         });
-        
+
 //         let due = tasks.map(entry => entry.dueDate);
 //         let dec = tasks.map(entry => entry.decision);
 
@@ -263,10 +280,10 @@ const CreateTask = async (req, res) => {
 function convertDateFormat(dateString) {
   // Split the date string by the hyphen
   const dateParts = dateString.split("-");
-  
+
   // Reorder the parts to dd/mm/yyyy
   const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-  
+
   return formattedDate;
 }
 
@@ -276,10 +293,8 @@ const UpdateTask = async (req, res) => {
     let updateData = req.body;
     let { members } = req.body;
     const { userId } = req.user;
-
     let file = req.file;
     const selectedmember = JSON.stringify(members);
-
     if (file) {
       const result = await uploadToS3(req.file);
       updateData = {
@@ -289,43 +304,34 @@ const UpdateTask = async (req, res) => {
         ...updateData,
       };
     }
-
     const updatedTask = await db.Task.update(updateData, {
       where: { id: taskId },
       individualHooks: true,
       userId: userId, // Pass the userId in options
     });
-
     if (!updatedTask[0]) {
       return res.status(404).json({ error: "Task not found" });
     }
     let member = await db.Task.findOne({ where: { id: taskId } });
-      meetMembers =[]
-      let decision = member.dataValues.decision;
-      let dueDate = member.dataValues.dueDate;
-      
-      let PR = member.dataValues.members;
-      let meetingId = member.dataValues.meetingId;
-      
-      meetMembers.push(userId)
-      meetMembers.push(PR)
-      
-      // Fetch creator's name
-      const creator = await db.Meeting.findOne({
-        attributes: ['meetingnumber'],
-        where: { id: meetingId },
-        raw: true,
-      });
+    meetMembers = []
+    let decision = member.dataValues.decision;
+    let dueDate = member.dataValues.dueDate;
+    let PR = member.dataValues.members;
+    let meetingId = member.dataValues.meetingId;
 
-    
+    meetMembers.push(userId)
+    meetMembers.push(PR)
+
+    // Fetch creator's name
+    const creator = await db.Meeting.findOne({
+      attributes: ['meetingnumber'],
+      where: { id: meetingId },
+      raw: true,
+    });
     if (!member) {
       return res.status(404).json({ error: "Meeting not found" });
     }
-
-    
-
     const meetingnumber = creator.meetingnumber;
-
     const emailResults = await db.User.findAll({
       attributes: ['email', 'name'],
       where: { id: { [Op.in]: meetMembers } },
@@ -348,10 +354,10 @@ const UpdateTask = async (req, res) => {
       const mailData = {
         from: 'nirajkr00024@gmail.com',
         to: emails[i],
-        subject: 'Action Required: Task update for you ',
+        subject: `Action Required: Task Created for ${names[i]} `,
         html: `
           <style>
-             .container {
+             .container { 
                max-width: 700px;
                margin: 0 auto;
                padding: 24px 0;
@@ -448,14 +454,29 @@ const UpdateTask = async (req, res) => {
           </div>
         `,
       };
+      let tasks = await db.Task.findAll({
+        where: { id: req.params.id },
+        raw: true,
+      });
 
-      await transporter.sendMail(mailData);
-      await db.Task.update(
-        { emailSent: true },  // Set emailSent to true
-        { where: { id: taskId } }  // Specify the task ID
-      );
+      let due = tasks.map(entry => entry.dueDate);
+      let dec = tasks.map(entry => entry.decision);
+      let update_count = tasks.map(entry => entry.update_count);
+
+      if (due.every(date => date != null) && dec.every(decision => decision != null)) {
+          try {
+            const info = await transporter.sendMail(mailData);
+            logger.info('Email sent successfully', { info });
+        } catch (error) {
+            logger.error('Error sending email', { error });
+        }
+          await db.Task.update(
+            { update_count: true },  // Set emailSent to true
+            { where: { id: taskId } }  // Specify the task ID
+          );
+
+      }
     }
-
     res.status(200).json({ message: "Task successfully updated" });
   } catch (error) {
     console.error("Error updating task:", error);
@@ -527,7 +548,7 @@ const UpdateTask = async (req, res) => {
 //       }
 //     }
 
-    
+
 
 //     // Add meeting members
 //     const meetingMemberIds = meetingMembers.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
@@ -708,7 +729,7 @@ const GetTaskbyId = async (req, res) => {
       }
     }
 
-    
+
 
     // Add meeting members
     const meetingMemberIds = meetingMembers.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
@@ -794,7 +815,7 @@ const GetTaskbyId = async (req, res) => {
     let cTime = new Date();
     let timeDiff = cTime.getTime() - createdAtTime.getTime();
     let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    task.age =diffDays
+    task.age = diffDays
 
 
     // Fetch task logs
@@ -848,7 +869,7 @@ const GetTaskbyId = async (req, res) => {
       decision: task.decision,
       SubTaskCount: await db.SubTask.count({ where: { TaskId: taskId } }),
       date: meeting ? meeting.date : null,
-      taskCreateby:taskCreatorName,
+      taskCreateby: taskCreatorName,
       age: task.age,
       taskCreateBY: jsonObject,
       meetingnumber: meeting ? meeting.meetingnumber : null,
@@ -1259,7 +1280,7 @@ const GetTaskbyId = async (req, res) => {
 //             id: { [Op.in]: [62] }
 //           },
 //           raw: true
-  
+
 //         });
 //         console.log(colabs)
 //       }
@@ -1371,10 +1392,10 @@ const SubTaskAdd = async (req, res) => {
       data.image = result.Location;
     }
 
-    const task = await db.SubTask.create({ 
-      ...data, 
-      TaskId: req.params.id, 
-      Collaborators: req.body.Collaborators 
+    const task = await db.SubTask.create({
+      ...data,
+      TaskId: req.params.id,
+      Collaborators: req.body.Collaborators
     });
     res.status(201).send(task);
   } catch (error) {
@@ -1383,11 +1404,11 @@ const SubTaskAdd = async (req, res) => {
   }
 };
 
-const SubTaskUpdate = async (req, res) =>{
+const SubTaskUpdate = async (req, res) => {
   try {
     const updateData = req.body;
     let file = req.file;
-  
+
     if (file) {
       const result = await uploadToS3(req.file)
       updateData = {
@@ -1395,16 +1416,16 @@ const SubTaskUpdate = async (req, res) =>{
         ...updateData,
       }
     }
-  
+
     const updatedTask = await db.SubTask.update(updateData, {
       where: { id: req.params.id }
     });
-    res.status(200).json({ message: "successfully updated",updatedTask })
+    res.status(200).json({ message: "successfully updated", updatedTask })
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).send("Error updating task");
   }
-  }
+}
 const SubTaskDelete = async (req, res) => {
   try {
     await db.SubTask.destroy({
@@ -2213,7 +2234,7 @@ const GetTask = async (req, res) => {
 //     //   const currentDate = new Date().toISOString().slice(0, 10);
 //     //   whereClause.status = {
 //     //     [Op.in]: ["To-Do", "In-Progress"],
-        
+
 //     //   }
 //     //   whereClause.dueDate = { [Op.lt]: currentDate };
 //     //   ;
@@ -2411,7 +2432,7 @@ const GetTask = async (req, res) => {
 //           uniqueMembers.push(member);
 //         }
 //       });
-      
+
 //       let createdAtTime = new Date(task.createdAt);
 //       let cTime = new Date();
 //       let timeDiff = cTime.getTime() - createdAtTime.getTime();
@@ -2714,33 +2735,33 @@ const GetTask = async (req, res) => {
 //       const subtaskCount = subTaskCounts[task.id] || 0;
 //       const members = meetingMembersMap[task.meetingId] || [];
 //       const memberdata = members[0];
-    
+
 //       const uniqueMemberIds = new Set();
 //       const uniqueMembers = [];
-    
+
 //       if (self && !uniqueMemberIds.has(self.id)) {
 //         uniqueMemberIds.add(self.id);
 //         uniqueMembers.push(self);
 //       }
-    
+
 //       members.forEach(member => {
 //         if (!uniqueMemberIds.has(member.id)) {
 //           uniqueMemberIds.add(member.id);
 //           uniqueMembers.push(member);
 //         }
 //       });
-    
+
 //       const meeting = meetings.find(m => String(m.id) === String(task.meetingId));
 //       const meetingNumber = meeting ? meeting.meetingnumber : null;
 //       const meetingdate = meeting ? meeting.date : null;
-    
+
 //       // Fetch user corresponding to `members` value
 //       let memberdataFinal = null;
 //       if (task.members) {
 //         memberdataFinal = userMap[task.members].name || null;
 //       }
-      
-    
+
+
 //       return {
 //         id: task.id,
 //         decision: task.decision,
@@ -2764,7 +2785,7 @@ const GetTask = async (req, res) => {
 //         updatedbyuser: subTaskMessageMap[task.id] || null
 //       };
 //     });
-    
+
 
 //     res.status(200).json({
 //       tasks: combinedResult,
@@ -3311,8 +3332,8 @@ const ListTaskCount = async (req, res) => {
 
 
 const GetTaskbyEntity = async (req, res) => {
-   let = entityId = req.params.id
-   const teamMembers = await db.Meeting.findAll({
+  let = entityId = req.params.id
+  const teamMembers = await db.Meeting.findAll({
     where: { EntityId: entityId }, // Fetch team based on TeamId from meeting
     raw: true
   });
