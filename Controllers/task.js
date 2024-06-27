@@ -470,6 +470,8 @@ const UpdateTask = async (req, res) => {
 // };
 
 
+
+// working code
 const GetTaskbyId = async (req, res) => {
   const taskId = req.params.id;
   try {
@@ -632,7 +634,7 @@ const GetTaskbyId = async (req, res) => {
     taskLogs.forEach(log => {
       log.changes.forEach(change => {
         if (change.changedBy) userIds.add(change.changedBy);
-        if (change.fieldChanged === 'collaborators') {
+        if (change.fieldChanged === 'members' || change.fieldChanged === 'collaborators') {
           if (change.newValue) userIds.add(change.newValue);
           if (change.oldValue) userIds.add(change.oldValue);
         }
@@ -661,10 +663,12 @@ const GetTaskbyId = async (req, res) => {
       changes: log.changes.map(change => ({
         ...change,
         changedBy: userMapp[change.changedBy] || change.changedBy,
-        newValue: change.fieldChanged === 'collaborators' ? userMapp[change.newValue] || change.newValue : change.newValue,
-        oldValue: change.fieldChanged === 'collaborators' ? userMapp[change.oldValue] || change.oldValue : change.oldValue
+        newValue: (change.fieldChanged === 'collaborators' || change.fieldChanged === 'members') ? (userMapp[change.newValue] || change.newValue) : change.newValue,
+        oldValue: (change.fieldChanged === 'collaborators' || change.fieldChanged === 'members') ? (userMapp[change.oldValue] || change.oldValue) : change.oldValue
       }))
     }));
+
+
 
     // Prepare the response data
     const combinedResult = {
@@ -686,7 +690,7 @@ const GetTaskbyId = async (req, res) => {
       file: task.file || null,
       comments: commentsWithUserInfo || [],
       group: groupMembers.filter(member => member.entityname !== null),
-      activeLog: enhancedTaskLogs // Include the task logs in the response
+      activeLog: enhancedTaskLogs.length === 1 ? enhancedTaskLogs[0] : enhancedTaskLogs
     };
 
     // Send the response
@@ -696,177 +700,6 @@ const GetTaskbyId = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-// const GetTaskbyId = async (req, res) => {
-//   const taskId = req.params.id;
-//   try {
-//     // Fetch the task details
-//     let task = await db.Task.findOne({
-//       where: { id: taskId },
-//     });
-//     let TC = task.dataValues.taskCreatedBy
-//     console.log(TC)
-//     if (!task) {
-//       return res.status(404).json({ error: 'Task not found' });
-//     }
-
-//     // Extracting meetingId from task
-//     const meetingId = parseInt(task.meetingId, 10);
-//     if (isNaN(meetingId)) {
-//       return res.status(400).json({ error: 'Invalid meeting ID' });
-//     }
-
-//     // Fetch the meeting details
-//     const meeting = await db.Meeting.findOne({
-//       where: { id: meetingId },
-//       raw: true
-//     });
-
-//     if (!meeting) {
-//       return res.status(404).json({ error: 'Meeting not found' });
-//     }
-
-//     const { EntityId, TeamId, members: meetingMembers, UserId } = meeting;
-
-//     let groupMembers = [];
-
-//     // Fetch users based on EntityId
-//     if (EntityId) {
-//       const entityMembers = await db.User.findAll({
-//         attributes: ['id', 'name', 'email', 'image', 'entityname'],
-//         where: { entityname: EntityId },
-//         raw: true
-//       });
-//       groupMembers.push(...entityMembers);
-//     }
-
-//     // Fetch users based on TeamId
-//     if (TeamId) {
-//       const team = await db.Team.findOne({
-//         attributes: ['members'],
-//         where: { id: TeamId },
-//         raw: true
-//       });
-
-//       if (team) {
-//         const teamMemberIds = team.members.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-//         const teamMembers = await db.User.findAll({
-//           attributes: ['id', 'name', 'email', 'image', 'entityname'],
-//           where: { id: { [Op.in]: teamMemberIds } },
-//           raw: true
-//         });
-//         groupMembers.push(...teamMembers);
-//       }
-//     }
-
-//     // Add meeting members
-//     const meetingMemberIds = meetingMembers.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-//     const meetingUsers = await db.User.findAll({
-//       attributes: ['id', 'name', 'email', 'image', 'entityname'],
-//       where: { id: { [Op.in]: meetingMemberIds } },
-//       raw: true
-//     });
-//     groupMembers.push(...meetingUsers);
-
-//     // Fetch user details for the meeting's creator
-//     const meetingUser = await db.User.findOne({
-//       attributes: ['id', 'name', 'email', 'image', 'entityname'],
-//       where: { id: UserId },
-//       raw: true
-//     });
-
-//     if (meetingUser && !groupMembers.some(member => member.id === meetingUser.id)) {
-//       groupMembers.push(meetingUser);
-//     }
-
-//     // Fetch task comments for the given task
-//     const taskComments = await db.SubTaskDoc.findAll({
-//       where: { TaskId: taskId },
-//       raw: true
-//     });
-
-//     // Extract unique userIds from comments
-//     const commentUserIds = [...new Set(taskComments.map(item => parseInt(item.senderId, 10)))].filter(id => !isNaN(id));
-//     const users = await db.User.findAll({
-//       attributes: ['id', 'name', 'image'],
-//       where: { id: { [Op.in]: commentUserIds } },
-//       raw: true
-//     });
-
-//     // Create a map of userIds to corresponding user details for quick lookup
-//     const userMap = {};
-//     users.forEach(user => {
-//       userMap[user.id] = { senderImage: user.image, senderName: user.name };
-//     });
-
-//     // Prepare the comments array with senderName and senderImage
-//     const commentsWithUserInfo = taskComments.map(comment => ({
-//       ...comment,
-//       senderName: userMap[parseInt(comment.senderId, 10)] ? userMap[parseInt(comment.senderId, 10)].senderName : null,
-//       senderImage: userMap[parseInt(comment.senderId, 10)] ? userMap[parseInt(comment.senderId, 10)].senderImage : null
-//     }));
-
-//     // Fetch user details for the collaborators
-//     const collaborators = task.collaborators.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-//     let collaboratorsUsers = [];
-
-//     if (collaborators.length > 0) {
-//       collaboratorsUsers = await db.User.findAll({
-//         attributes: ['id', 'name', 'email', 'image', 'entityname'],
-//         where: { id: { [Op.in]: collaborators } },
-//         raw: true
-//       });
-//     }
-
-//     // Fetch task creator entity name
-//     if(TC && TC.name=="entities"){
-//     taskCreatorName = entity ? entity.name : '';
-//       const entity = await db.Entity.findOne({
-//       attributes: ['name'],
-//       where: { id: TC.id },
-//       raw: true
-//     });
-//     taskCreatorName = entity ? entity.name : '';
-//     }
-//     if (TC && TC.name=="teams") {
-//       const Team = await db.Team.findOne({
-//         attributes: ['name'],
-//         where: { id: TC.id },
-//         raw: true
-//       });
-//       taskCreatorEntityName = Team ? Team.name : '';
-//     }
-
-//     // Prepare the response data
-//     const combinedResult = {
-//       id: task.id,
-//       decision: task.decision,
-//       SubTaskCount: await db.SubTask.count({ where: { TaskId: taskId } }),
-//       date: meeting ? meeting.date : null,
-//       taskCreateby: '',
-//       taskCreateBY: task.taskCreatedBy,
-//       meetingnumber: meeting ? meeting.meetingnumber : null,
-//       priority: task.priority || null,
-//       members: task.members,
-//       collaborators: collaboratorsUsers,
-//       dueDate: task.dueDate,
-//       status: task.status,
-//       createdAt: task.createdAt,
-//       updatedAt: task.updatedAt,
-//       file: task.file || null,
-//       comments: commentsWithUserInfo || [],
-//       group: groupMembers.filter(member => member.entityname !== null)
-//     };
-
-//     // Send the response
-//     res.status(200).json([combinedResult]);
-//   } catch (error) {
-//     console.error('Error fetching task details:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
 
 
 // const GetTaskbyId = async (req, res) => {
