@@ -3,7 +3,22 @@ const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
 const { Op, where, Sequelize } = require('sequelize');
 const moment = require('moment');
-const {uploadToS3}= require('../utils/wearhouse'); 
+const { uploadToS3 } = require('../utils/wearhouse');
+const winston = require('winston');
+
+
+
+
+
+function convertDateFormat(dateStr) {
+  // Split the date string by '-'
+  let parts = dateStr.split('-');
+
+  // Rearrange the parts to 'dd-mm-yyyy'
+  let formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+
+  return formattedDate;
+}
 
 
 const CreateTask = async (req, res) => {
@@ -33,10 +48,10 @@ const CreateTask = async (req, res) => {
 
     let task = await db.Task.create({ meetingId: bmId, createdby: createdby, collaborators: collaborators, taskCreatedBy: taskCreatedByString });
 
-    let createdid =task.dataValues.id;
+    let createdid = task.dataValues.id;
 
     // if (createdid){
-      
+
     // await db.Task.update(
     //   { update_count: 1 },  // Set emailSent to true
     //   { where: { id: createdid }, raw: true }  // Specify the task ID
@@ -50,233 +65,15 @@ const CreateTask = async (req, res) => {
 };
 
 
-// const UpdateTask = async (req, res) => {
-//   try {
-//     const taskId = req.params.id; // Assuming taskId is part of the URL
-//     const updateData = req.body;
-//     let { members } = req.body;
-//     let data = req.body;
-//     const { userId} = req.user;
-
-//     // console.log("userId", userId)
-//     let file = req.file;
-//     const selectedmember = JSON.stringify(members);
-
-//     if (file) {
-//       const result = await uploadToS3(req.file);
-//       updateData = {
-//         image: `${result.Location}`,
-//         members: selectedmember,
-//         createdby: userId,
-//         ...data,
-//       }
-//     }
-//     const updatedTask = await db.Task.update(updateData, {
-//       where: { id: req.params.id }
-//     });
-//     // try {
-//       let member = await db.Task.findOne({ where: {id: req.params.id} });
-//       if (!member) {
-//         return res.status(404).json({ error: "Meeting not found" });
-//       }
-
-//       meetMembers =[]
-//       let decision = member.dataValues.decision;
-//       let dueDate = member.dataValues.dueDate;
-      
-//       let PR = member.dataValues.members;
-//       let meetingId = member.dataValues.meetingId;
-      
-//       meetMembers.push(userId)
-//       meetMembers.push(PR)
-      
-//       // Fetch creator's name
-//       const creator = await db.Meeting.findOne({
-//         attributes: ['meetingnumber'],
-//         where: { id: meetingId },
-//         raw: true,
-//       });
-
-
-//       const meetingnumber = creator.meetingnumber;
-
-//       // Fetch emails and names of the members
-//       const emailResults = await db.User.findAll({
-//         attributes: ['email', 'name'],
-//         where: { id: { [Op.in]: meetMembers } },
-//         raw: true,
-//       });
-
-//       const emails = emailResults.map(entry => entry.email);
-//       let currentDate = new Date().toISOString().slice(0, 10);
-
-//       let Ceatorname = await db.User.findAll({
-//         attributes: ['name'],
-//         where: { id: userId },
-//         raw: true,
-//       });
-//       let Creatorname = Ceatorname.map(entry => entry.name);
-
-      
-//       const names = emailResults.map(entry => entry.name);
-
-//       // Send individual emails to each recipient
-//       for (let i = 0; i < emails.length; i++) {
-//         const mailData = {
-//           from: 'nirajkr00024@gmail.com',
-//           to: emails[i],
-//           subject: 'Action Required: Task update for you ',
-//           html: `
-         
-//           <style>
-//              .container {
-//                max-width: 700px;
-//                margin: 0 auto;
-//                padding: 24px 0;
-//                font-family: "Poppins", sans-serif;
-//                background-color: rgb(231 229 228);
-//                border-radius: 1%;
-//              }
-//              .banner {
-//                margin-bottom: 10px;
-//                width: 90px;
-//                height: 8vh;
-//                margin-right: 20px;
-//              }
-          
-//              .header {
-//                display: flex;
-//                align-items: center;
-//                justify-content: center;
-//                padding-top: 10px;
-//              }
-          
-//              p {
-//                margin-bottom: 15px;
-//              }
-//              .container-main {
-//                max-width: 650px;
-//                margin: 0 auto;
-          
-//                font-family: "serif", sans-serif;
-//                background-color: #fafafa;
-//                border-radius: 1%;
-//              }
-//              .content {
-//                padding: 25px;
-//              }
-//              table {
-//                border-collapse: collapse;
-//                width: 100%;
-//                margin-top: 10px;
-//              }
-//              th, td {
-//                border: 1px solid black;
-//                padding: 8px;
-//                text-align: left;
-//              }
-//              tr:nth-child(even) {
-//                background-color: #f2f2f2;
-//              }
-//              .footer {
-//                background-color: rgb(249 115 22);
-//                padding: 0.5em;
-//                text-align: center;
-//              }
-          
-//            </style>
-//            <div class="container">
-//       <div class="container-main">
-//         <div class="header">
-//           <img
-//             src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
-//             alt="kapil_Groups_Logo"
-//             class="banner"
-//           />
-//         </div>
- 
-//         <hr style="margin: 0" />
-//         <div class="content">
-//           <h5 style="font-size: 1rem; font-weight: 500">
-//             Dear <span style="font-weight: bold">${names[i]}</span>,
-//           </h5>
-//           <div style="font-size: 0.8rem">
-//             <p style="line-height: 1.4">
-//             We wanted to inform you of an update regarding the decision which was assigned in Meeting:
-//               <span style="font-weight:bold"> ${meetingnumber}</span>Here are the details of the decision update:
-//             </p>
-//            <table>
-//             <thead>
-//               <th>Decision Taken</th>
-//               <th>Assigned Date</th>
-//               <th>Due Date</th>
-//             </thead>
-//             <tbody>
-//               <tr>
-//                 <td> ${decision}</td>
-//               <td> ${currentDate}</td>
-//               <td> ${dueDate}</td>
-//               </tr>
-//             </tbody>
-//            </table>
-//            <p>Please ensure that the decision assigned to you is completed by the due date.</p>
-//             <p style="padding-top: 15px;">Best regards,</p>
-//             <p>${Creatorname}</p>
-//             <p>Kapil Group</p>
-//           </div>
-//         </div>
-//         <div class="footer">
-//           <p style="color: white; font-size: 15px; margin: 0">
-//             All rights are reserved by Kapil Group
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//           `,
-//         };
-        
-//         let tasks = await db.Task.findAll({
-//           where: { id: req.params.id },
-//           raw: true,
-//         });
-        
-//         let due = tasks.map(entry => entry.dueDate);
-//         let dec = tasks.map(entry => entry.decision);
-
-//         if (due.every(date => date != null) && dec.every(decision => decision != null)) {
-//           await transporter.sendMail(mailData);
-//           await db.Task.update(
-//             { update_count: 1 },  // Set emailSent to true
-//             { where: { id: req.params.id }, raw: true }  // Specify the task ID
-//           );
-
-//         }
-//       }
-
-//     res.status(200).json({ message: "successfully updated" })
-//   } catch (error) {
-//     console.error("Error updating task:", error);
-//     res.status(500).send("Error updating task");
-//   }
-// };
-
-function convertDateFormat(dateString) {
-  // Split the date string by the hyphen
-  const dateParts = dateString.split("-");
-  
-  // Reorder the parts to dd/mm/yyyy
-  const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-  
-  return formattedDate;
-}
-
 const UpdateTask = async (req, res) => {
   try {
     const taskId = req.params.id; // Assuming taskId is part of the URL
-    let updateData = req.body;
+    const updateData = req.body;
     let { members } = req.body;
-    const { userId } = req.user;
+    let data = req.body;
+    const { userId} = req.user;
 
+    // console.log("userId", userId)
     let file = req.file;
     const selectedmember = JSON.stringify(members);
 
@@ -286,30 +83,48 @@ const UpdateTask = async (req, res) => {
         image: `${result.Location}`,
         members: selectedmember,
         createdby: userId,
-        ...updateData,
-      };
+        ...data,
+      }
     }
-
     const updatedTask = await db.Task.update(updateData, {
-      where: { id: taskId },
-      individualHooks: true,
-      userId: userId, // Pass the userId in options
+      where: { id: req.params.id }
     });
+    // try {
+      let member = await db.Task.findOne({ where: {id: req.params.id} });
+      if (!member) {
+        return res.status(404).json({ error: "Meeting not found" });
+      }
 
-    if (!updatedTask[0]) {
-      return res.status(404).json({ error: "Task not found" });
-    }
-    let member = await db.Task.findOne({ where: { id: taskId } });
       meetMembers =[]
       let decision = member.dataValues.decision;
       let dueDate = member.dataValues.dueDate;
-      
       let PR = member.dataValues.members;
       let meetingId = member.dataValues.meetingId;
-      
+      let blo = member.dataValues.taskCreatedBy;
+      let jsonObject = JSON.parse(blo);
+
+      let taskCreatorName = '';
+      if (jsonObject && jsonObject.name == "entities") {
+        const entity = await db.Entity.findOne({
+          attributes: ['name'],
+          where: { id: jsonObject.id },
+          raw: true
+        });
+        taskCreatorName = entity ? entity.name : '';
+      } else if (jsonObject && jsonObject.name == "teams") {
+        const team = await db.Team.findOne({
+          attributes: ['name'],
+          where: { id: jsonObject.id },
+          raw: true
+        });
+        console.log(team)
+        taskCreatorName = team ? team.name : '';
+  
+      }
+
       meetMembers.push(userId)
       meetMembers.push(PR)
-      
+
       // Fetch creator's name
       const creator = await db.Meeting.findOne({
         attributes: ['meetingnumber'],
@@ -317,151 +132,160 @@ const UpdateTask = async (req, res) => {
         raw: true,
       });
 
-    
-    if (!member) {
-      return res.status(404).json({ error: "Meeting not found" });
-    }
 
-    
+      const meetingnumber = creator.meetingnumber;
 
-    const meetingnumber = creator.meetingnumber;
+      // Fetch emails and names of the members
+      const emailResults = await db.User.findAll({
+        attributes: ['email', 'name'],
+        where: { id: { [Op.in]: meetMembers } },
+        raw: true,
+      });
 
-    const emailResults = await db.User.findAll({
-      attributes: ['email', 'name'],
-      where: { id: { [Op.in]: meetMembers } },
-      raw: true,
-    });
+      const emails = emailResults.map(entry => entry.email);
+      let currentDate = new Date().toISOString().slice(0, 10);
 
-    const emails = emailResults.map(entry => entry.email);
-    let currentDate = new Date().toISOString().slice(0, 10);
+      let Ceatorname = await db.User.findAll({
+        attributes: ['name'],
+        where: { id: userId },
+        raw: true,
+      });
+      let Creatorname = Ceatorname.map(entry => entry.name);
 
-    let creatorNameResult = await db.User.findAll({
-      attributes: ['name'],
-      where: { id: userId },
-      raw: true,
-    });
-    let creatorName = creatorNameResult.map(entry => entry.name);
 
-    const names = emailResults.map(entry => entry.name);
+      const names = emailResults.map(entry => entry.name);
 
-    for (let i = 0; i < emails.length; i++) {
-      const mailData = {
-        from: 'nirajkr00024@gmail.com',
-        to: emails[i],
-        subject: 'Action Required: Task update for you ',
-        html: `
-          <style>
-             .container {
-               max-width: 700px;
-               margin: 0 auto;
-               padding: 24px 0;
-               font-family: "Poppins", sans-serif;
-               background-color: rgb(231 229 228);
-               border-radius: 1%;
-             }
-             .banner {
-               margin-bottom: 10px;
-               width: 90px;
-               height: 8vh;
-               margin-right: 20px;
-             }
-          
-             .header {
-               display: flex;
-               align-items: center;
-               justify-content: center;
-               padding-top: 10px;
-             }
-          
-             p {
-               margin-bottom: 15px;
-             }
-             .container-main {
-               max-width: 650px;
-               margin: 0 auto;
-          
-               font-family: "serif", sans-serif;
-               background-color: #fafafa;
-               border-radius: 1%;
-             }
-             .content {
-               padding: 25px;
-             }
-             table {
-               border-collapse: collapse;
-               width: 100%;
-               margin-top: 10px;
-             }
-             th, td {
-               border: 1px solid black;
-               padding: 8px;
-               text-align: left;
-             }
-             tr:nth-child(even) {
-               background-color: #f2f2f2;
-             }
-             .footer {
-               background-color: rgb(249 115 22);
-               padding: 0.5em;
-               text-align: center;
-             }
-          
-           </style>
-           <div class="container">
-      <div class="container-main">
-        <div class="header">
-          <img
-            src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
-            alt="kapil_Groups_Logo"
-            class="banner"
-          />
-        </div>
- 
-        <hr style="margin: 0" />
-        <div class="content">
-          <h5 style="font-size: 1rem; font-weight: 500">
-            Dear <span style="font-weight: bold">${names[i]}</span>,
-          </h5>
-          <div style="font-size: 0.8rem">
-            <p style="line-height: 1.4">
-            We wanted to inform you of an update regarding the decision which was assigned in Meeting:
-              <span style="font-weight:bold"> ${meetingnumber}</span>Here are the details of the decision update:
-            </p>
-           <table>
-            <thead>
-              <th>Decision Taken</th>
-              <th>Assigned Date</th>
-              <th>Due Date</th>
-            </thead>
-            <tbody>
-              <tr>
-                <td> ${decision}</td>
-              <td> ${currentDate}</td>
-              <td> ${dueDate}</td>
-              </tr>
-            </tbody>
-           </table>
-           <p>Please ensure that the decision assigned to you is completed by the due date.</p>
-            <p style="padding-top: 15px;">Best regards,</p>
-            <p>${creatorName}</p>
-            <p>Kapil Group</p>
+      // Send individual emails to each recipient
+      for (let i = 0; i < emails.length; i++) {
+        const mailData = {
+          from: 'nirajkr00024@gmail.com',
+          to: emails[i],
+          subject: `Action Required: Task Created for ${names[i]} `,
+          html: `
+            <style>
+               .container { 
+                 max-width: 700px;
+                 margin: 0 auto;
+                 padding: 24px 0;
+                 font-family: "Poppins", sans-serif;
+                 background-color: rgb(231 229 228);
+                 border-radius: 1%;
+               }
+               .banner {
+                 margin-bottom: 10px;
+                 width: 90px;
+                 height: 8vh;
+                 margin-right: 20px;
+               }
+            
+               .header {
+                 display: flex;
+                 align-items: center;
+                 justify-content: center;
+                 padding-top: 10px;
+               }
+            
+               p {
+                 margin-bottom: 15px;
+               }
+               .container-main {
+                 max-width: 650px;
+                 margin: 0 auto;
+            
+                 font-family: "serif", sans-serif;
+                 background-color: #fafafa;
+                 border-radius: 1%;
+               }
+               .content {
+                 padding: 25px;
+               }
+               table {
+                 border-collapse: collapse;
+                 width: 100%;
+                 margin-top: 10px;
+               }
+               th, td {
+                 border: 1px solid black;
+                 padding: 8px;
+                 text-align: left;
+               }
+               tr:nth-child(even) {
+                 background-color: #f2f2f2;
+               }
+               .footer {
+                 background-color: rgb(249 115 22);
+                 padding: 0.5em;
+                 text-align: center;
+               }
+            
+             </style>
+            <div class="container">
+        <div class="container-main">
+          <div class="header">
+            <img
+              src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
+              alt="kapil_Groups_Logo"
+              class="banner"
+            />
           </div>
-        `,
-      };
+   
+          <hr style="margin: 0" />
+          <div class="content">
+            <h5 style="font-size: 1rem; font-weight: 500">
+              Dear <span style="font-weight: bold">${names[i]}</span>,
+            </h5>
+            <div style="font-size: 0.8rem">
+              <p style="line-height: 1.4">
+              You've been assigned a decision from <span style="font-weight:bold"> ${taskCreatorName}</span>, made during <span style="font-weight:bold"> ${meetingnumber}</span>. Here are the details:
+              </p>
+             <table>
+              <thead>
+                <th>Decision Taken</th>
+                <th>Assigned Date</th>
+                <th>Due Date</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td> ${decision}</td>
+                <td> ${currentDate}</td>
+                <td> ${dueDate}</td>
+                </tr>
+              </tbody>
+             </table>
+             <p>Please ensure that the decision assigned to you is completed by the due date.</p>
+              <p style="padding-top: 15px;">Best regards,</p>
+              <p>${Creatorname}</p>
+              <p>Kapil Group</p>
+            </div>
+          `,
+        };
+        
 
-      await transporter.sendMail(mailData);
-      await db.Task.update(
-        { emailSent: true },  // Set emailSent to true
-        { where: { id: taskId } }  // Specify the task ID
-      );
-    }
 
-    res.status(200).json({ message: "Task successfully updated" });
+        let tasks = await db.Task.findAll({
+          where: { id: req.params.id },
+          raw: true,
+        });
+
+        let due = tasks.map(entry => entry.dueDate);
+        let dec = tasks.map(entry => entry.decision);
+
+        if (due.every(date => date != null) && dec.every(decision => decision != null)) {
+          await transporter.sendMail(mailData);
+
+        }
+      }
+
+    res.status(200).json({ message: "successfully updated" })
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).send("Error updating task");
   }
 };
+
+
+
+
 
 
 
@@ -527,7 +351,7 @@ const UpdateTask = async (req, res) => {
 //       }
 //     }
 
-    
+
 
 //     // Add meeting members
 //     const meetingMemberIds = meetingMembers.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
@@ -710,7 +534,7 @@ const GetTaskbyId = async (req, res) => {
       }
     }
 
-    
+
 
     // Add meeting members
     const meetingMemberIds = meetingMembers.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
@@ -796,7 +620,7 @@ const GetTaskbyId = async (req, res) => {
     let cTime = new Date();
     let timeDiff = cTime.getTime() - createdAtTime.getTime();
     let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    task.age =diffDays
+    task.age = diffDays
 
 
     // Fetch task logs
@@ -852,7 +676,7 @@ const GetTaskbyId = async (req, res) => {
       decision: task.decision,
       SubTaskCount: await db.SubTask.count({ where: { TaskId: taskId } }),
       date: meeting ? meeting.date : null,
-      taskCreateby:taskCreatorName,
+      taskCreateby: taskCreatorName,
       age: task.age,
       taskCreateBY: jsonObject,
       meetingnumber: meeting ? meeting.meetingnumber : null,
@@ -1092,7 +916,7 @@ const GetTaskbyId = async (req, res) => {
 //             id: { [Op.in]: [62] }
 //           },
 //           raw: true
-  
+
 //         });
 //         console.log(colabs)
 //       }
@@ -1204,10 +1028,10 @@ const SubTaskAdd = async (req, res) => {
       data.image = result.Location;
     }
 
-    const task = await db.SubTask.create({ 
-      ...data, 
-      TaskId: req.params.id, 
-      Collaborators: req.body.Collaborators 
+    const task = await db.SubTask.create({
+      ...data,
+      TaskId: req.params.id,
+      Collaborators: req.body.Collaborators
     });
     res.status(201).send(task);
   } catch (error) {
@@ -1216,11 +1040,11 @@ const SubTaskAdd = async (req, res) => {
   }
 };
 
-const SubTaskUpdate = async (req, res) =>{
+const SubTaskUpdate = async (req, res) => {
   try {
     const updateData = req.body;
     let file = req.file;
-  
+
     if (file) {
       const result = await uploadToS3(req.file)
       updateData = {
@@ -1228,16 +1052,16 @@ const SubTaskUpdate = async (req, res) =>{
         ...updateData,
       }
     }
-  
+
     const updatedTask = await db.SubTask.update(updateData, {
       where: { id: req.params.id }
     });
-    res.status(200).json({ message: "successfully updated",updatedTask })
+    res.status(200).json({ message: "successfully updated", updatedTask })
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).send("Error updating task");
   }
-  }
+}
 const SubTaskDelete = async (req, res) => {
   try {
     await db.SubTask.destroy({
@@ -2046,7 +1870,7 @@ const GetTask = async (req, res) => {
 //     //   const currentDate = new Date().toISOString().slice(0, 10);
 //     //   whereClause.status = {
 //     //     [Op.in]: ["To-Do", "In-Progress"],
-        
+
 //     //   }
 //     //   whereClause.dueDate = { [Op.lt]: currentDate };
 //     //   ;
@@ -2244,7 +2068,7 @@ const GetTask = async (req, res) => {
 //           uniqueMembers.push(member);
 //         }
 //       });
-      
+
 //       let createdAtTime = new Date(task.createdAt);
 //       let cTime = new Date();
 //       let timeDiff = cTime.getTime() - createdAtTime.getTime();
@@ -2547,33 +2371,33 @@ const GetTask = async (req, res) => {
 //       const subtaskCount = subTaskCounts[task.id] || 0;
 //       const members = meetingMembersMap[task.meetingId] || [];
 //       const memberdata = members[0];
-    
+
 //       const uniqueMemberIds = new Set();
 //       const uniqueMembers = [];
-    
+
 //       if (self && !uniqueMemberIds.has(self.id)) {
 //         uniqueMemberIds.add(self.id);
 //         uniqueMembers.push(self);
 //       }
-    
+
 //       members.forEach(member => {
 //         if (!uniqueMemberIds.has(member.id)) {
 //           uniqueMemberIds.add(member.id);
 //           uniqueMembers.push(member);
 //         }
 //       });
-    
+
 //       const meeting = meetings.find(m => String(m.id) === String(task.meetingId));
 //       const meetingNumber = meeting ? meeting.meetingnumber : null;
 //       const meetingdate = meeting ? meeting.date : null;
-    
+
 //       // Fetch user corresponding to `members` value
 //       let memberdataFinal = null;
 //       if (task.members) {
 //         memberdataFinal = userMap[task.members].name || null;
 //       }
-      
-    
+
+
 //       return {
 //         id: task.id,
 //         decision: task.decision,
@@ -2597,7 +2421,7 @@ const GetTask = async (req, res) => {
 //         updatedbyuser: subTaskMessageMap[task.id] || null
 //       };
 //     });
-    
+
 
 //     res.status(200).json({
 //       tasks: combinedResult,
@@ -3144,8 +2968,8 @@ const ListTaskCount = async (req, res) => {
 
 
 const GetTaskbyEntity = async (req, res) => {
-   let = entityId = req.params.id
-   const teamMembers = await db.Meeting.findAll({
+  let = entityId = req.params.id
+  const teamMembers = await db.Meeting.findAll({
     where: { EntityId: entityId }, // Fetch team based on TeamId from meeting
     raw: true
   });
