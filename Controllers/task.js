@@ -98,6 +98,20 @@ const UpdateTask = async (req, res) => {
       meetMembers =[]
       let decision = member.dataValues.decision;
       let dueDate = member.dataValues.dueDate;
+
+      try{
+        var reversedDateStr = dueDate.split('-').reverse().join('-');
+        let current = new Date().toISOString().slice(0, 10);
+        var currentDate= current.split('-').reverse().join('-');
+        console.log(reversedDateStr,"ppppp",currentDate)
+
+        
+
+      }
+      catch(error){
+        console.log(error)
+
+      }
       let PR = member.dataValues.members;
       let meetingId = member.dataValues.meetingId;
       let blo = member.dataValues.taskCreatedBy;
@@ -143,7 +157,6 @@ const UpdateTask = async (req, res) => {
       });
 
       const emails = emailResults.map(entry => entry.email);
-      let currentDate = new Date().toISOString().slice(0, 10);
 
       let Ceatorname = await db.User.findAll({
         attributes: ['name'],
@@ -248,7 +261,7 @@ const UpdateTask = async (req, res) => {
                 <tr>
                   <td> ${decision}</td>
                 <td> ${currentDate}</td>
-                <td> ${dueDate}</td>
+                <td> ${reversedDateStr}</td>
                 </tr>
               </tbody>
              </table>
