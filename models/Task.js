@@ -270,4 +270,55 @@ module.exports = (sequelize, DataTypes) => {
   
   return Task;
   
+
+
+
+  // Task.addHook('beforeUpdate', async (task, options) => {
+  //   console.log('Before update hook triggered for Task:', task.id);
+  //   const changedFields = task.changed();
+
+
+  //   if (changedFields && changedFields.length > 0) {
+  //     const log = await sequelize.models.TaskLog.findOne({ where: { taskId: task.id } });
+
+  //     // const newChanges = changedFields.map((field) => ({
+  //     //   fieldChanged: field,
+  //     //   oldValue: task._previousDataValues[field],
+  //     //   newValue: task[field],
+  //     //   changedBy: options.userId,
+  //     //   changeDate: new Date(),
+  //     // }));
+
+  //     const newChanges = changedFields.map((field) => {
+  //       // Exclude logging updatedAt field
+  //       if (field === 'updatedAt') {
+  //         return null; // Skip logging this field
+  //       }
+  
+  //       return {
+  //         fieldChanged: field,
+  //         oldValue: task._previousDataValues[field],
+  //         newValue: task[field],
+  //         changedBy: options.userId,
+  //         changeDate: new Date(),
+  //       };
+  //     }).filter(change => change !== null); // Remove null entries
+
+  //     console.log("newChanges", newChanges);
+
+  //     if (log) {
+  //       // Append changes to existing log
+  //       const updatedChanges = log.changes.concat(newChanges);
+  //       await log.update({ changes: updatedChanges });
+  //     } else {
+  //       // Create a new log entry
+  //       await sequelize.models.TaskLog.create({
+  //         taskId: task.id,
+  //         changes: newChanges,
+  //       });
+  //     }
+  //   }
+  // });
+
+  // return Task;
 };

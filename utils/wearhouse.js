@@ -38,8 +38,6 @@ const uploadToS3 = async (fileData) => {
   });
 
 };
-
-
 const uploadToS4 = async (fileData, filebody) => {
   let Query = filebody;
   console.log(filebody,"ertyuio")

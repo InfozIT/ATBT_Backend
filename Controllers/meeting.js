@@ -6,20 +6,7 @@ const mycon = require('../DB/mycon');
 const Team = db.Team
 const Entity = db.Entity
 const { Op } = require('sequelize');
-const {uploadToS3}= require('../utils/wearhouse'); 
-
-
-
-
-function convertDateFormat(dateString) {
-    // Split the date string by the hyphen
-    const dateParts = dateString.split("-");
-    
-    // Reorder the parts to dd/mm/yyyy
-    const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-    
-    return formattedDate;
-}
+const uploadToS3 = require('../utils/wearhouse')
 
 
 
@@ -65,11 +52,6 @@ const CreateMeeting = async (req, res) => {
         let Meetmember = member.dataValues.members;
         let createdby = member.dataValues.createdBy;
         let date = member.dataValues.date;
-        let formattedDate = convertDateFormat(date);
-        console.log(formattedDate,"Dateformate")
-
-
-
         let BMno = member.dataValues.meetingnumber;
     
         let num1 = Number(createdby);
@@ -108,7 +90,7 @@ const CreateMeeting = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: `Invitation: Board Meeting on ${formattedDate}`,
+            subject: `Invitation: Board Meeting on ${date}`,
             html: `
               <style>
                 .container {
@@ -166,7 +148,7 @@ const CreateMeeting = async (req, res) => {
                     </h5>
                     <div style="font-size: 0.8rem">
                       <p style="line-height: 1.4">
-                        You are cordially invited to the Board Meeting on ${formattedDate}. Below are the details:
+                        You are cordially invited to the Board Meeting on ${date}. Below are the details:
                       </p>
                       <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
@@ -200,8 +182,6 @@ const CreateMeeting = async (req, res) => {
         let Meetmember = member.dataValues.members;
         let createdby = member.dataValues.createdBy;
         let date = member.dataValues.date;
-        let formattedDate = convertDateFormat(date);
-
         let BMno = member.dataValues.meetingnumber;
     
         let num1 = Number(createdby);
@@ -229,7 +209,7 @@ const CreateMeeting = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: `Invitation: Board Meeting on ${formattedDate}`,
+            subject: `Invitation: Board Meeting on ${date}`,
             html: `
               <style>
                 .container {
@@ -287,7 +267,7 @@ const CreateMeeting = async (req, res) => {
                     </h5>
                     <div style="font-size: 0.8rem">
                       <p style="line-height: 1.4">
-                        You are cordially invited to the Board Meeting on ${formattedDate}. Below are the details:
+                        You are cordially invited to the Board Meeting on ${date}. Below are the details:
                       </p>
                       <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
@@ -321,8 +301,6 @@ const CreateMeeting = async (req, res) => {
         let Meetmember = member.dataValues.members;
         let createdby = member.dataValues.createdBy;
         let date = member.dataValues.date;
-        let formattedDate = convertDateFormat(date);
-
         let BMno = member.dataValues.meetingnumber;
     
         let num1 = Number(createdby);
@@ -364,7 +342,7 @@ const CreateMeeting = async (req, res) => {
           const mailData = {
             from: 'nirajkr00024@gmail.com',
             to: emails[i],
-            subject: `Invitation: Board Meeting on ${formattedDate}`,
+            subject: `Invitation: Board Meeting on ${date}`,
             html: `
               <style>
                 .container {
@@ -422,7 +400,7 @@ const CreateMeeting = async (req, res) => {
                     </h5>
                     <div style="font-size: 0.8rem">
                       <p style="line-height: 1.4">
-                        You are cordially invited to the Board Meeting on ${formattedDate}. Below are the details:
+                        You are cordially invited to the Board Meeting on ${date}. Below are the details:
                       </p>
                       <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
@@ -662,35 +640,21 @@ const UpdateMeetings = async (req, res) => {
           return res.status(404).json({ error: "Meeting not found" });
         }
 
-        const EntityId = member.dataValues.EntityId;
-        const TeamId = member.dataValues.TeamId;
+        let meetMembers = member.dataValues.members;
         const userId = member.dataValues.UserId;
-        if (EntityId){
-          let meet = await db.Meeting.findOne({
-            where: {EntityId: EntityId },
-          }
-          
-        );
-        let date = meet.dataValues.date;
-        let formattedDate = convertDateFormat(date);
-        const createdBy = meet.dataValues.createdBy;
-        let BMno = meet.dataValues.meetingnumber;
-        let extrenal = meet.dataValues.members;
+        const createdBy = member.dataValues.createdBy;
+        const meetingDate = member.dataValues.date;
+        let BMno = member.dataValues.meetingnumber;
 
-
-
-        let memid = await db.User.findAll({
-          attributes: ['id'],
-          where: { entityname: EntityId } },
-        
-        );
-        const internal = memid.map(entry => entry.id);
 
         // Convert userId and createdBy to numbers
         const numUserId = Number(userId);
         const numCreatedBy = Number(createdBy);
 
-
+        // Add userId to meetMembers if not already present
+        if (!meetMembers.includes(numUserId)) {
+          meetMembers.push(numUserId);
+        }
 
         // Fetch creator's name
         const creator = await db.User.findOne({
@@ -705,13 +669,10 @@ const UpdateMeetings = async (req, res) => {
 
         const creatorName = creator.name;
 
-        let meetM = internal.concat(extrenal);
-        let all = meetM.concat(createdBy);
-
         // Fetch emails and names of the members
         const emailResults = await db.User.findAll({
           attributes: ['email', 'name'],
-          where: { id: { [Op.in]: all } },
+          where: { id: { [Op.in]: meetMembers } },
           raw: true,
         });
 
@@ -781,7 +742,7 @@ const UpdateMeetings = async (req, res) => {
                     </h5>
                     <div style="font-size: 0.8rem">
                       <p style="line-height: 1.4">
-                        We regret to inform you that the Board Meeting on ${formattedDate} have been updated. Below are the updated details:
+                        We regret to inform you that the Board Meeting on ${meetingDate} have been updated. Below are the updated details:
                       </p>
                       <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
                       <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
@@ -804,148 +765,6 @@ const UpdateMeetings = async (req, res) => {
 
           await transporter.sendMail(mailData);
         }
-
-        
-
-
-
-        }
-        else if (TeamId){
-          let meet = await db.Meeting.findOne({
-            where: {TeamId: TeamId },
-          }
-          
-        );
-        let date = meet.dataValues.date;
-        let formattedDate = convertDateFormat(date);
-        const createdBy = meet.dataValues.createdBy;
-        let BMno = meet.dataValues.meetingnumber;
-        let extrenal = meet.dataValues.members;
-        let memid = await db.Team.findOne({
-          where: { id: TeamId } }
-        );
-        const internal = memid.dataValues.members;
-        // Convert userId and createdBy to numbers
-        const numUserId = Number(userId);
-        const numCreatedBy = Number(createdBy);
-
-        // Fetch creator's name
-        const creator = await db.User.findOne({
-          attributes: ['name'],
-          where: { id: numCreatedBy },
-          raw: true,
-        });
-
-        if (!creator) {
-          return res.status(404).json({ error: "Creator not found" });
-        }
-
-        const creatorName = creator.name;
-
-        let meetM = internal.concat(extrenal);
-        let all = meetM.concat(createdBy);
-
-        // Fetch emails and names of the members
-        const emailResults = await db.User.findAll({
-          attributes: ['email', 'name'],
-          where: { id: { [Op.in]: all } },
-          raw: true,
-        });
-
-        const emails = emailResults.map(entry => entry.email);
-        console.log(emails,"-------")
-        const names = emailResults.map(entry => entry.name);
-
-        // Send individual emails to each recipient
-        for (let i = 0; i < emails.length; i++) {
-          const mailData = {
-            from: 'nirajkr00024@gmail.com',
-            to: emails[i],
-            subject: 'Notice : Board Meeting Updated',
-            html: `
-              <style>
-                .container {
-                  max-width: 700px;
-                  margin: 0 auto;
-                  padding: 24px 0;
-                  font-family: "Poppins", sans-serif;
-                  background-color: rgb(231 229 228);
-                  border-radius: 1%;
-                }
-                .banner {
-                  margin-bottom: 10px;
-                  width: 90px;
-                  height: 8vh;
-                  margin-right: 20px;
-                }
-                .header {
-                  display: flex;
-                  align-items: center;
-                  justify-content:center;
-                  padding-top: 10px;
-                }
-                p {
-                  margin-bottom: 15px;
-                }
-                .container-main {
-                  max-width: 650px;
-                  margin: 0 auto;
-                  font-family: "serif", sans-serif;
-                  background-color: #fafafa;
-                  border-radius: 1%;
-                }
-                .content {
-                  padding: 25px;
-                }
-                .footer {
-                  background-color: rgb(249 115 22);
-                  padding: 0.5em;
-                  text-align: center;
-                }
-              </style>
-              <div class="container">
-                <div class="container-main">
-                  <div class="header">
-                    <img
-                      src="https://upload-from-node.s3.ap-south-1.amazonaws.com/b66dcf3d-b7e7-4e5b-85d4-9052a6f6fa39-image+(6).png"
-                      alt="kapil_Groups_Logo"
-                      class="banner"
-                    />
-                  </div>
-                  <hr style="margin: 0" />
-                  <div class="content">
-                    <h5 style="font-size: 1rem; font-weight: 500">
-                      Dear <span style="font-weight: bold">${names[i]}</span>,
-                    </h5>
-                    <div style="font-size: 0.8rem">
-                      <p style="line-height: 1.4">
-                        We regret to inform you that the Board Meeting on ${formattedDate} have been updated. Below are the updated details:
-                      </p>
-                      <p><span style="font-weight: bold">Meeting Id :</span> ${BMno}</p>
-                      <p><span style="font-weight: bold">Members :</span> ${names.join(', ')}</p>
-                      <p>Kindly update your calendar to reflect the new meeting date.</p>
-              <p>Thank you for your understanding.</p>
-              <p style="padding-top: 10px;">Warm regards,</p>
-                      <p>${creatorName}</p>
-                      <p>Kapil Group</p>
-                    </div>
-                  </div>
-                  <div class="footer">
-                    <p style="color: white; font-size: 15px; margin: 0">
-                      All rights are reserved by Kapil Group
-                    </p>
-                  </div>
-                </div>
-              </div>
-            `,
-          };
-
-          await transporter.sendMail(mailData);
-        }
-      }
-
-          
-   
 
         res.status(201).send(`${id}`);
       } catch (dbError) {
@@ -995,6 +814,7 @@ const PatchMeetings = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 const DeleteMeeting = async (req, res) => {
   try {
