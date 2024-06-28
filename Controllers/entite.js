@@ -2,7 +2,7 @@ require('dotenv').config();
 var db = require('../models/index');
 const Entity = db.Entity;
 const mycon = require('../DB/mycon')
-const uploadToS3 = require('../utils/wearhouse')
+const {uploadToS3} = require('../utils/wearhouse')
 // const { Op } = require('sequelize');
 const { Op } = require('sequelize'); 
 

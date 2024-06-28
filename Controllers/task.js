@@ -2,7 +2,7 @@ var db = require('../models/index');
 const mycon = require('../DB/mycon');
 const transporter = require('../utils/nodemailer')
 const { Op, where, Sequelize } = require('sequelize');
-const uploadToS3 = require('../utils/wearhouse')
+const {uploadToS3} = require('../utils/wearhouse')
 const moment = require('moment');
 
 

@@ -2,7 +2,7 @@ const db = require('../models/index');
 const Team = db.Team;
 require('dotenv').config();
 // const db = require('../models/index');
-const uploadToS3 = require('../utils/wearhouse')
+const {uploadToS3} = require('../utils/wearhouse')
 const { QueryTypes } = require('sequelize');
 const mycon = require('../DB/mycon')
 const { Op } = require('sequelize');

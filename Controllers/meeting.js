@@ -6,7 +6,7 @@ const mycon = require('../DB/mycon');
 const Team = db.Team
 const Entity = db.Entity
 const { Op } = require('sequelize');
-const uploadToS3 = require('../utils/wearhouse')
+const {uploadToS3} = require('../utils/wearhouse')
 
 
 
