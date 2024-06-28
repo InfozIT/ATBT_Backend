@@ -303,7 +303,20 @@ const UpdateTask = async (req, res) => {
       meetMembers =[]
       let decision = member.dataValues.decision;
       let dueDate = member.dataValues.dueDate;
-      
+
+      try{
+        var reversedDateStr = dueDate.split('-').reverse().join('-');
+        let current = new Date().toISOString().slice(0, 10);
+        var currentDate= current.split('-').reverse().join('-');
+        console.log(reversedDateStr,"ppppp",currentDate)
+
+        
+
+      }
+      catch(error){
+        console.log(error)
+
+      }
       let PR = member.dataValues.members;
       let meetingId = member.dataValues.meetingId;
       
@@ -326,11 +339,7 @@ const UpdateTask = async (req, res) => {
 
     const meetingnumber = creator.meetingnumber;
 
-    const emailResults = await db.User.findAll({
-      attributes: ['email', 'name'],
-      where: { id: { [Op.in]: meetMembers } },
-      raw: true,
-    });
+      
 
     const emails = emailResults.map(entry => entry.email);
     let currentDate = new Date().toISOString().slice(0, 10);
@@ -446,8 +455,38 @@ const UpdateTask = async (req, res) => {
             <p>${creatorName}</p>
             <p>Kapil Group</p>
           </div>
-        `,
-      };
+   
+          <hr style="margin: 0" />
+          <div class="content">
+            <h5 style="font-size: 1rem; font-weight: 500">
+              Dear <span style="font-weight: bold">${names[i]}</span>,
+            </h5>
+            <div style="font-size: 0.8rem">
+              <p style="line-height: 1.4">
+              You've been assigned a decision from <span style="font-weight:bold"> ${taskCreatorName}</span>, made during <span style="font-weight:bold"> ${meetingnumber}</span>. Here are the details:
+              </p>
+             <table>
+              <thead>
+                <th>Decision Taken</th>
+                <th>Assigned Date</th>
+                <th>Due Date</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td> ${decision}</td>
+                <td> ${currentDate}</td>
+                <td> ${reversedDateStr}</td>
+                </tr>
+              </tbody>
+             </table>
+             <p>Please ensure that the decision assigned to you is completed by the due date.</p>
+              <p style="padding-top: 15px;">Best regards,</p>
+              <p>${Creatorname}</p>
+              <p>Kapil Group</p>
+            </div>
+          `,
+        };
+        
 
       await transporter.sendMail(mailData);
       await db.Task.update(
@@ -2069,7 +2108,7 @@ const GetTask = async (req, res) => {
       const meetingdate = meeting ? meeting.date : null;
 
       let memberdataFinal = null;
-      if (task.members) {
+      if (task.members && userMap[task.members]) {
         memberdataFinal = userMap[task.members].name || null;
       }
 
