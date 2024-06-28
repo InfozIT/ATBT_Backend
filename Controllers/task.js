@@ -307,7 +307,6 @@ const UpdateTask = async (req, res) => {
       try{
         var reversedDateStr = dueDate.split('-').reverse().join('-');
         let current = new Date().toISOString().slice(0, 10);
-        var currentDate= current.split('-').reverse().join('-');
         console.log(reversedDateStr,"ppppp",currentDate)
 
         
