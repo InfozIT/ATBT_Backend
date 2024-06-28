@@ -1511,8 +1511,7 @@ const GetMeetingList = async (req, res) => {
 
 
 const getAttachments = async (req, res) => {
-  const { TaskId, MeetingId, EntityId, TeamId,AllTaskbyMeeting,AllTaskbyTeam } = req.query;
-
+  const { TaskId, MeetingId, EntityId, TeamId, AllTaskbyMeeting, AllTaskbyTeam } = req.query;
 
   try {
     let data;
@@ -1528,28 +1527,23 @@ const getAttachments = async (req, res) => {
       data = await fetchAttachments({ TaskId });
     } else if (MeetingId) {
       data = await fetchAttachments({ MeetingId });
-    } 
-    else if (AllTaskbyMeeting) {
-      const project = await db.Task.findAll({ attributes: ['id'],where: { meetingId: AllTaskbyMeeting } });
+    } else if (AllTaskbyMeeting) {
+      const project = await db.Task.findAll({ attributes: ['id'], where: { meetingId: AllTaskbyMeeting } });
       let taskIds = project.map(entry => entry.id);
       data = await db.Attachments.findAll({
         where: { TaskId: { [Op.in]: taskIds } },
-      }); 
-    }
-    else if (AllTaskbyTeam) {
-      console.log(AllTaskbyTeam)
-      const Meet = await db.Meeting.findAll({ attributes: ['id'],where: { TeamId: AllTaskbyTeam } });
+      });
+    } else if (AllTaskbyTeam) {
+      const Meet = await db.Meeting.findAll({ attributes: ['id'], where: { TeamId: AllTaskbyTeam } });
       let MeetIds = Meet.map(entry => entry.id);
       let Data = await db.Task.findAll({
         where: { meetingId: { [Op.in]: MeetIds } },
       });
       let TaskIds = Data.map(entry => entry.id);
-      console.log(TaskIds)
       data = await db.Attachments.findAll({
         where: { TaskId: { [Op.in]: TaskIds } },
-      }); 
-    }
-    else if (EntityId || TeamId) {
+      });
+    } else if (EntityId || TeamId) {
       const whereClause = EntityId ? { EntityId } : { TeamId };
       const projects = await db.Meeting.findAll({
         attributes: ['id'],
@@ -1574,14 +1568,34 @@ const getAttachments = async (req, res) => {
         }))
       : [];
 
-    res.status(200).json(cleanedData);
+    // Retrieve decisions for the tasks
+    const TaskIds = cleanedData.map(entry => entry.TaskId).filter(item => item !== null);
+    const taskDecisions = await db.Task.findAll({
+      attributes: ['id', 'decision'],
+      where: { id: { [Op.in]: TaskIds } },
+    });
+    
+    // Create a map of taskId to decision
+    const decisionMap = taskDecisions.reduce((acc, task) => {
+      acc[task.id] = task.decision;
+      return acc;
+    }, {});
+
+    // Add decisions to the cleaned data
+    const finalResult = cleanedData.map(item => ({
+      ...item,
+      decision: decisionMap[item.TaskId] || null,
+    }));
+
+    res.status(200).json(finalResult);
   } catch (error) {
     console.error('Error retrieving data:', error);
     res.status(500).json({ error: 'An error occurred while retrieving data' });
   }
 };
 
-module.exports = getAttachments;
+
+
 
 
 
