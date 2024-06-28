@@ -307,7 +307,6 @@ const UpdateTask = async (req, res) => {
       try{
         var reversedDateStr = dueDate.split('-').reverse().join('-');
         let current = new Date().toISOString().slice(0, 10);
-        var currentDate= current.split('-').reverse().join('-');
         console.log(reversedDateStr,"ppppp",currentDate)
 
         
@@ -1838,7 +1837,7 @@ const DeleteTskDoc = async (req, res) => {
 }
 
 const GetTask = async (req, res) => {
-  const { userId, meetingId, status, entityId, teamId, runningdecisions } = req.query;
+  const { userId, meetingId, status, entityId, teamId } = req.query;
   const fromDate = req.query.fromDate;
   const toDate = req.query.toDate;
   const page = parseInt(req.query.page) || 1; // Default to page 1
@@ -1899,24 +1898,25 @@ const GetTask = async (req, res) => {
         : { [Op.in]: teamMeetingIds };
     }
 
+
     if (status) {
+      const currentDate = new Date().toISOString().slice(0, 10);
+    
       if (status === "Over-Due") {
-        const currentDate = new Date().toISOString().slice(0, 10);
         whereClause.dueDate = { [Op.lt]: currentDate };
+      } else if (status === 'runningdecisions') {
+        whereClause[Op.or] = [
+          { status: { [Op.in]: ["To-Do", "In-Progress"] } },
+          { dueDate: { [Op.lt]: currentDate } }
+        ];
       } else {
         whereClause.status = status;
       }
     }
-
-    if (status === 'runningdecisions') {
-      const currentDate = new Date().toISOString().slice(0, 10);
-      whereClause = {
-        [Op.or]: [
-          { status: { [Op.in]: ["To-Do", "In-Progress"] } },
-          { dueDate: { [Op.lt]: currentDate } }
-        ]
-      };
-    }
+    
+    
+      
+    
 
     let totalTasks = await db.Task.count({ where: whereClause });
     const offset = (page - 1) * pageSize;
