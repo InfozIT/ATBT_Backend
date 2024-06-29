@@ -151,8 +151,6 @@ app.post('/sendbyemail/:id', async (req, res) => {
           raw: true,
         });
         let Creatorname = Ceatorname.map(entry => entry.name);
-
-
         const names = emailResults.map(entry => entry.name);
 
         // Send individual emails to each recipient
